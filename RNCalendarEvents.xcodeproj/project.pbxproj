@@ -213,6 +213,12 @@
 		BEC43C741C723089001221C6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/node_modules/react-native/React",
+					"$(SRCROOT)/../../node_modules/react-native/React",
+					"$(SRCROOT)/../react-native/React",
+					"$(SRCROOT)/../../React",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -222,6 +228,12 @@
 		BEC43C751C723089001221C6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/node_modules/react-native/React",
+					"$(SRCROOT)/../../node_modules/react-native/React",
+					"$(SRCROOT)/../react-native/React",
+					"$(SRCROOT)/../../React",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

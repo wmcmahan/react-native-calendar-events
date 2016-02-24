@@ -60,7 +60,7 @@ componentWillUnmount () {
 Authorization must be granted before accessing calendar events.
 
 ```javascript
-RNCalendarEvents.authorizeEventStore((error, auth) => {...});
+RNCalendarEvents.authorizeEventStore((auth, error) => {...});
 ```
 
 
