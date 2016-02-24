@@ -1,6 +1,6 @@
 {
   "name": "react-native-calendar-events",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Will McMahan",
   "license": "MIT",
   "main": "RNCalendarEvents.ios.js",
