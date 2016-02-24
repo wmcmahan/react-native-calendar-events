@@ -9,12 +9,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/wmcmahan/React-Native-Calendar-Events"
+    "url": "https://github.com/wmcmahan/react-native-calendar-events"
   },
   "bugs": {
-    "url": "https://github.com/wmcmahan/React-Native-Calendar-Events/issues"
+    "url": "https://github.com/wmcmahan/react-native-calendar-events/issues"
   },
-  "homepage": "https://github.com/wmcmahan/React-Native-CalendarReminders",
+  "homepage": "https://github.com/wmcmahan/react-native-calendar-events",
   "description": "React Native module for IOS Calendar Events",
   "keywords": [
     "eventkit",
