@@ -47,7 +47,7 @@ Example:
 ```javascript
 componentWillMount () {
   this.eventEmitter = NativeAppEventEmitter.addListener('calendarEventsChanged', () => {
-    RNCalendarEvents.fetchAllEvents(events => {...});
+    RNCalendarEvents.fetchAllEvents(startDate, endDate, events => {...});
   });
 }
 
@@ -67,7 +67,7 @@ RNCalendarEvents.authorizeEventStore((error, auth) => {...});
 ## Fetch all calendar events from EventStore
 
 ```javascript
-RNCalendarEvents.fetchAllEvents(events => {...});
+RNCalendarEvents.fetchAllEvents(startDate, endDate, events => {...});
 ```
 ## Create calendar event
 
