@@ -176,7 +176,7 @@ RCT_EXPORT_MODULE()
     BOOL success = [self.eventStore removeEvent:calendarEvent span:EKSpanThisEvent commit:YES error:&error];
     
     if (!success) {
-        [self.bridge.eventDispatcher sendAppEventWithName:@"CalendarEventError"
+        [self.bridge.eventDispatcher sendAppEventWithName:@"eventSaveError"
                                                      body:@{@"error": error}];
     }
 }
