@@ -156,10 +156,10 @@ RCT_EXPORT_MODULE()
     NSError *error = nil;
     BOOL success = [self.eventStore saveEvent:calendarEvent span:EKSpanFutureEvents commit:YES error:&error];
     if (!success) {
-        [self.bridge.eventDispatcher sendAppEventWithName:@"CalendarEventError"
+        [self.bridge.eventDispatcher sendAppEventWithName:@"eventSaveError"
                                                      body:@{@"error": error}];
     } else {
-        [self.bridge.eventDispatcher sendAppEventWithName:@"CalendarEventSuccess"
+        [self.bridge.eventDispatcher sendAppEventWithName:@"eventSaveSuccess"
                                                      body:calendarEvent.calendarItemIdentifier];
     }
 }
@@ -439,7 +439,7 @@ RCT_EXPORT_MODULE()
 {
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        [weakSelf.bridge.eventDispatcher sendAppEventWithName:@"CalendarEventsChanged"
+        [weakSelf.bridge.eventDispatcher sendAppEventWithName:@"calendarEventsChanged"
                                                          body:nil];
     });
 }
