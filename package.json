@@ -1,0 +1,28 @@
+{
+  "name": "react-native-calendar-events",
+  "version": "0.1.0",
+  "author": "Will McMahan",
+  "license": "MIT",
+  "main": "RNCalendarEvents.ios.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wmcmahan/React-Native-Calendar-Events"
+  },
+  "bugs": {
+    "url": "https://github.com/wmcmahan/React-Native-Calendar-Events/issues"
+  },
+  "homepage": "https://github.com/wmcmahan/React-Native-CalendarReminders",
+  "description": "React Native module for IOS Calendar Events",
+  "keywords": [
+    "eventkit",
+    "calendar",
+    "events",
+    "calendar-events"
+  ],
+  "peerDependencies": {
+    "react-native": ">=0.8.0"
+  }
+}

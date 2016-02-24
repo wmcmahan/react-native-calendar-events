@@ -1,0 +1,255 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BEC43C6E1C723089001221C6 /* RNCalendarEvents.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = BEC43C6D1C723089001221C6 /* RNCalendarEvents.h */; };
+		BEC43C701C723089001221C6 /* RNCalendarEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = BEC43C6F1C723089001221C6 /* RNCalendarEvents.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BEC43C681C723089001221C6 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				BEC43C6E1C723089001221C6 /* RNCalendarEvents.h in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		BEC43C6A1C723089001221C6 /* libRNCalendarEvents.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCalendarEvents.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC43C6D1C723089001221C6 /* RNCalendarEvents.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RNCalendarEvents.h; path = ../RNCalendarEvents.h; sourceTree = "<group>"; };
+		BEC43C6F1C723089001221C6 /* RNCalendarEvents.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RNCalendarEvents.m; path = ../RNCalendarEvents.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BEC43C671C723089001221C6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BEC43C611C723089001221C6 = {
+			isa = PBXGroup;
+			children = (
+				BEC43C6C1C723089001221C6 /* RNCalendarEvents */,
+				BEC43C6B1C723089001221C6 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BEC43C6B1C723089001221C6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BEC43C6A1C723089001221C6 /* libRNCalendarEvents.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BEC43C6C1C723089001221C6 /* RNCalendarEvents */ = {
+			isa = PBXGroup;
+			children = (
+				BEC43C6D1C723089001221C6 /* RNCalendarEvents.h */,
+				BEC43C6F1C723089001221C6 /* RNCalendarEvents.m */,
+			);
+			path = RNCalendarEvents;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BEC43C691C723089001221C6 /* RNCalendarEvents */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BEC43C731C723089001221C6 /* Build configuration list for PBXNativeTarget "RNCalendarEvents" */;
+			buildPhases = (
+				BEC43C661C723089001221C6 /* Sources */,
+				BEC43C671C723089001221C6 /* Frameworks */,
+				BEC43C681C723089001221C6 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RNCalendarEvents;
+			productName = RNCalendarEvents;
+			productReference = BEC43C6A1C723089001221C6 /* libRNCalendarEvents.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BEC43C621C723089001221C6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0720;
+				ORGANIZATIONNAME = "William Mc";
+				TargetAttributes = {
+					BEC43C691C723089001221C6 = {
+						CreatedOnToolsVersion = 7.2.1;
+						DevelopmentTeam = 39P9FCH768;
+					};
+				};
+			};
+			buildConfigurationList = BEC43C651C723089001221C6 /* Build configuration list for PBXProject "RNCalendarEvents" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = BEC43C611C723089001221C6;
+			productRefGroup = BEC43C6B1C723089001221C6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BEC43C691C723089001221C6 /* RNCalendarEvents */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BEC43C661C723089001221C6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BEC43C701C723089001221C6 /* RNCalendarEvents.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BEC43C711C723089001221C6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		BEC43C721C723089001221C6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		BEC43C741C723089001221C6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		BEC43C751C723089001221C6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BEC43C651C723089001221C6 /* Build configuration list for PBXProject "RNCalendarEvents" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BEC43C711C723089001221C6 /* Debug */,
+				BEC43C721C723089001221C6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BEC43C731C723089001221C6 /* Build configuration list for PBXNativeTarget "RNCalendarEvents" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BEC43C741C723089001221C6 /* Debug */,
+				BEC43C751C723089001221C6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BEC43C621C723089001221C6 /* Project object */;
+}
