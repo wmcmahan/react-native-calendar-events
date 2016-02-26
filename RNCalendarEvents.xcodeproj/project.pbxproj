@@ -26,8 +26,8 @@
 
 /* Begin PBXFileReference section */
 		BEC43C6A1C723089001221C6 /* libRNCalendarEvents.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRNCalendarEvents.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC43C6D1C723089001221C6 /* RNCalendarEvents.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RNCalendarEvents.h; path = ../RNCalendarEvents.h; sourceTree = "<group>"; };
-		BEC43C6F1C723089001221C6 /* RNCalendarEvents.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RNCalendarEvents.m; path = ../RNCalendarEvents.m; sourceTree = "<group>"; };
+		BEC43C6D1C723089001221C6 /* RNCalendarEvents.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNCalendarEvents.h; sourceTree = "<group>"; };
+		BEC43C6F1C723089001221C6 /* RNCalendarEvents.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNCalendarEvents.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,7 +63,7 @@
 				BEC43C6D1C723089001221C6 /* RNCalendarEvents.h */,
 				BEC43C6F1C723089001221C6 /* RNCalendarEvents.m */,
 			);
-			path = RNCalendarEvents;
+			name = RNCalendarEvents;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

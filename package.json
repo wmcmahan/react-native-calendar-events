@@ -17,9 +17,11 @@
   "homepage": "https://github.com/wmcmahan/react-native-calendar-events",
   "description": "React Native module for IOS Calendar Events",
   "keywords": [
+    "react-native",
+    "react-component",
+    "ios",
     "eventkit",
-    "calendar",
-    "events",
+    "reminders",
     "calendar-events"
   ],
   "peerDependencies": {

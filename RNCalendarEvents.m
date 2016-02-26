@@ -157,7 +157,7 @@ RCT_EXPORT_MODULE()
     BOOL success = [self.eventStore saveEvent:calendarEvent span:EKSpanFutureEvents commit:YES error:&error];
     if (!success) {
         [self.bridge.eventDispatcher sendAppEventWithName:@"eventSaveError"
-                                                     body:@{@"error": error}];
+                                                     body:@{@"error": [error.userInfo valueForKey:@"NSLocalizedDescription"]}];
     } else {
         [self.bridge.eventDispatcher sendAppEventWithName:@"eventSaveSuccess"
                                                      body:calendarEvent.calendarItemIdentifier];
@@ -177,7 +177,7 @@ RCT_EXPORT_MODULE()
     
     if (!success) {
         [self.bridge.eventDispatcher sendAppEventWithName:@"eventSaveError"
-                                                     body:@{@"error": error}];
+                                                     body:@{@"error": [error.userInfo valueForKey:@"NSLocalizedDescription"]}];
     }
 }
 
@@ -466,7 +466,7 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
     
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        weakSelf.calendarEvents = [weakSelf.eventStore eventsMatchingPredicate:predicate];
+        weakSelf.calendarEvents = [[weakSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
         dispatch_async(dispatch_get_main_queue(), ^{
             callback(@[[weakSelf serializeCalendarEvents:weakSelf.calendarEvents]]);
         });
