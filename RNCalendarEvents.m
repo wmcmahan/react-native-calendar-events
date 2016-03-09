@@ -48,36 +48,25 @@ RCT_EXPORT_MODULE()
 #pragma mark -
 #pragma mark Event Store Authorization
 
-- (void)authorizationStatusForAccessEventStore
+- (NSString *)authorizationStatusForEventStore
 {
     EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
     
     switch (status) {
         case EKAuthorizationStatusDenied:
-        case EKAuthorizationStatusRestricted: {
             self.isAccessToEventStoreGranted = NO;
-            break;
-        }
+            return @"denied";
+        case EKAuthorizationStatusRestricted:
+            self.isAccessToEventStoreGranted = NO;
+            return @"restricted";
         case EKAuthorizationStatusAuthorized:
-            self.isAccessToEventStoreGranted = YES;
             [self addNotificationCenter];
-            break;
+            self.isAccessToEventStoreGranted = YES;
+            return @"authorized";
         case EKAuthorizationStatusNotDetermined: {
-            [self requestCalendarAccess];
-            break;
+            return @"undetermined";
         }
     }
-}
-
--(void)requestCalendarAccess
-{
-    __weak RNCalendarEvents *weakSelf = self;
-    [self.eventStore requestAccessToEntityType:EKEntityTypeEvent completion:^(BOOL granted, NSError *error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            weakSelf.isAccessToEventStoreGranted = granted;
-            [weakSelf addNotificationCenter];
-        });
-    }];
 }
 
 #pragma mark -
@@ -452,10 +441,25 @@ RCT_EXPORT_MODULE()
 #pragma mark -
 #pragma mark RCT Exports
 
+RCT_EXPORT_METHOD(authorizationStatus:(RCTResponseSenderBlock)callback)
+{
+    NSString *status = [self authorizationStatusForEventStore];
+    callback(@[@{@"status": status}]);
+}
+
 RCT_EXPORT_METHOD(authorizeEventStore:(RCTResponseSenderBlock)callback)
 {
-    [self authorizationStatusForAccessEventStore];
-    callback(@[@(self.isAccessToEventStoreGranted)]);
+    __weak RNCalendarEvents *weakSelf = self;
+    [self.eventStore requestAccessToEntityType:EKEntityTypeEvent completion:^(BOOL granted, NSError *error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSString *status = granted ? @"authorized" : @"denied";
+            weakSelf.isAccessToEventStoreGranted = granted;
+            if (!error) {
+                [weakSelf addNotificationCenter];
+                callback(@[@{@"status": status}]);
+            }
+        });
+    }];
 }
 
 RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate callback:(RCTResponseSenderBlock)callback)

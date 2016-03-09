@@ -56,11 +56,18 @@ componentWillUnmount () {
 }
 ```
 
+## Get authorization status for IOS EventStore
+Finds the current authorization status: "denied", "restricted", "authorized" or "undetermined".
+
+```javascript
+RNCalendarEvents.authorizationStatus(({status}) => {...});
+```
+
 ## Request authorization to IOS EventStore
 Authorization must be granted before accessing calendar events.
 
 ```javascript
-RNCalendarEvents.authorizeEventStore((auth, error) => {...});
+RNCalendarEvents.authorizeEventStore(({status}) => {...});
 ```
 
 
