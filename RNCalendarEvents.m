@@ -79,6 +79,8 @@ RCT_EXPORT_MODULE()
                    notes:(NSString *)notes
                   alarms:(NSArray *)alarms
               recurrence:(NSString *)recurrence
+              url:(NSString *)url
+
 {
     if (!self.isAccessToEventStoreGranted) {
         return;
@@ -91,7 +93,8 @@ RCT_EXPORT_MODULE()
     calendarEvent.startDate = startDate;
     calendarEvent.endDate = endDate;
     calendarEvent.notes = notes;
-    
+    calendarEvent.URL = url;
+
     if (alarms) {
         calendarEvent.alarms = [self createCalendarEventAlarms:alarms];
     }
@@ -114,6 +117,8 @@ RCT_EXPORT_MODULE()
             notes:(NSString *)notes
            alarms:(NSArray *)alarms
        recurrence:(NSString *)recurrence
+       url:(NSString *)url
+
 {
     if (!self.isAccessToEventStoreGranted) {
         return;
@@ -124,7 +129,8 @@ RCT_EXPORT_MODULE()
     calendarEvent.startDate = startDate;
     calendarEvent.endDate = endDate;
     calendarEvent.notes = notes;
-    
+    calendarEvent.URL = url;
+
     if (alarms) {
         calendarEvent.alarms = [self createCalendarEventAlarms:alarms];
     }
@@ -305,7 +311,8 @@ RCT_EXPORT_MODULE()
                                          _allDay: @NO,
                                          _notes: @"",
                                          _alarms: @[],
-                                         _recurrence: @""
+                                         _recurrence: @"",
+                                         _url: @""
                                          };
     
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -486,7 +493,8 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details)
     NSString *notes = [RCTConvert NSString:details[_notes]];
     NSArray *alarms = [RCTConvert NSArray:details[_alarms]];
     NSString *recurrence = [RCTConvert NSString:details[_recurrence]];
-    
+    NSString *url = [RCTConvert NSString:details[_url]];
+
     if (eventId) {
         EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
         [self editEvent:calendarEvent
@@ -495,6 +503,7 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details)
                 endDate:endDate
                location:location
                   notes:notes
+                   url:url
                  alarms:alarms
              recurrence:recurrence];
         
@@ -503,7 +512,8 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details)
                      startDate:startDate
                        endDate:endDate
                       location:location
-                         notes:notes
+                         notes:notes,
+                         url:url,
                         alarms:alarms
                     recurrence:recurrence];
     }
