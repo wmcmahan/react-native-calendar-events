@@ -8,6 +8,8 @@ npm install react-native-calendar-events
 ```
 Then add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries.
 
+For iOS 8 compatibility, you may need to link your project with `CoreFoundation.framework` (status = Optional) under Link Binary With Libraries on the Build Phases page of your project settings.
+
 ## Usage
 
 Require the `react-native-calendar-events` module and React Native's `NativeAppEventEmitter` module.
