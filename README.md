@@ -88,7 +88,8 @@ Example:
 RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
-  startDate: '2016-10-01T09:45:00.000UTC'
+  startDate: '2016-10-01T09:45:00.000UTC',
+  endDate: '2016-10-02T09:45:00.000UTC'
 });
 ```
 
@@ -117,6 +118,7 @@ RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
   startDate: '2016-10-01T09:45:00.000UTC',
+  endDate: '2016-10-02T09:45:00.000UTC',
   alarms: [{
     date: -1 // or absolute date
   }]
@@ -129,6 +131,7 @@ RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
   startDate: '2016-10-01T09:45:00.000UTC',
+  endDate: '2016-10-02T09:45:00.000UTC',
   alarms: [{
     structuredLocation: {
       title: 'title',
@@ -150,6 +153,7 @@ RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
   startDate: '2016-10-01T09:45:00.000UTC',
+  endDate: '2016-10-02T09:45:00.000UTC',
   alarms: [{
     date: -1 // or absolute date
   }],
@@ -165,7 +169,8 @@ RNCalendarEvents.saveEvent('title', {
   id: 'id',
   location: 'location',
   notes: 'notes',
-  startDate: '2016-10-02T09:45:00.000UTC'
+  startDate: '2016-10-02T09:45:00.000UTC',
+  endDate: '2016-10-02T09:45:00.000UTC'
 });
 ```
 
