@@ -157,7 +157,7 @@ RCT_EXPORT_MODULE()
     }
 }
 
-- (void)deleteEvent:(NSString *)eventId
+- (void)deleteEvent:(NSString *)eventId span:(EKSpan *)span
 {
     if (!self.isAccessToEventStoreGranted) {
         return;
@@ -165,7 +165,7 @@ RCT_EXPORT_MODULE()
 
     EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
     NSError *error = nil;
-    BOOL success = [self.eventStore removeEvent:calendarEvent span:EKSpanThisEvent commit:YES error:&error];
+    BOOL success = [self.eventStore removeEvent:calendarEvent span:span commit:YES error:&error];
 
     if (!success) {
         [self.bridge.eventDispatcher sendAppEventWithName:@"eventSaveError"
@@ -403,8 +403,7 @@ RCT_EXPORT_MODULE()
         if (event.occurrenceDate) {
             [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.occurrenceDate] forKey:_occurrenceDate];
         }
-
-
+        
         [formedCalendarEvent setValue:[NSNumber numberWithBool:event.isDetached] forKey:_isDetached];
 
         [formedCalendarEvent setValue:[NSNumber numberWithBool:event.allDay] forKey:_allDay];
@@ -502,7 +501,12 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details)
 
 RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId)
 {
-    [self deleteEvent:eventId];
+    [self deleteEvent:eventId span:EKSpanThisEvent];
+}
+
+RCT_EXPORT_METHOD(removeFutureEvents:(NSString *)eventId)
+{
+    [self deleteEvent:eventId span:EKSpanFutureEvents];
 }
 
 @end
