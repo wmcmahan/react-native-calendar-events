@@ -175,8 +175,15 @@ RNCalendarEvents.saveEvent('title', {
 ```
 
 ## Remove calendar event
-Give the unique calendar event **id** to remove an existing calendar event.
+Give the unique calendar event instance **id** to remove the calendar event.
 
 ```javascript
 RNCalendarEvents.removeEvent('id');
+```
+
+## Remove future (recurring) calendar events
+Give the unique calendar event instance **id** to remove future calendar events.
+
+```javascript
+RNCalendarEvents.removeFutureEvents('id');
 ```
