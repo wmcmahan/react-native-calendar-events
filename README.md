@@ -17,7 +17,7 @@ Require the `react-native-calendar-events` module and React Native's `NativeAppE
 import React from 'react-native';
 import RNCalendarEvents from 'react-native-calendar-events';
 
-const {NativeAppEventEmitter} = React;
+const {NativeAppEventEmitter} = 'react-native';
 ```
 
 ## Properties
