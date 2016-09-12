@@ -1,10 +1,13 @@
+require 'json'
+package_json = JSON.parse(File.read('package.json'))
+
 Pod::Spec.new do |s|
   s.name         = 'react-native-calendar-events'
-  s.version      = '0.1.4'
-  s.summary      = 'React Native Module for IOS Calendar Events'
+  s.version      = package_json['version']
+  s.summary      = package_json['description']
   s.homepage     = 'https://github.com/wmcmahan/react-native-calendar-events'
-  s.author       = 'Will McMahan'
-  s.license      = 'MIT'
+  s.author       = package_json['author']
+  s.license      = package_json['license']
   s.platform     = :ios, '8.0'
   s.source       = {
     :git => 'https://github.com/wmcmahan/react-native-calendar-events.git'
