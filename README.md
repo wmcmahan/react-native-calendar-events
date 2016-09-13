@@ -17,6 +17,8 @@ Require the `react-native-calendar-events` module.
 import RNCalendarEvents from 'react-native-calendar-events';
 ```
 
+> **NOTE**: Starting from `1.0.0`, this package will use Promises instead of Events.
+
 ## Properties
 
 | Property        | Value            | Description |
