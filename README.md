@@ -36,44 +36,136 @@ import RNCalendarEvents from 'react-native-calendar-events';
 | alarms          | Array            | The alarms associated with the calendar event, as an array of alarm objects. |
 
 
-## Get authorization status for IOS EventStore
-Returns a promise with fulfilled authorization status of "denied", "restricted", "authorized" or "undetermined".
+## authorizationStatus
+Get authorization status for IOS EventStore.
 
 ```javascript
-RNCalendarEvents.authorizationStatus();
+RNCalendarEvents.authorizationStatus()
 ```
 
-## Request authorization to IOS EventStore
-Authorization must be granted before accessing calendar events.
-Returns a promise with fulfilled authorization status of "denied", "restricted", "authorized" or "undetermined".
+Returns: Promise 
+- fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
+- rejected: Error
+
+Example:
+```javascript
+RNCalendarEvents.authorizationStatus()
+  .then(status => {
+    // handle status
+  })
+  .catch(error => {
+   // handle error
+  });
+```
+
+## authorizeEventStore
+Request authorization to IOS EventStore. Authorization must be granted before accessing calendar events.
 
 ```javascript
-RNCalendarEvents.authorizeEventStore();
+RNCalendarEvents.authorizeEventStore()
 ```
 
-## Fetch all calendar events from EventStore
+Returns: Promise 
+ - fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
+ - rejected: Error
+
+Example:
+```javascript
+RNCalendarEvents.authorizeEventStore()
+  .then(status => {
+    // handle status
+  })
+  .catch(error => {
+   // handle error
+  });
+```
+
+## fetchAllEvents
+Fetch all calendar events from EventStore
 Returns a promise with fulfilled with found events.
 
 ```javascript
-RNCalendarEvents.fetchAllEvents(startDate, endDate);
+RNCalendarEvents.fetchAllEvents(startDate, endDate)
 ```
 
-## Create calendar event
-Returns a promise with fulfilled with the created event's id.
+Parameters: 
+ - startDate: Date - The start date of the range of events fetched.
+ - endDate: Date - The end date of the range of events fetched.
+
+Returns: Promise 
+ - fulfilled: Array - Matched events within the specified date range.
+ - rejected: Error
+
+Example:
+```javascript
+RNCalendarEvents.fetchAllEvents('2016-08-19T19:26:00.000Z', '2017-08-19T19:26:00.000Z')
+  .then(events => {
+    // handle events
+  })
+  .catch(error => {
+   // handle error
+  });
+```
+
+## saveEvent
+Creates calendar event.
 
 ```
 RNCalendarEvents.saveEvent(title, settings);
 ```
+
+Parameters: 
+ - title: String - The title of the event.
+ - settings: Object - The event's settings.
+
+Returns: Promise 
+ - fulfilled: String - Created event's ID.
+ - rejected: Error
+
 Example:
 
 ```javascript
 RNCalendarEvents.saveEvent('title', {
-  location: 'location',
-  notes: 'notes',
-  startDate: '2016-10-01T09:45:00.000UTC',
-  endDate: '2016-10-02T09:45:00.000UTC'
-})
-.then(eventId => {...});
+    location: 'location',
+    notes: 'notes',
+    startDate: '2016-10-01T09:45:00.000UTC',
+    endDate: '2016-10-02T09:45:00.000UTC'
+  })
+  .then(id => {
+    // handle success
+  })
+  .catch(error => {
+    // handle error
+  });
+```
+
+## Update Event
+Give the unique calendar event **ID** to update an existing calendar event.
+
+Parameters: 
+ - title: String - The title of the event.
+ - settings: Object - The event's settings.
+
+Returns: Promise 
+ - fulfilled: String - Updated event's ID.
+ - rejected: Error
+
+Example:
+
+```javascript
+RNCalendarEvents.saveEvent('title', {
+    id: 'FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE',
+    location: 'location',
+    notes: 'notes',
+    startDate: '2016-10-01T09:45:00.000UTC',
+    endDate: '2016-10-02T09:45:00.000UTC'
+  })
+  .then(id => {
+    // handle success
+  })
+  .catch(error => {
+    // handle error
+  });
 ```
 
 ## Create calendar event with alarms
@@ -145,34 +237,54 @@ RNCalendarEvents.saveEvent('title', {
 });
 ```
 
-## Update calendar event
-Give the unique calendar event **id** to update an existing calendar event.
-Returns a promise with fulfilled with updated event's id.
+## removeEvent
+Removes calendar event.
 
 ```javascript
-RNCalendarEvents.saveEvent('title', {
-  id: 'id',
-  location: 'location',
-  notes: 'notes',
-  startDate: '2016-10-02T09:45:00.000UTC',
-  endDate: '2016-10-02T09:45:00.000UTC'
-});
+RNCalendarEvents.removeEvent(id);
 ```
 
-## Remove calendar event
-Give the unique calendar event instance **id** to remove the calendar event.
-Returns a promise with fulfilled with updated event's id.
+Parameters:
+ - id: String - The id of the event to remove.
 
+Returns: Promise 
+ - fulfilled: Bool - Successful
+ - rejected: Error
+
+Example:
 
 ```javascript
-RNCalendarEvents.removeEvent('id');
+RNCalendarEvents.removeEvent('FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE')
+  .then(success => {
+    // handle success
+  })
+  .catch(error => {
+    // handle error
+  });
 ```
 
-## Remove future (recurring) calendar events
-Give the unique calendar event instance **id** to remove future calendar events.
-Returns a promise with fulfilled with updated event's id.
-
+## removeFutureEvents
+Removes future (recurring) calendar events.
 
 ```javascript
-RNCalendarEvents.removeFutureEvents('id');
+RNCalendarEvents.removeFutureEvents(id);
+```
+
+Parameters:
+ - id: String - The id of the event to remove.
+
+Returns: Promise 
+ - fulfilled: Bool - Successful
+ - rejected: Error
+
+Example:
+
+```javascript
+RNCalendarEvents.removeFutureEvents('FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE')
+  .then(success => {
+    // handle success
+  })
+  .catch(error => {
+    // handle error
+  });
 ```
