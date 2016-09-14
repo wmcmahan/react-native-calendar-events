@@ -1,7 +1,6 @@
 # React-Native-Calendar-Events
 React Native Module for IOS Calendar Events
 
-
 ## Install
 ```
 npm install react-native-calendar-events
@@ -12,13 +11,13 @@ For iOS 8 compatibility, you may need to link your project with `CoreFoundation.
 
 ## Usage
 
-Require the `react-native-calendar-events` module and React Native's `NativeAppEventEmitter` module.
-```javascript
-import React from 'react-native';
-import RNCalendarEvents from 'react-native-calendar-events';
+Require the `react-native-calendar-events` module.
 
-const {NativeAppEventEmitter} = 'react-native';
+```javascript
+import RNCalendarEvents from 'react-native-calendar-events';
 ```
+
+> **NOTE**: Starting from `1.0.0`, this package will use Promises instead of Events.
 
 ## Properties
 
@@ -36,61 +35,45 @@ const {NativeAppEventEmitter} = 'react-native';
 | notes           | String           | The notes associated with the calendar event. |
 | alarms          | Array            | The alarms associated with the calendar event, as an array of alarm objects. |
 
-## Events
-
-| Name        | Body            | Description |
-| :--------------- | :---------------- | :----------- |
-| calendarEventsChanged              | (empty)             | |
-| eventSaveSuccess           | event id             | The ID of the successfully saved event |
-| eventSaveError       | error message            | Error that occurred during save. |
-
-Example:
-
-```javascript
-componentWillMount () {
-  this.eventEmitter = NativeAppEventEmitter.addListener('calendarEventsChanged', () => {
-    RNCalendarEvents.fetchAllEvents(startDate, endDate, events => {...});
-  });
-}
-
-componentWillUnmount () {
-  this.eventEmitter.remove();
-}
-```
 
 ## Get authorization status for IOS EventStore
-Finds the current authorization status: "denied", "restricted", "authorized" or "undetermined".
+Returns a promise with fulfilled authorization status of "denied", "restricted", "authorized" or "undetermined".
 
 ```javascript
-RNCalendarEvents.authorizationStatus(({status}) => {...});
+RNCalendarEvents.authorizationStatus();
 ```
 
 ## Request authorization to IOS EventStore
 Authorization must be granted before accessing calendar events.
+Returns a promise with fulfilled authorization status of "denied", "restricted", "authorized" or "undetermined".
 
 ```javascript
-RNCalendarEvents.authorizeEventStore(({status}) => {...});
+RNCalendarEvents.authorizeEventStore();
 ```
-
 
 ## Fetch all calendar events from EventStore
+Returns a promise with fulfilled with found events.
 
 ```javascript
-RNCalendarEvents.fetchAllEvents(startDate, endDate, events => {...});
+RNCalendarEvents.fetchAllEvents(startDate, endDate);
 ```
+
 ## Create calendar event
+Returns a promise with fulfilled with the created event's id.
 
 ```
 RNCalendarEvents.saveEvent(title, settings);
 ```
 Example:
+
 ```javascript
 RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
   startDate: '2016-10-01T09:45:00.000UTC',
   endDate: '2016-10-02T09:45:00.000UTC'
-});
+})
+.then(eventId => {...});
 ```
 
 ## Create calendar event with alarms
@@ -123,6 +106,7 @@ RNCalendarEvents.saveEvent('title', {
     date: -1 // or absolute date
   }]
 });
+
 ```
 Example with structuredLocation:
 
@@ -163,6 +147,7 @@ RNCalendarEvents.saveEvent('title', {
 
 ## Update calendar event
 Give the unique calendar event **id** to update an existing calendar event.
+Returns a promise with fulfilled with updated event's id.
 
 ```javascript
 RNCalendarEvents.saveEvent('title', {
@@ -176,6 +161,8 @@ RNCalendarEvents.saveEvent('title', {
 
 ## Remove calendar event
 Give the unique calendar event instance **id** to remove the calendar event.
+Returns a promise with fulfilled with updated event's id.
+
 
 ```javascript
 RNCalendarEvents.removeEvent('id');
@@ -183,6 +170,8 @@ RNCalendarEvents.removeEvent('id');
 
 ## Remove future (recurring) calendar events
 Give the unique calendar event instance **id** to remove future calendar events.
+Returns a promise with fulfilled with updated event's id.
+
 
 ```javascript
 RNCalendarEvents.removeFutureEvents('id');
