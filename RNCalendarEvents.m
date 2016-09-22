@@ -85,6 +85,7 @@ RCT_EXPORT_MODULE()
     NSString *location = [RCTConvert NSString:details[_location]];
     NSDate *startDate = [RCTConvert NSDate:details[_startDate]];
     NSDate *endDate = [RCTConvert NSDate:details[_endDate]];
+    NSNumber *allDay = [RCTConvert NSNumber:details[_allDay]];
     NSString *notes = [RCTConvert NSString:details[_notes]];
     NSString *url = [RCTConvert NSString:details[_url]];
     NSArray *alarms = [RCTConvert NSArray:details[_alarms]];
@@ -112,6 +113,10 @@ RCT_EXPORT_MODULE()
 
     if (endDate) {
         calendarEvent.endDate = endDate;
+    }
+    
+    if (allDay) {
+        calendarEvent.allDay = [allDay boolValue];
     }
 
     if (notes) {
