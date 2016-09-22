@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "author": "Will McMahan",
   "license": "MIT",
-  "main": "RNCalendarEvents.ios.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
