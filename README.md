@@ -5,9 +5,53 @@ React Native Module for IOS Calendar Events
 ```
 npm install react-native-calendar-events
 ```
-Then add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries.
+
+### iOS
+Add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries.
 
 For iOS 8 compatibility, you may need to link your project with `CoreFoundation.framework` (status = Optional) under Link Binary With Libraries on the Build Phases page of your project settings.
+
+### Android
+
+- Edit `build.gradle` to look like this:
+```java
+apply plugin: 'com.android.application'
+
+android {
+  ...
+}
+
+dependencies {
+  ...
++ compile project(':react-native-calendar-events')
+}
+```
+
+- In `settings.gradle`, insert the following code:
+```
+include ':react-native-calendar-events'
+project(':react-native-calendar-events').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-calendar-events/android')
+```
+
+- Edit your MainActivity.java to look like this:
+```
+package com.myapp;
+
+....
+import com.calendarevents.CalendarEventsPackage;
+
+public class MainActivity extends extends ReactActivity {
+
+  @Override
+	protected List<ReactPackage> getPackages() {
+		return Arrays.<ReactPackage>asList(
+						new MainReactPackage(),
+						new CalendarEventsPackage()
+		);
+	}
+	...
+}
+```
 
 ## Usage
 
