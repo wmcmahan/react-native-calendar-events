@@ -31,4 +31,8 @@ public class CalendarEventsPackage implements ReactPackage {
 
         return modules;
     }
+
+    public static void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        CalendarEvents.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 }

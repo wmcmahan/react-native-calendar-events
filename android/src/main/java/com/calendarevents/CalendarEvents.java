@@ -32,7 +32,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     public static final int PERMISSION_REQUEST_CODE = 37;
     private ReactContext reactContext;
-    private Promise permissionsPromise;
+    private static Promise permissionsPromise;
 
     public CalendarEvents(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -55,20 +55,21 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
     }
 
-    public void onRequestPermissionsResult(int requestCode,
+    public static void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CODE: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    this.permissionsPromise.resolve("authorized");
+                    permissionsPromise.resolve("authorized");
                 } else if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    this.permissionsPromise.resolve("denied");
+                    permissionsPromise.resolve("denied");
                 } else {
-                    this.permissionsPromise.reject("permissions - unknown error", String.valueOf(grantResults[0]));
+                    permissionsPromise.reject("permissions - unknown error", String.valueOf(grantResults[0]));
                 }
+                permissionsPromise = null;
                 return;
             }
 

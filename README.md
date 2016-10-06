@@ -33,7 +33,7 @@ include ':react-native-calendar-events'
 project(':react-native-calendar-events').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-calendar-events/android')
 ```
 
-- Edit your MainActivity.java to look like this:
+- Edit your `MainActivity.java` to look like this:
 ```
 package com.myapp;
 
@@ -50,6 +50,23 @@ public class MainActivity extends extends ReactActivity {
 		);
 	}
 	...
+}
+```
+
+- Edit your `MainActivity.java` to look like this:
+```java
+import com.calendarevents.CalendarEventsPackage;
+
+public class MainActivity extends ReactActivity {
+  ...
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+      CalendarEventsPackage.onRequestPermissionsResult(requestCode, permissions, grantResults);
+      super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+  }
+
+  ...
 }
 ```
 
