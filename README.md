@@ -141,7 +141,7 @@ RNCalendarEvents.authorizeEventStore()
   });
 ```
 
-## fetchAllEvents
+## fetchAllEvents (iOS Only)
 Fetch all calendar events from EventStore
 Returns a promise with fulfilled with found events.
 
@@ -200,7 +200,7 @@ RNCalendarEvents.saveEvent('title', {
   });
 ```
 
-## Update Event
+## Update Event (iOS Only)
 Give the unique calendar event **ID** to update an existing calendar event.
 
 Parameters: 
@@ -236,7 +236,7 @@ RNCalendarEvents.saveEvent('title', {
 | Property        | Value            | Description |
 | :--------------- | :------------------| :----------- |
 | date           | Date or Number    | If a Date is given, an alarm will be set with an absolute date. If a Number is given, an alarm will be set with a relative offset (in minutes) from the start date. |
-| structuredLocation | Object             | The location to trigger an alarm. |
+| structuredLocation | Object             | (iOS Only) The location to trigger an alarm. |
 
 ### Alarm structuredLocation properties:
 
@@ -256,12 +256,12 @@ RNCalendarEvents.saveEvent('title', {
   startDate: '2016-10-01T09:45:00.000UTC',
   endDate: '2016-10-02T09:45:00.000UTC',
   alarms: [{
-    date: -1 // or absolute date
+    date: -1 // or absolute date - iOS Only
   }]
 });
 
 ```
-Example with structuredLocation:
+Example with structuredLocation (iOS Only):
 
 ```javascript
 RNCalendarEvents.saveEvent('title', {
@@ -292,13 +292,13 @@ RNCalendarEvents.saveEvent('title', {
   startDate: '2016-10-01T09:45:00.000UTC',
   endDate: '2016-10-02T09:45:00.000UTC',
   alarms: [{
-    date: -1 // or absolute date
+    date: -1 // or absolute date - iOS Only
   }],
   recurrence: 'daily'
 });
 ```
 
-## removeEvent
+## removeEvent (iOS Only)
 Removes calendar event.
 
 ```javascript
@@ -324,7 +324,7 @@ RNCalendarEvents.removeEvent('FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE')
   });
 ```
 
-## removeFutureEvents
+## removeFutureEvents (iOS Only)
 Removes future (recurring) calendar events.
 
 ```javascript
