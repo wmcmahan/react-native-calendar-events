@@ -28,13 +28,13 @@ dependencies {
 ```
 
 - In `settings.gradle`, insert the following code:
-```
+```java
 include ':react-native-calendar-events'
 project(':react-native-calendar-events').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-calendar-events/android')
 ```
 
 - Edit your `MainActivity.java` to look like this:
-```
+```java
 package com.myapp;
 
 ....
@@ -53,7 +53,7 @@ public class MainActivity extends extends ReactActivity {
 }
 ```
 
-- Edit your `MainActivity.java` to look like this:
+- If your apps targetSDK is 23 or higher, edit your `MainActivity.java` to look like this:
 ```java
 import com.calendarevents.CalendarEventsPackage;
 
