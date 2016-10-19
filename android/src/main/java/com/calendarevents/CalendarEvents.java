@@ -1,5 +1,6 @@
 package com.calendarevents;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -49,7 +50,12 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     {
         if  (ContextCompat.checkSelfPermission(reactContext, Manifest.permission.WRITE_CALENDAR)!= PackageManager.PERMISSION_GRANTED)
         {
-            ActivityCompat.requestPermissions(this.getCurrentActivity(),
+            Activity currentActivity = getCurrentActivity();
+            if (currentActivity == null) {
+                permissionsPromise.reject("E_ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist");
+                return;
+            }
+            ActivityCompat.requestPermissions(currentActivity,
                     new String[]{ Manifest.permission.WRITE_CALENDAR },
                     PERMISSION_REQUEST_CODE);
         }
@@ -235,3 +241,4 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
     //endregion
 }
+
