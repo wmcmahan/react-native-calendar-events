@@ -11,6 +11,10 @@ Add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries.
 
 For iOS 8 compatibility, you may need to link your project with `CoreFoundation.framework` (status = Optional) under Link Binary With Libraries on the Build Phases page of your project settings.
 
+Setting up privacy usage descriptions may also be require depending on which iOS version is supported. This involves updating the Property List, `Info.plist`, with the corresponding key for the EKEventStore api. [Info.plist reference](https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html).
+
+For updating the `Info.plist` key/value via Xcode, add a `Privacy - Calendars Usage Description` key with a usage description as the value.
+
 ### Android
 
 - Edit `build.gradle` to look like this:
