@@ -5,13 +5,74 @@ React Native Module for IOS Calendar Events
 ```
 npm install react-native-calendar-events
 ```
-Then add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries.
+
+### iOS
+Add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries.
 
 For iOS 8 compatibility, you may need to link your project with `CoreFoundation.framework` (status = Optional) under Link Binary With Libraries on the Build Phases page of your project settings.
 
 Setting up privacy usage descriptions may also be require depending on which iOS version is supported. This involves updating the Property List, `Info.plist`, with the corresponding key for the EKEventStore api. [Info.plist reference](https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html).
 
 For updating the `Info.plist` key/value via Xcode, add a `Privacy - Calendars Usage Description` key with a usage description as the value.
+
+### Android
+
+- Edit `build.gradle` to look like this:
+```java
+apply plugin: 'com.android.application'
+
+android {
+  ...
+}
+
+dependencies {
+  ...
++ compile project(':react-native-calendar-events')
+}
+```
+
+- In `settings.gradle`, insert the following code:
+```java
+include ':react-native-calendar-events'
+project(':react-native-calendar-events').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-calendar-events/android')
+```
+
+- Edit your `MainActivity.java` to look like this:
+```java
+package com.myapp;
+
+....
+import com.calendarevents.CalendarEventsPackage;
+
+public class MainActivity extends extends ReactActivity {
+
+  @Override
+	protected List<ReactPackage> getPackages() {
+		return Arrays.<ReactPackage>asList(
+						new MainReactPackage(),
+						new CalendarEventsPackage()
+		);
+	}
+	...
+}
+```
+
+- If your apps targetSDK is 23 or higher, edit your `MainActivity.java` to look like this:
+```java
+import com.calendarevents.CalendarEventsPackage;
+
+public class MainActivity extends ReactActivity {
+  ...
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+      CalendarEventsPackage.onRequestPermissionsResult(requestCode, permissions, grantResults);
+      super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+  }
+
+  ...
+}
+```
 
 ## Usage
 
@@ -84,7 +145,7 @@ RNCalendarEvents.authorizeEventStore()
   });
 ```
 
-## fetchAllEvents
+## fetchAllEvents (iOS Only)
 Fetch all calendar events from EventStore
 Returns a promise with fulfilled with found events.
 
@@ -143,7 +204,7 @@ RNCalendarEvents.saveEvent('title', {
   });
 ```
 
-## Update Event
+## Update Event (iOS Only)
 Give the unique calendar event **ID** to update an existing calendar event.
 
 Parameters: 
@@ -179,7 +240,7 @@ RNCalendarEvents.saveEvent('title', {
 | Property        | Value            | Description |
 | :--------------- | :------------------| :----------- |
 | date           | Date or Number    | If a Date is given, an alarm will be set with an absolute date. If a Number is given, an alarm will be set with a relative offset (in minutes) from the start date. |
-| structuredLocation | Object             | The location to trigger an alarm. |
+| structuredLocation | Object             | (iOS Only) The location to trigger an alarm. |
 
 ### Alarm structuredLocation properties:
 
@@ -199,12 +260,12 @@ RNCalendarEvents.saveEvent('title', {
   startDate: '2016-10-01T09:45:00.000UTC',
   endDate: '2016-10-02T09:45:00.000UTC',
   alarms: [{
-    date: -1 // or absolute date
+    date: -1 // or absolute date - iOS Only
   }]
 });
 
 ```
-Example with structuredLocation:
+Example with structuredLocation (iOS Only):
 
 ```javascript
 RNCalendarEvents.saveEvent('title', {
@@ -235,13 +296,13 @@ RNCalendarEvents.saveEvent('title', {
   startDate: '2016-10-01T09:45:00.000UTC',
   endDate: '2016-10-02T09:45:00.000UTC',
   alarms: [{
-    date: -1 // or absolute date
+    date: -1 // or absolute date - iOS Only
   }],
   recurrence: 'daily'
 });
 ```
 
-## removeEvent
+## removeEvent (iOS Only)
 Removes calendar event.
 
 ```javascript
@@ -267,7 +328,7 @@ RNCalendarEvents.removeEvent('FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE')
   });
 ```
 
-## removeFutureEvents
+## removeFutureEvents (iOS Only)
 Removes future (recurring) calendar events.
 
 ```javascript
