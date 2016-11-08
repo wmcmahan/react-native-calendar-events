@@ -31,9 +31,9 @@ import java.util.TimeZone;
 
 public class CalendarEvents extends ReactContextBaseJavaModule {
 
-    public static final int PERMISSION_REQUEST_CODE = 37;
+    public static int PERMISSION_REQUEST_CODE = 37;
     private ReactContext reactContext;
-    private static Promise permissionsPromise;
+    private static HashMap<Integer, Promise> permissionsPromises = new HashMap<>();
 
     public CalendarEvents(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -46,15 +46,17 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     //region Calendar Permissions
-    private void requestCalendarReadWritePermission()
+    private void requestCalendarReadWritePermission(final Promise promise)
     {
         if  (ContextCompat.checkSelfPermission(reactContext, Manifest.permission.WRITE_CALENDAR)!= PackageManager.PERMISSION_GRANTED)
         {
             Activity currentActivity = getCurrentActivity();
             if (currentActivity == null) {
-                permissionsPromise.reject("E_ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist");
+                promise.reject("E_ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist");
                 return;
             }
+            PERMISSION_REQUEST_CODE++;
+            permissionsPromises.put(PERMISSION_REQUEST_CODE, promise);
             ActivityCompat.requestPermissions(currentActivity,
                     new String[]{ Manifest.permission.WRITE_CALENDAR },
                     PERMISSION_REQUEST_CODE);
@@ -63,22 +65,20 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     public static void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_CODE: {
+        if (permissionsPromises.containsKey(requestCode)) {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permissionsPromise.resolve("authorized");
-                } else if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    permissionsPromise.resolve("denied");
-                } else {
-                    permissionsPromise.reject("permissions - unknown error", String.valueOf(grantResults[0]));
-                }
-                permissionsPromise = null;
-                return;
+            Promise permissionsPromise = permissionsPromises.get(requestCode);
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                permissionsPromise.resolve("authorized");
+            } else if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                permissionsPromise.resolve("denied");
+            } else {
+                permissionsPromise.reject("permissions - unknown error", grantResults.length > 0 ? String.valueOf(grantResults[0]) : "Request was cancelled");
             }
-
+            permissionsPromises.remove(requestCode);
+            return;
         }
     }
 
@@ -203,11 +203,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     //region React Native Methods
     @ReactMethod
     public void requestCalendarPermissions(Promise promise) {
-        this.permissionsPromise = promise;
         if (this.haveCalendarReadWritePermissions()) {
-            this.permissionsPromise.resolve("authorized");
+            promise.resolve("authorized");
         } else {
-            this.requestCalendarReadWritePermission();
+            this.requestCalendarReadWritePermission(promise);
         }
     }
 
