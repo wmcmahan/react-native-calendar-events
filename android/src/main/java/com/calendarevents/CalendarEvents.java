@@ -48,19 +48,16 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     //region Calendar Permissions
     private void requestCalendarReadWritePermission(final Promise promise)
     {
-        if  (ContextCompat.checkSelfPermission(reactContext, Manifest.permission.WRITE_CALENDAR)!= PackageManager.PERMISSION_GRANTED)
-        {
-            Activity currentActivity = getCurrentActivity();
-            if (currentActivity == null) {
-                promise.reject("E_ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist");
-                return;
-            }
-            PERMISSION_REQUEST_CODE++;
-            permissionsPromises.put(PERMISSION_REQUEST_CODE, promise);
-            ActivityCompat.requestPermissions(currentActivity,
-                    new String[]{ Manifest.permission.WRITE_CALENDAR },
-                    PERMISSION_REQUEST_CODE);
+        Activity currentActivity = getCurrentActivity();
+        if (currentActivity == null) {
+            promise.reject("E_ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist");
+            return;
         }
+        PERMISSION_REQUEST_CODE++;
+        permissionsPromises.put(PERMISSION_REQUEST_CODE, promise);
+        ActivityCompat.requestPermissions(currentActivity,
+                new String[]{ Manifest.permission.WRITE_CALENDAR },
+                PERMISSION_REQUEST_CODE);
     }
 
     public static void onRequestPermissionsResult(int requestCode,
