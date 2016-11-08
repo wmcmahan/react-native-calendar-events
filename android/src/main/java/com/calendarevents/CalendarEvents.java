@@ -92,7 +92,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     //endregion
 
     //region Event Accessors
-    public WritableMap addEvent(String title, ReadableMap details) {
+    public WritableMap addEvent(String title, ReadableMap details) throws ParseException {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -117,10 +117,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             java.util.Calendar startCal = java.util.Calendar.getInstance();
             try {
                 startCal.setTime(sdf.parse(details.getString("startDate")));
-                eventValues.put(CalendarContract.Events.DTSTART, startCal.getTimeInMillis());
             } catch (ParseException e) {
                 e.printStackTrace();
+                throw e;
             }
+            eventValues.put(CalendarContract.Events.DTSTART, startCal.getTimeInMillis());
         }
 
         if (details.hasKey("endDate")) {
@@ -129,6 +130,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 endCal.setTime(sdf.parse(details.getString("endDate")));
             } catch (ParseException e) {
                 e.printStackTrace();
+                throw e;
             }
             eventValues.put(CalendarContract.Events.DTEND, endCal.getTimeInMillis());
         }
