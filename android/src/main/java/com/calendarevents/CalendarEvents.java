@@ -63,7 +63,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     public static void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         if (permissionsPromises.containsKey(requestCode)) {
-                // If request is cancelled, the result arrays are empty.
+            // If request is cancelled, the result arrays are empty.
             Promise permissionsPromise = permissionsPromises.get(requestCode);
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -71,11 +71,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             } else if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 permissionsPromise.resolve("denied");
-            } else {
+            } else if (permissionsPromises.size() == 1) { // there should only be one
                 permissionsPromise.reject("permissions - unknown error", grantResults.length > 0 ? String.valueOf(grantResults[0]) : "Request was cancelled");
             }
             permissionsPromises.remove(requestCode);
-            return;
         }
     }
 
