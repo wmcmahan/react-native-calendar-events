@@ -39,18 +39,12 @@ project(':react-native-calendar-events').projectDir = new File(rootProject.proje
 
 - Edit your `MainApplication.java` to look like this:
 ```java
-package com.myapp;
-
-....
-import com.calendarevents.CalendarEventsPackage;
-
-public class MainActivity extends extends ReactActivity {
 
   @Override
 	protected List<ReactPackage> getPackages() {
 		return Arrays.<ReactPackage>asList(
 						new MainReactPackage(),
-						new CalendarEventsPackage()
+						new CalendarEventsPackage() // <-- Add this line
 		);
 	}
 	...
