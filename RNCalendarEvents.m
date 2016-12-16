@@ -157,6 +157,22 @@ RCT_EXPORT_MODULE()
     return [response copy];
 }
 
+- (NSDictionary *)findById:(NSString *)eventId
+{
+    if ([[self authorizationStatusForEventStore] isEqualToString:@"granted"]) {
+        return @{@"success": [NSNull null], @"error": @"unauthorized to access calendar"};
+    }
+
+    NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:@{@"success": [NSNull null]}];
+
+    EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+
+    if (calendarEvent) {
+        [response setValue:[self serializeCalendarEvent:calendarEvent] forKey:@"success"];
+    }
+    return [response copy];
+}
+
 - (NSDictionary *)deleteEvent:(NSString *)eventId span:(EKSpan *)span
 {
     if ([[self authorizationStatusForEventStore] isEqualToString:@"granted"]) {
@@ -324,104 +340,129 @@ RCT_EXPORT_MODULE()
 
     for (EKEvent *event in calendarEvents) {
 
-        NSMutableDictionary *formedCalendarEvent = [NSMutableDictionary dictionaryWithDictionary:emptyCalendarEvent];
-
-        if (event.calendarItemIdentifier) {
-            [formedCalendarEvent setValue:event.calendarItemIdentifier forKey:_id];
-        }
-
-        if (event.title) {
-            [formedCalendarEvent setValue:event.title forKey:_title];
-        }
-
-        if (event.notes) {
-            [formedCalendarEvent setValue:event.notes forKey:_notes];
-        }
-
-        if (event.URL) {
-            [formedCalendarEvent setValue:[event.URL absoluteString] forKey:_url];
-        }
-
-        if (event.location) {
-            [formedCalendarEvent setValue:event.location forKey:_location];
-        }
-
-        if (event.hasAlarms) {
-            NSMutableArray *alarms = [[NSMutableArray alloc] init];
-
-            for (EKAlarm *alarm in event.alarms) {
-
-                NSMutableDictionary *formattedAlarm = [[NSMutableDictionary alloc] init];
-                NSString *alarmDate = nil;
-
-                if (alarm.absoluteDate) {
-                    alarmDate = [dateFormatter stringFromDate:alarm.absoluteDate];
-                } else if (alarm.relativeOffset) {
-                    NSDate *calendarEventStartDate = nil;
-                    if (event.startDate) {
-                        calendarEventStartDate = event.startDate;
-                    } else {
-                        calendarEventStartDate = [NSDate date];
-                    }
-                    alarmDate = [dateFormatter stringFromDate:[NSDate dateWithTimeInterval:alarm.relativeOffset
-                                                                                 sinceDate:calendarEventStartDate]];
-                }
-                [formattedAlarm setValue:alarmDate forKey:@"date"];
-
-                if (alarm.structuredLocation) {
-                    NSString *proximity = nil;
-                    switch (alarm.proximity) {
-                        case EKAlarmProximityEnter:
-                            proximity = @"enter";
-                            break;
-                        case EKAlarmProximityLeave:
-                            proximity = @"leave";
-                            break;
-                        default:
-                            proximity = @"None";
-                            break;
-                    }
-                    [formattedAlarm setValue:@{
-                                               @"title": alarm.structuredLocation.title,
-                                               @"proximity": proximity,
-                                               @"radius": @(alarm.structuredLocation.radius),
-                                               @"coords": @{
-                                                       @"latitude": @(alarm.structuredLocation.geoLocation.coordinate.latitude),
-                                                       @"longitude": @(alarm.structuredLocation.geoLocation.coordinate.longitude)
-                                                       }}
-                                      forKey:@"structuredLocation"];
-
-                }
-                [alarms addObject:formattedAlarm];
-            }
-            [formedCalendarEvent setValue:alarms forKey:_alarms];
-        }
-
-        if (event.startDate) {
-            [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.startDate] forKey:_startDate];
-        }
-
-        if (event.endDate) {
-            [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.endDate] forKey:_endDate];
-        }
-
-        if (event.occurrenceDate) {
-            [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.occurrenceDate] forKey:_occurrenceDate];
-        }
-
-        [formedCalendarEvent setValue:[NSNumber numberWithBool:event.isDetached] forKey:_isDetached];
-
-        [formedCalendarEvent setValue:[NSNumber numberWithBool:event.allDay] forKey:_allDay];
-
-        if (event.hasRecurrenceRules) {
-            NSString *frequencyType = [self nameMatchingFrequency:[[event.recurrenceRules objectAtIndex:0] frequency]];
-            [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
-        }
-
-        [serializedCalendarEvents addObject:formedCalendarEvent];
+        [serializedCalendarEvents addObject:[self serializeCalendarEvent:event]];
     }
 
     return [serializedCalendarEvents copy];
+}
+
+- (NSDictionary *)serializeCalendarEvent:(EKEvent *)event
+{
+
+    NSDictionary *emptyCalendarEvent = @{
+                                         _title: @"",
+                                         _location: @"",
+                                         _startDate: @"",
+                                         _endDate: @"",
+                                         _allDay: @NO,
+                                         _notes: @"",
+                                         _url: @"",
+                                         _alarms: @[],
+                                         _recurrence: @""
+                                         };
+
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    NSTimeZone *timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+    [dateFormatter setTimeZone:timeZone];
+    [dateFormatter setLocale:[NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"]];
+    [dateFormatter setDateFormat: @"yyyy-MM-dd'T'HH:mm:ss.SSS'Z"];
+
+
+    NSMutableDictionary *formedCalendarEvent = [NSMutableDictionary dictionaryWithDictionary:emptyCalendarEvent];
+
+    if (event.calendarItemIdentifier) {
+        [formedCalendarEvent setValue:event.calendarItemIdentifier forKey:_id];
+    }
+
+    if (event.title) {
+        [formedCalendarEvent setValue:event.title forKey:_title];
+    }
+
+    if (event.notes) {
+        [formedCalendarEvent setValue:event.notes forKey:_notes];
+    }
+
+    if (event.URL) {
+        [formedCalendarEvent setValue:[event.URL absoluteString] forKey:_url];
+    }
+
+    if (event.location) {
+        [formedCalendarEvent setValue:event.location forKey:_location];
+    }
+
+    if (event.hasAlarms) {
+        NSMutableArray *alarms = [[NSMutableArray alloc] init];
+
+        for (EKAlarm *alarm in event.alarms) {
+
+            NSMutableDictionary *formattedAlarm = [[NSMutableDictionary alloc] init];
+            NSString *alarmDate = nil;
+
+            if (alarm.absoluteDate) {
+                alarmDate = [dateFormatter stringFromDate:alarm.absoluteDate];
+            } else if (alarm.relativeOffset) {
+                NSDate *calendarEventStartDate = nil;
+                if (event.startDate) {
+                    calendarEventStartDate = event.startDate;
+                } else {
+                    calendarEventStartDate = [NSDate date];
+                }
+                alarmDate = [dateFormatter stringFromDate:[NSDate dateWithTimeInterval:alarm.relativeOffset
+                                                                             sinceDate:calendarEventStartDate]];
+            }
+            [formattedAlarm setValue:alarmDate forKey:@"date"];
+
+            if (alarm.structuredLocation) {
+                NSString *proximity = nil;
+                switch (alarm.proximity) {
+                    case EKAlarmProximityEnter:
+                        proximity = @"enter";
+                        break;
+                    case EKAlarmProximityLeave:
+                        proximity = @"leave";
+                        break;
+                    default:
+                        proximity = @"None";
+                        break;
+                }
+                [formattedAlarm setValue:@{
+                                           @"title": alarm.structuredLocation.title,
+                                           @"proximity": proximity,
+                                           @"radius": @(alarm.structuredLocation.radius),
+                                           @"coords": @{
+                                                   @"latitude": @(alarm.structuredLocation.geoLocation.coordinate.latitude),
+                                                   @"longitude": @(alarm.structuredLocation.geoLocation.coordinate.longitude)
+                                                   }}
+                                  forKey:@"structuredLocation"];
+
+            }
+            [alarms addObject:formattedAlarm];
+        }
+        [formedCalendarEvent setValue:alarms forKey:_alarms];
+    }
+
+    if (event.startDate) {
+        [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.startDate] forKey:_startDate];
+    }
+
+    if (event.endDate) {
+        [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.endDate] forKey:_endDate];
+    }
+
+    if (event.occurrenceDate) {
+        [formedCalendarEvent setValue:[dateFormatter stringFromDate:event.occurrenceDate] forKey:_occurrenceDate];
+    }
+
+    [formedCalendarEvent setValue:[NSNumber numberWithBool:event.isDetached] forKey:_isDetached];
+
+    [formedCalendarEvent setValue:[NSNumber numberWithBool:event.allDay] forKey:_allDay];
+
+    if (event.hasRecurrenceRules) {
+        NSString *frequencyType = [self nameMatchingFrequency:[[event.recurrenceRules objectAtIndex:0] frequency]];
+        [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
+    }
+
+    return [formedCalendarEvent copy];
 }
 
 #pragma mark -
@@ -470,6 +511,17 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate r
             }
         });
     });
+}
+
+RCT_EXPORT_METHOD(findEventById:(NSString *)eventId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSDictionary *response = [self findById:eventId];
+
+    if (!response) {
+        reject(@"error", @"error finding event", nil);
+    } else {
+        resolve([response valueForKey:@"success"]);
+    }
 }
 
 RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
