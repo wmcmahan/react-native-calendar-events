@@ -9,7 +9,7 @@ export default {
     return CalendarEvents.getCalendarPermissions()
   },
 
-  async findAllEvents (startDate, endDate) {
+  async fetchAllEvents (startDate, endDate) {
     return CalendarEvents.findAllEvents(startDate, endDate)
   },
 
