@@ -146,6 +146,33 @@ RNCalendarEvents.authorizeEventStore()
   });
 ```
 
+
+## findEventById
+Find calendar event by id.
+Returns a promise with fulfilled found events.
+
+```javascript
+RNCalendarEvents.findEventById(id)
+```
+
+Parameters: 
+ - id: String - The events unique id.
+
+Returns: Promise 
+ - fulfilled: Object | null - Found event with unique id.
+ - rejected: Error
+
+Example:
+```javascript
+RNCalendarEvents.findEventById('FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE')
+  .then(event => {
+    // handle events
+  })
+  .catch(error => {
+   // handle error
+  });
+```
+
 ## fetchAllEvents
 Fetch all calendar events.
 Returns a promise with fulfilled found events.
