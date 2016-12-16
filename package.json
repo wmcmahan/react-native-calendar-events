@@ -19,6 +19,7 @@
     "react-native",
     "react-component",
     "ios",
+    "android",
     "eventkit",
     "reminders",
     "calendar-events"

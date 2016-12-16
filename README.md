@@ -1,5 +1,5 @@
 # React-Native-Calendar-Events
-React Native Module for IOS Calendar Events
+React Native Module for IOS and Android Calendar Events
 
 ## Install
 ```
@@ -27,7 +27,7 @@ android {
 
 dependencies {
   ...
-+ compile project(':react-native-calendar-events')
+  compile project(':react-native-calendar-events')
 }
 ```
 
@@ -37,7 +37,7 @@ include ':react-native-calendar-events'
 project(':react-native-calendar-events').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-calendar-events/android')
 ```
 
-- Edit your `MainActivity.java` to look like this:
+- Edit your `MainApplication.java` to look like this:
 ```java
 package com.myapp;
 
@@ -94,15 +94,16 @@ import RNCalendarEvents from 'react-native-calendar-events';
 | endDate         | Date             | The end date of the calendar event. |
 | allDay          | Bool             | Indicates whether the event is an all-day event. |
 | recurrence      | String           | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |
-| occurrenceDate  | Date (read-only) | The original occurrence date of an event if it is part of a recurring series. |
-| isDetached      | Bool             | Indicates whether an event is a detached instance of a repeating event. |
+| occurrenceDate (ios only)| Date (read-only) | The original occurrence date of an event if it is part of a recurring series. |
+| isDetached (ios only)| Bool             | Indicates whether an event is a detached instance of a repeating event. |
 | location        | String           | The location associated with the calendar event. |
-| notes           | String           | The notes associated with the calendar event. |
+| notes (ios only)| String           | The notes associated with the calendar event. |
+| description (android only)| String | The description associated with the calendar event. |
 | alarms          | Array            | The alarms associated with the calendar event, as an array of alarm objects. |
 
 
 ## authorizationStatus
-Get authorization status for IOS EventStore.
+Get calendar authorization status.
 
 ```javascript
 RNCalendarEvents.authorizationStatus()
@@ -124,7 +125,7 @@ RNCalendarEvents.authorizationStatus()
 ```
 
 ## authorizeEventStore
-Request authorization to IOS EventStore. Authorization must be granted before accessing calendar events.
+Request calendar authorization. Authorization must be granted before accessing calendar events.
 
 ```javascript
 RNCalendarEvents.authorizeEventStore()
@@ -145,9 +146,9 @@ RNCalendarEvents.authorizeEventStore()
   });
 ```
 
-## fetchAllEvents (iOS Only)
-Fetch all calendar events from EventStore
-Returns a promise with fulfilled with found events.
+## fetchAllEvents
+Fetch all calendar events.
+Returns a promise with fulfilled found events.
 
 ```javascript
 RNCalendarEvents.fetchAllEvents(startDate, endDate)
@@ -193,8 +194,8 @@ Example:
 RNCalendarEvents.saveEvent('title', {
     location: 'location',
     notes: 'notes',
-    startDate: '2016-10-01T09:45:00.000UTC',
-    endDate: '2016-10-02T09:45:00.000UTC'
+    startDate: '2016-08-19T19:26:00.000Z',
+    endDate: '2017-08-19T19:26:00.000Z'
   })
   .then(id => {
     // handle success
@@ -204,12 +205,17 @@ RNCalendarEvents.saveEvent('title', {
   });
 ```
 
-## Update Event (iOS Only)
-Give the unique calendar event **ID** to update an existing calendar event.
+## Update Event
+Give the unique calendar event **id** to update an existing calendar event.
+
+```
+RNCalendarEvents.saveEvent(title, {id: 'FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE'});
+```
 
 Parameters: 
  - title: String - The title of the event.
  - settings: Object - The event's settings.
+ - id: String - The event's unique id.
 
 Returns: Promise 
  - fulfilled: String - Updated event's ID.
@@ -222,8 +228,8 @@ RNCalendarEvents.saveEvent('title', {
     id: 'FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE',
     location: 'location',
     notes: 'notes',
-    startDate: '2016-10-01T09:45:00.000UTC',
-    endDate: '2016-10-02T09:45:00.000UTC'
+    startDate: '2016-08-19T19:26:00.000Z',
+    endDate: '2017-08-19T19:26:00.000Z'
   })
   .then(id => {
     // handle success
@@ -257,8 +263,8 @@ Example with date:
 RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
-  startDate: '2016-10-01T09:45:00.000UTC',
-  endDate: '2016-10-02T09:45:00.000UTC',
+  startDate: '2016-08-19T19:26:00.000Z',
+  endDate: '2017-08-19T19:26:00.000Z',
   alarms: [{
     date: -1 // or absolute date - iOS Only
   }]
@@ -271,8 +277,8 @@ Example with structuredLocation (iOS Only):
 RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
-  startDate: '2016-10-01T09:45:00.000UTC',
-  endDate: '2016-10-02T09:45:00.000UTC',
+  startDate: '2016-08-19T19:26:00.000Z',
+  endDate: '2017-08-19T19:26:00.000Z',
   alarms: [{
     structuredLocation: {
       title: 'title',
@@ -293,8 +299,8 @@ Example with recurrence:
 RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
-  startDate: '2016-10-01T09:45:00.000UTC',
-  endDate: '2016-10-02T09:45:00.000UTC',
+  startDate: '2016-08-19T19:26:00.000Z',
+  endDate: '2017-08-19T19:26:00.000Z',
   alarms: [{
     date: -1 // or absolute date - iOS Only
   }],
@@ -302,7 +308,7 @@ RNCalendarEvents.saveEvent('title', {
 });
 ```
 
-## removeEvent (iOS Only)
+## removeEvent
 Removes calendar event.
 
 ```javascript
