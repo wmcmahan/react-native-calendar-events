@@ -1,6 +1,6 @@
 #import "RNCalendarEvents.h"
-#import "RCTConvert.h"
-#import "RCTUtils.h"
+#import <React/RCTConvert.h>
+#import <React/RCTUtils.h>
 #import <EventKit/EventKit.h>
 
 @interface RNCalendarEvents ()
