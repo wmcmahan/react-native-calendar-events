@@ -25,6 +25,6 @@
     "calendar-events"
   ],
   "peerDependencies": {
-    "react-native": ">=0.8.0"
+    "react-native": ">=0.40.0"
   }
 }
