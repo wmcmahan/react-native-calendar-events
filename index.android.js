@@ -13,6 +13,10 @@ export default {
     return CalendarEvents.findAllEvents(startDate, endDate)
   },
 
+  async findCalendars () {
+    return CalendarEvents.findCalendars();
+  },
+
   async findEventById (id) {
     return CalendarEvents.findById(id);
   },

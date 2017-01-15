@@ -10,6 +10,7 @@
 @end
 
 static NSString *const _id = @"id";
+static NSString *const _calendarId = @"calendarId";
 static NSString *const _title = @"title";
 static NSString *const _location = @"location";
 static NSString *const _startDate = @"startDate";
@@ -80,6 +81,7 @@ RCT_EXPORT_MODULE()
     }
 
     EKEvent *calendarEvent = nil;
+    NSString *calendarId = [RCTConvert NSString:details[_calendarId]];
     NSString *eventId = [RCTConvert NSString:details[_id]];
     NSString *title = [RCTConvert NSString:details[_title]];
     NSString *location = [RCTConvert NSString:details[_location]];
@@ -97,6 +99,14 @@ RCT_EXPORT_MODULE()
     } else {
         calendarEvent = [EKEvent eventWithEventStore:self.eventStore];
         calendarEvent.calendar = [self.eventStore defaultCalendarForNewEvents];
+
+        if (calendarId) {
+            EKCalendar *calendar = [self.eventStore calendarWithIdentifier:calendarId];
+
+            if (calendar) {
+                calendarEvent.calendar = calendar;
+            }
+        }
     }
 
     if (title) {
@@ -114,7 +124,7 @@ RCT_EXPORT_MODULE()
     if (endDate) {
         calendarEvent.endDate = endDate;
     }
-    
+
     if (allDay) {
         calendarEvent.allDay = [allDay boolValue];
     }
@@ -374,6 +384,16 @@ RCT_EXPORT_MODULE()
         [formedCalendarEvent setValue:event.calendarItemIdentifier forKey:_id];
     }
 
+    if (event.calendar) {
+        [formedCalendarEvent setValue:@{
+                                        @"id": event.calendar.calendarIdentifier,
+                                        @"title": event.calendar.title,
+                                        @"source": event.calendar.source.title,
+                                        @"allowsModifications": @(event.calendar.allowsContentModifications),
+                                        }
+                               forKey:@"calendar"];
+    }
+
     if (event.title) {
         [formedCalendarEvent setValue:event.title forKey:_title];
     }
@@ -494,6 +514,26 @@ RCT_EXPORT_METHOD(authorizeEventStore:(RCTPromiseResolveBlock)resolve rejecter:(
     }];
 }
 
+RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSArray* calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
+
+    if (!calendars) {
+        reject(@"error", @"error finding calendars", nil);
+    } else {
+        NSMutableArray *eventCalendars = [[NSMutableArray alloc] init];
+        for (EKCalendar *calendar in calendars) {
+            [eventCalendars addObject:@{
+                                        @"id": calendar.calendarIdentifier,
+                                        @"title": calendar.title,
+                                        @"allowsModifications": @(calendar.allowsContentModifications),
+                                        @"source": calendar.source.title
+                                        }];
+        }
+        resolve(eventCalendars);
+    }
+}
+
 RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:startDate
@@ -552,7 +592,7 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId resolver:(RCTPromiseResolveBlo
 RCT_EXPORT_METHOD(removeFutureEvents:(NSString *)eventId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     NSDictionary *response = [self deleteEvent:eventId span:EKSpanFutureEvents];
-
+    
     if ([response valueForKey:@"success"] != [NSNull null]) {
         resolve([response valueForKey:@"success"]);
     } else {

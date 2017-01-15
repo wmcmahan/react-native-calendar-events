@@ -82,7 +82,8 @@ import RNCalendarEvents from 'react-native-calendar-events';
 
 | Property        | Value            | Description |
 | :--------------- | :---------------- | :----------- |
-| id              | String (read-only)             | Unique id for the calendar event. |
+| id              | String (read-only) | Unique id for the calendar event. |
+| calendarId      | String (write-only)| Unique id for the calendar where the event will be saved. Defaults to the device's default calendar. |
 | title           | String             | The title for the calendar event. |
 | startDate       | Date             | The start date of the calendar event. |
 | endDate         | Date             | The end date of the calendar event. |
@@ -94,6 +95,7 @@ import RNCalendarEvents from 'react-native-calendar-events';
 | notes (ios only)| String           | The notes associated with the calendar event. |
 | description (android only)| String | The description associated with the calendar event. |
 | alarms          | Array            | The alarms associated with the calendar event, as an array of alarm objects. |
+| calendar        | Object (read-only) | The calendar containing the event.|
 
 
 ## authorizationStatus
@@ -375,6 +377,29 @@ Example:
 RNCalendarEvents.removeFutureEvents('FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE')
   .then(success => {
     // handle success
+  })
+  .catch(error => {
+    // handle error
+  });
+```
+
+## findCalendars
+Finds all the calendars on the device.
+
+```javascript
+RNCalendarEvents.findCalendars();
+```
+
+Returns: Promise
+ - fulfilled: Array - A list of known calendars on the device
+ - rejected: Error
+
+Example:
+
+```javascript
+RNCalendarEvents.findCalendars()
+  .then(calendars => {
+    // handle calendars
   })
   .catch(error => {
     // handle error

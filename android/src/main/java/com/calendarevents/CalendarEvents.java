@@ -22,6 +22,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
@@ -32,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
 
 public class CalendarEvents extends ReactContextBaseJavaModule {
 
@@ -91,6 +93,22 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
     //endregion
 
+    public WritableNativeArray findEventCalendars() {
+
+        Cursor cursor = null;
+        ContentResolver cr = reactContext.getContentResolver();
+
+        Uri uri = CalendarContract.Calendars.CONTENT_URI;
+
+        cursor = cr.query(uri, new String[]{
+                CalendarContract.Calendars._ID,
+                CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+                CalendarContract.Calendars.ACCOUNT_NAME
+        }, null, null, null);
+
+        return serializeEventCalendars(cursor);
+    }
+
     //region Event Accessors
     public WritableNativeArray findEvents(String startDate, String endDate) {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
@@ -124,7 +142,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Events.DTEND,
                 CalendarContract.Events.ALL_DAY,
                 CalendarContract.Events.EVENT_LOCATION,
-                CalendarContract.Events.RRULE
+                CalendarContract.Events.RRULE,
+                CalendarContract.Events.CALENDAR_ID
         }, selection, null, null);
 
         return serializeEvents(cursor);
@@ -147,12 +166,38 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Events.DTEND,
                 CalendarContract.Events.ALL_DAY,
                 CalendarContract.Events.EVENT_LOCATION,
-                CalendarContract.Events.RRULE
+                CalendarContract.Events.RRULE,
+                CalendarContract.Events.CALENDAR_ID
         }, selection, null, null);
 
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
             result = serializeEvent(cursor);
+        } else {
+            result = null;
+        }
+
+        cursor.close();
+
+        return result;
+    }
+
+    public WritableNativeMap findCalendarById(String calendarID) {
+
+        WritableNativeMap result = new WritableNativeMap();
+        Cursor cursor = null;
+        ContentResolver cr = reactContext.getContentResolver();
+        Uri uri = ContentUris.withAppendedId(CalendarContract.Calendars.CONTENT_URI, Integer.parseInt(calendarID));
+
+        cursor = cr.query(uri, new String[]{
+                CalendarContract.Calendars._ID,
+                CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+                CalendarContract.Calendars.ACCOUNT_NAME
+        }, null, null, null);
+
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            result = serializeEventCalendar(cursor);
         } else {
             result = null;
         }
@@ -171,7 +216,6 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         ContentValues eventValues = new ContentValues();
 
         WritableMap event = Arguments.createMap();
-        eventValues.put(CalendarContract.Events.CALENDAR_ID, 1);
 
         if (title != null) {
             eventValues.put(CalendarContract.Events.TITLE, title);
@@ -224,6 +268,17 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             cr.update(updateUri, eventValues, null, null);
             event.putInt("eventID", Integer.parseInt(details.getString("id")));
         } else {
+
+            if (details.hasKey("calendarId")) {
+                WritableNativeMap calendar = findCalendarById(details.getString("calendarId"));
+
+                if (calendar != null) {
+                    eventValues.put(CalendarContract.Events.CALENDAR_ID, Integer.parseInt(calendar.getString("id")));
+                } else {
+                    eventValues.put(CalendarContract.Events.CALENDAR_ID, 1);
+                }
+            }
+
             Uri eventsUri = CalendarContract.Events.CONTENT_URI;
             Uri eventUri = cr.insert(eventsUri, eventValues);
             int eventID = Integer.parseInt(eventUri.getLastPathSegment());
@@ -333,6 +388,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
 
         event.putString("id", cursor.getString(0));
+        event.putMap("calendarId", findCalendarById(cursor.getString(cursor.getColumnIndex("calendar_id"))));
         event.putString("title", cursor.getString(cursor.getColumnIndex("title")));
         event.putString("description", cursor.getString(2));
         event.putString("startDate", startDateUTC);
@@ -342,6 +398,29 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         event.putString("recurrence", recurrenceRole);
 
         return event;
+    }
+
+    public WritableNativeArray serializeEventCalendars(Cursor cursor) {
+        WritableNativeArray results = new WritableNativeArray();
+
+        while (cursor.moveToNext()) {
+            results.pushMap(serializeEventCalendar(cursor));
+        }
+
+        cursor.close();
+
+        return results;
+    }
+
+    public WritableNativeMap serializeEventCalendar(Cursor cursor) {
+
+        WritableNativeMap calendar = new WritableNativeMap();
+
+        calendar.putString("id", cursor.getString(0));
+        calendar.putString("title", cursor.getString(1));
+        calendar.putString("source", cursor.getString(2));
+
+        return calendar;
     }
     // endregion
 
@@ -361,6 +440,20 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             promise.resolve("authorized");
         } else {
             this.requestCalendarReadWritePermission(promise);
+        }
+    }
+
+    @ReactMethod
+    public void findCalendars(Promise promise) {
+        if (this.haveCalendarReadWritePermissions()) {
+            try {
+                WritableArray calendars = this.findEventCalendars();
+                promise.resolve(calendars);
+            } catch (Exception e) {
+                promise.reject("calendar request error", e.getMessage());
+            }
+        } else {
+            promise.reject("add event error", "you don't have permissions to add an event to the users calendar");
         }
     }
 
