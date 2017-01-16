@@ -2,5 +2,40 @@
 
 import { NativeModules } from 'react-native';
 
-var RNCalendarEvents = NativeModules.RNCalendarEvents;
-export default RNCalendarEvents;
+const RNCalendarEvents = NativeModules.RNCalendarEvents
+
+export default {
+
+  authorizationStatus () {
+    return RNCalendarEvents.authorizationStatus()
+  },
+
+  authorizeEventStore () {
+    return RNCalendarEvents.authorizeEventStore()
+  },
+
+  fetchAllEvents (startDate, endDate, calendars = []) {
+    return RNCalendarEvents.fetchAllEvents(startDate, endDate, calendars)
+  },
+
+  findCalendars () {
+    return RNCalendarEvents.findCalendars();
+  },
+
+  findEventById (id) {
+    return RNCalendarEvents.findEventById(id);
+  },
+
+  saveEvent (title, details) {
+    return RNCalendarEvents.saveEvent(title, details)
+  },
+
+  removeEvent (id) {
+    return RNCalendarEvents.removeEvent(id)
+  },
+
+  removeFutureEvents (id) {
+    return RNCalendarEvents.removeFutureEvents(id)
+  }
+
+}

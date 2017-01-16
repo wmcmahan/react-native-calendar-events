@@ -66,8 +66,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 PERMISSION_REQUEST_CODE);
     }
 
-    public static void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public static void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (permissionsPromises.containsKey(requestCode)) {
             // If request is cancelled, the result arrays are empty.
             Promise permissionsPromise = permissionsPromises.get(requestCode);
@@ -110,7 +109,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     //region Event Accessors
-    public WritableNativeArray findEvents(String startDate, String endDate) {
+    public WritableNativeArray findEvents(String startDate, String endDate, ReadableArray calendars) {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -132,7 +131,21 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
         String selection = "((" + CalendarContract.Events.DTSTART + " >= " + eStartDate.getTimeInMillis() + ") " +
                 "AND (" + CalendarContract.Events.DTEND + " <= " + eEndDate.getTimeInMillis() + ") " +
-                "AND (" + CalendarContract.Events.DELETED + " != 1))";
+                "AND (" + CalendarContract.Events.DELETED + " != 1) ";
+
+        if (calendars.size() > 0) {
+            String calendarQuery = "AND (";
+            for (int i = 0; i < calendars.size(); i++) {
+                calendarQuery += CalendarContract.Events.CALENDAR_ID + " = " + calendars.getString(i);
+                if (i != calendars.size() - 1) {
+                    calendarQuery += " OR ";
+                }
+            }
+            calendarQuery += ")";
+            selection += calendarQuery;
+        }
+
+        selection += ")";
 
         cursor = cr.query(uri, new String[]{
                 CalendarContract.Events._ID,
@@ -472,11 +485,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void findAllEvents(String startDate, String endDate, Promise promise) {
+    public void findAllEvents(String startDate, String endDate, ReadableArray calendars, Promise promise) {
 
         if (this.haveCalendarReadWritePermissions()) {
             try {
-                WritableNativeArray results = this.findEvents(startDate, endDate);
+                WritableNativeArray results = this.findEvents(startDate, endDate, calendars);
                 promise.resolve(results);
 
             } catch (Exception e) {
@@ -532,7 +545,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void uriForCalendar(Promise promise) {
-      promise.resolve(CalendarContract.Events.CONTENT_URI.toString());
+        promise.resolve(CalendarContract.Events.CONTENT_URI.toString());
     }
     //endregion
 }

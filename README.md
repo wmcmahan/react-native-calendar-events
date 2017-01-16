@@ -174,12 +174,13 @@ Fetch all calendar events.
 Returns a promise with fulfilled found events.
 
 ```javascript
-RNCalendarEvents.fetchAllEvents(startDate, endDate)
+RNCalendarEvents.fetchAllEvents(startDate, endDate, calendars)
 ```
 
 Parameters: 
  - startDate: Date - The start date of the range of events fetched.
  - endDate: Date - The end date of the range of events fetched.
+ - calendars: Array - List of calendar id strings to specify calendar events. Defaults to all calendars if empty.
 
 Returns: Promise 
  - fulfilled: Array - Matched events within the specified date range.
@@ -187,7 +188,7 @@ Returns: Promise
 
 Example:
 ```javascript
-RNCalendarEvents.fetchAllEvents('2016-08-19T19:26:00.000Z', '2017-08-19T19:26:00.000Z')
+RNCalendarEvents.fetchAllEvents('2016-08-19T19:26:00.000Z', '2017-08-19T19:26:00.000Z', ['1', '2'])
   .then(events => {
     // handle events
   })

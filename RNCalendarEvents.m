@@ -330,24 +330,6 @@ RCT_EXPORT_MODULE()
 {
     NSMutableArray *serializedCalendarEvents = [[NSMutableArray alloc] init];
 
-    NSDictionary *emptyCalendarEvent = @{
-                                         _title: @"",
-                                         _location: @"",
-                                         _startDate: @"",
-                                         _endDate: @"",
-                                         _allDay: @NO,
-                                         _notes: @"",
-                                         _url: @"",
-                                         _alarms: @[],
-                                         _recurrence: @""
-                                         };
-
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    NSTimeZone *timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
-    [dateFormatter setTimeZone:timeZone];
-    [dateFormatter setLocale:[NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"]];
-    [dateFormatter setDateFormat: @"yyyy-MM-dd'T'HH:mm:ss.SSS'Z"];
-
     for (EKEvent *event in calendarEvents) {
 
         [serializedCalendarEvents addObject:[self serializeCalendarEvent:event]];
@@ -367,7 +349,7 @@ RCT_EXPORT_MODULE()
                                          _allDay: @NO,
                                          _notes: @"",
                                          _url: @"",
-                                         _alarms: @[],
+                                         _alarms: [NSArray array],
                                          _recurrence: @""
                                          };
 
@@ -534,11 +516,24 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
     }
 }
 
-RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate calendars:(NSArray *)calendars resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
+    NSMutableArray *eventCalendars;
+
+    if (calendars.count) {
+        eventCalendars = [[NSMutableArray alloc] init];
+        NSArray *deviceCalendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
+
+        for (EKCalendar *calendar in deviceCalendars) {
+            if ([calendars containsObject:calendar.calendarIdentifier]) {
+                [eventCalendars addObject:calendar];
+            }
+        }
+    }
+
     NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:startDate
                                                                       endDate:endDate
-                                                                    calendars:nil];
+                                                                    calendars:eventCalendars];
 
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
