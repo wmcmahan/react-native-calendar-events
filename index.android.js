@@ -9,8 +9,8 @@ export default {
     return CalendarEvents.getCalendarPermissions()
   },
 
-  async fetchAllEvents (startDate, endDate) {
-    return CalendarEvents.findAllEvents(startDate, endDate)
+  async fetchAllEvents (startDate, endDate, calendars = []) {
+    return CalendarEvents.findAllEvents(startDate, endDate, calendars)
   },
 
   async findCalendars () {
