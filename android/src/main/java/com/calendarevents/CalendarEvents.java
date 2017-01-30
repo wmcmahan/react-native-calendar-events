@@ -102,7 +102,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         cursor = cr.query(uri, new String[]{
                 CalendarContract.Calendars._ID,
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-                CalendarContract.Calendars.ACCOUNT_NAME
+                CalendarContract.Calendars.ACCOUNT_NAME,
+                CalendarContract.Calendars.IS_PRIMARY,
+                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL
         }, null, null, null);
 
         return serializeEventCalendars(cursor);
