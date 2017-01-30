@@ -205,7 +205,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         cursor = cr.query(uri, new String[]{
                 CalendarContract.Calendars._ID,
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-                CalendarContract.Calendars.ACCOUNT_NAME
+                CalendarContract.Calendars.ACCOUNT_NAME,
+                CalendarContract.Calendars.IS_PRIMARY,
+                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL
         }, null, null, null);
 
         if (cursor.getCount() > 0) {
@@ -401,7 +403,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
 
         event.putString("id", cursor.getString(0));
-        event.putMap("calendarId", findCalendarById(cursor.getString(cursor.getColumnIndex("calendar_id"))));
+        event.putMap("calendar", findCalendarById(cursor.getString(cursor.getColumnIndex("calendar_id"))));
         event.putString("title", cursor.getString(cursor.getColumnIndex("title")));
         event.putString("description", cursor.getString(2));
         event.putString("startDate", startDateUTC);
@@ -432,6 +434,18 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         calendar.putString("id", cursor.getString(0));
         calendar.putString("title", cursor.getString(1));
         calendar.putString("source", cursor.getString(2));
+        calendar.putBoolean("isPrimary", cursor.getString(3) == "1");
+
+        int accesslevel = cursor.getInt(4);
+
+        if (accesslevel == CalendarContract.Calendars.CAL_ACCESS_ROOT ||
+            accesslevel == CalendarContract.Calendars.CAL_ACCESS_OWNER ||
+            accesslevel == CalendarContract.Calendars.CAL_ACCESS_EDITOR ||
+            accesslevel == CalendarContract.Calendars.CAL_ACCESS_CONTRIBUTOR) {
+            calendar.putBoolean("allowsModifications", true);
+        } else {
+            calendar.putBoolean("allowsModifications", false);
+        }
 
         return calendar;
     }
