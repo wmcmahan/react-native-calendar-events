@@ -6,6 +6,13 @@ React Native Module for IOS and Android Calendar Events
 npm install react-native-calendar-events
 ```
 
+And link
+```
+react-native link
+```
+
+Or you can do it manually by following the instructions below.
+
 ### iOS
 Add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries.
 
@@ -79,7 +86,11 @@ Require the `react-native-calendar-events` module.
 import RNCalendarEvents from 'react-native-calendar-events';
 ```
 
+- React-Native 0.40 and above use 1.3.x and above
+- React-Native 0.39 and below use 1.2.1 and below
+
 > **NOTE**: Starting from `1.0.0`, this package will use Promises instead of Events.
+
 
 ## Properties
 
