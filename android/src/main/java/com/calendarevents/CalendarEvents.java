@@ -129,16 +129,20 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         Cursor cursor = null;
         ContentResolver cr = reactContext.getContentResolver();
 
-        Uri uri = CalendarContract.Events.CONTENT_URI;
+        Uri.Builder uriBuilder = CalendarContract.Instances.CONTENT_URI.buildUpon();
+        ContentUris.appendId(uriBuilder, eStartDate.getTimeInMillis());
+        ContentUris.appendId(uriBuilder, eEndDate.getTimeInMillis());
 
-        String selection = "((" + CalendarContract.Events.DTSTART + " >= " + eStartDate.getTimeInMillis() + ") " +
-                "AND (" + CalendarContract.Events.DTEND + " <= " + eEndDate.getTimeInMillis() + ") " +
-                "AND (" + CalendarContract.Events.DELETED + " != 1) ";
+        Uri uri = uriBuilder.build();
+
+        String selection = "((" + CalendarContract.Instances.BEGIN + " >= " + eStartDate.getTimeInMillis() + ") " +
+                "AND (" + CalendarContract.Instances.END + " <= " + eEndDate.getTimeInMillis() + ") " +
+                "AND (" + CalendarContract.Instances.VISIBLE + " = 1) ";
 
         if (calendars.size() > 0) {
             String calendarQuery = "AND (";
             for (int i = 0; i < calendars.size(); i++) {
-                calendarQuery += CalendarContract.Events.CALENDAR_ID + " = " + calendars.getString(i);
+                calendarQuery += CalendarContract.Instances.CALENDAR_ID + " = " + calendars.getString(i);
                 if (i != calendars.size() - 1) {
                     calendarQuery += " OR ";
                 }
@@ -150,15 +154,15 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         selection += ")";
 
         cursor = cr.query(uri, new String[]{
-                CalendarContract.Events._ID,
-                CalendarContract.Events.TITLE,
-                CalendarContract.Events.DESCRIPTION,
-                CalendarContract.Events.DTSTART,
-                CalendarContract.Events.DTEND,
-                CalendarContract.Events.ALL_DAY,
-                CalendarContract.Events.EVENT_LOCATION,
-                CalendarContract.Events.RRULE,
-                CalendarContract.Events.CALENDAR_ID
+                CalendarContract.Instances.EVENT_ID,
+                CalendarContract.Instances.TITLE,
+                CalendarContract.Instances.DESCRIPTION,
+                CalendarContract.Instances.BEGIN,
+                CalendarContract.Instances.END,
+                CalendarContract.Instances.ALL_DAY,
+                CalendarContract.Instances.EVENT_LOCATION,
+                CalendarContract.Instances.RRULE,
+                CalendarContract.Instances.CALENDAR_ID
         }, selection, null, null);
 
         return serializeEvents(cursor);
@@ -294,6 +298,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 } else {
                     eventValues.put(CalendarContract.Events.CALENDAR_ID, 1);
                 }
+
+            } else {
+                eventValues.put(CalendarContract.Events.CALENDAR_ID, 1);
             }
 
             Uri eventsUri = CalendarContract.Events.CONTENT_URI;
@@ -313,9 +320,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
         ContentResolver cr = reactContext.getContentResolver();
         Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, Integer.parseInt(eventID));
-        String selection = "((" + CalendarContract.Events.DELETED + " != 1))";
 
-        int rows = cr.delete(uri, selection, null);
+        int rows = cr.delete(uri, null, null);
 
         return rows > 0;
     }
@@ -473,25 +479,42 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void findCalendars(Promise promise) {
+    public void findCalendars(final Promise promise) {
         if (this.haveCalendarReadWritePermissions()) {
             try {
-                WritableArray calendars = this.findEventCalendars();
-                promise.resolve(calendars);
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        WritableArray calendars = findEventCalendars();
+                        promise.resolve(calendars);
+                    }
+                });
+                thread.start();
             } catch (Exception e) {
                 promise.reject("calendar request error", e.getMessage());
             }
         } else {
-            promise.reject("add event error", "you don't have permissions to add an event to the users calendar");
+            promise.reject("add event error", "you don't have permissions to retrieve an event to the users calendar");
         }
     }
 
     @ReactMethod
-    public void saveEvent(String title, ReadableMap details, Promise promise) {
+    public void saveEvent(final String title, final ReadableMap details, final Promise promise) {
         if (this.haveCalendarReadWritePermissions()) {
             try {
-                WritableMap event = this.addEvent(title, details);
-                promise.resolve(event.getInt("eventID"));
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        WritableMap event = null;
+                        try {
+                            event = addEvent(title, details);
+                        } catch (ParseException e) {
+                            promise.reject("add event error", e.getMessage());
+                        }
+                        promise.resolve(event.getInt("eventID"));
+                    }
+                });
+                thread.start();
             } catch (Exception e) {
                 promise.reject("add event error", e.getMessage());
             }
@@ -501,12 +524,18 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void findAllEvents(String startDate, String endDate, ReadableArray calendars, Promise promise) {
+    public void findAllEvents(final String startDate, final String endDate, final ReadableArray calendars, final Promise promise) {
 
         if (this.haveCalendarReadWritePermissions()) {
             try {
-                WritableNativeArray results = this.findEvents(startDate, endDate, calendars);
-                promise.resolve(results);
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        WritableNativeArray results = findEvents(startDate, endDate, calendars);
+                        promise.resolve(results);
+                    }
+                });
+                thread.start();
 
             } catch (Exception e) {
                 promise.reject("find event error", e.getMessage());
@@ -518,11 +547,17 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void findById(String eventID, Promise promise) {
+    public void findById(final String eventID, final Promise promise) {
         if (this.haveCalendarReadWritePermissions()) {
             try {
-                WritableNativeMap results = this.findEventsById(eventID);
-                promise.resolve(results);
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        WritableMap results = findEventsById(eventID);
+                        promise.resolve(results);
+                    }
+                });
+                thread.start();
 
             } catch (Exception e) {
                 promise.reject("find event error", e.getMessage());
@@ -534,11 +569,17 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void removeEvent(String eventID, Promise promise) {
+    public void removeEvent(final String eventID, final Promise promise) {
         if (this.haveCalendarReadWritePermissions()) {
             try {
-                boolean successful = this.removeEvent(eventID);
-                promise.resolve(successful);
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        boolean successful = removeEvent(eventID);
+                        promise.resolve(successful);
+                    }
+                });
+                thread.start();
 
             } catch (Exception e) {
                 promise.reject("error removing event", e.getMessage());
