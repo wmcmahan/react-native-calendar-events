@@ -104,7 +104,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
                 CalendarContract.Calendars.ACCOUNT_NAME,
                 CalendarContract.Calendars.IS_PRIMARY,
-                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL
+                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
+                CalendarContract.Calendars.ALLOWED_AVAILABILITY
         }, null, null, null);
 
         return serializeEventCalendars(cursor);
@@ -162,7 +163,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Instances.ALL_DAY,
                 CalendarContract.Instances.EVENT_LOCATION,
                 CalendarContract.Instances.RRULE,
-                CalendarContract.Instances.CALENDAR_ID
+                CalendarContract.Instances.CALENDAR_ID,
+                CalendarContract.Instances.AVAILABILITY
         }, selection, null, null);
 
         return serializeEvents(cursor);
@@ -186,7 +188,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Events.ALL_DAY,
                 CalendarContract.Events.EVENT_LOCATION,
                 CalendarContract.Events.RRULE,
-                CalendarContract.Events.CALENDAR_ID
+                CalendarContract.Events.CALENDAR_ID,
+                CalendarContract.Events.AVAILABILITY
         }, selection, null, null);
 
         if (cursor.getCount() > 0) {
@@ -213,7 +216,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
                 CalendarContract.Calendars.ACCOUNT_NAME,
                 CalendarContract.Calendars.IS_PRIMARY,
-                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL
+                CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
+                CalendarContract.Calendars.ALLOWED_AVAILABILITY
         }, null, null, null);
 
         if (cursor.getCount() > 0) {
@@ -284,6 +288,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             eventValues.put(CalendarContract.Events.HAS_ALARM, true);
         }
 
+        if (details.hasKey("availability")) {
+            eventValues.put(CalendarContract.Events.AVAILABILITY, availabilityConstantMatchingString(details.getString("availability")));
+        }
+
         if (details.hasKey("id")) {
             Uri updateUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, Integer.parseInt(details.getString("id")));
             cr.update(updateUri, eventValues, null, null);
@@ -344,6 +352,52 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 resolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues);
             }
         }
+    }
+    //endregion
+
+    //region Availability
+    private WritableNativeArray calendarAllowedAvailabilitiesFromDBString(String dbString) {
+        WritableNativeArray availabilitiesStrings = new WritableNativeArray();
+        for(String availabilityId: dbString.split(",")) {
+            switch(Integer.parseInt(availabilityId)) {
+                case CalendarContract.Events.AVAILABILITY_BUSY:
+                    availabilitiesStrings.pushString("busy");
+                    break;
+                case CalendarContract.Events.AVAILABILITY_FREE:
+                    availabilitiesStrings.pushString("free");
+                    break;
+                case CalendarContract.Events.AVAILABILITY_TENTATIVE:
+                    availabilitiesStrings.pushString("tentative");
+                    break;
+            }
+        }
+
+        return availabilitiesStrings;
+    }
+
+    private String availabilityStringMatchingConstant(Integer constant)
+    {
+        switch(constant) {
+            case CalendarContract.Events.AVAILABILITY_BUSY:
+            default:
+                return "busy";
+            case CalendarContract.Events.AVAILABILITY_FREE:
+                return "free";
+            case CalendarContract.Events.AVAILABILITY_TENTATIVE:
+                return "tentative";
+        }
+    }
+
+    private Integer availabilityConstantMatchingString(String string) throws IllegalArgumentException {
+        if (string.equals("free")){
+            return CalendarContract.Events.AVAILABILITY_FREE;
+        }
+
+        if (string.equals("tentative")){
+            return CalendarContract.Events.AVAILABILITY_TENTATIVE;
+        }
+
+        return CalendarContract.Events.AVAILABILITY_BUSY;
     }
     //endregion
 
@@ -419,6 +473,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         event.putBoolean("allDay", allDay);
         event.putString("location", cursor.getString(6));
         event.putString("recurrence", recurrenceRole);
+        event.putString("availability", availabilityStringMatchingConstant(cursor.getInt(9)));
 
         return event;
     }
@@ -443,6 +498,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         calendar.putString("title", cursor.getString(1));
         calendar.putString("source", cursor.getString(2));
         calendar.putBoolean("isPrimary", cursor.getString(3) == "1");
+        calendar.putArray("allowedAvailabilities", calendarAllowedAvailabilitiesFromDBString(cursor.getString(5)));
 
         int accesslevel = cursor.getInt(4);
 
