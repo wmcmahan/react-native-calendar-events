@@ -317,11 +317,16 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     public boolean removeEvent(String eventID) {
+        int rows = 0;
+        
+        try {
+            ContentResolver cr = reactContext.getContentResolver();
+            Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, Integer.parseInt(eventID));
 
-        ContentResolver cr = reactContext.getContentResolver();
-        Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, Integer.parseInt(eventID));
-
-        int rows = cr.delete(uri, null, null);
+            rows = cr.delete(uri, null, null);
+        } catch (Exception e) {
+            promise.reject("calendar request error", e.getMessage());
+        }
 
         return rows > 0;
     }
