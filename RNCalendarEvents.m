@@ -22,6 +22,7 @@ static NSString *const _alarms = @"alarms";
 static NSString *const _recurrence = @"recurrence";
 static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
+static NSString *const _availability = @"availability";
 
 @implementation RNCalendarEvents
 
@@ -92,6 +93,7 @@ RCT_EXPORT_MODULE()
     NSString *url = [RCTConvert NSString:details[_url]];
     NSArray *alarms = [RCTConvert NSArray:details[_alarms]];
     NSString *recurrence = [RCTConvert NSString:details[_recurrence]];
+    NSString *availability = [RCTConvert NSString:details[_availability]];
 
     if (eventId) {
         calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
@@ -142,6 +144,10 @@ RCT_EXPORT_MODULE()
         if (rule) {
             calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
         }
+    }
+    
+    if (availability) {
+        calendarEvent.availability = [self availablilityConstantMatchingString:availability];
     }
 
     NSURL *URL = [NSURL URLWithString:[url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
@@ -324,6 +330,58 @@ RCT_EXPORT_MODULE()
 }
 
 #pragma mark -
+#pragma mark Availability
+
+- (NSMutableArray *)calendarSupportedAvailabilitiesFromMask:(EKCalendarEventAvailabilityMask)types
+{
+    NSMutableArray *availabilitiesStrings = @[].mutableCopy;
+
+    if(types & EKCalendarEventAvailabilityBusy) [availabilitiesStrings addObject:@"busy"];
+    if(types & EKCalendarEventAvailabilityFree) [availabilitiesStrings addObject:@"free"];
+    if(types & EKCalendarEventAvailabilityTentative) [availabilitiesStrings addObject:@"tentative"];
+    if(types & EKCalendarEventAvailabilityUnavailable) [availabilitiesStrings addObject:@"unavailable"];
+
+    return availabilitiesStrings;
+}
+
+- (NSString *)availabilityStringMatchingConstant:(EKEventAvailability)constant
+{
+    switch(constant) {
+        case EKEventAvailabilityNotSupported:
+            return @"notSupported";
+        case EKEventAvailabilityBusy:
+            return @"busy";
+        case EKEventAvailabilityFree:
+            return @"free";
+        case EKEventAvailabilityTentative:
+            return @"tentative";
+        case EKEventAvailabilityUnavailable:
+            return @"unavailable";
+    }
+}
+
+- (EKEventAvailability)availablilityConstantMatchingString:(NSString *)string
+{
+    if([string isEqualToString:@"busy"]) {
+        return EKEventAvailabilityBusy;
+    }
+    
+    if([string isEqualToString:@"free"]) {
+        return EKEventAvailabilityFree;
+    }
+    
+    if([string isEqualToString:@"tentative"]) {
+        return EKEventAvailabilityTentative;
+    }
+    
+    if([string isEqualToString:@"unavailable"]) {
+        return EKEventAvailabilityUnavailable;
+    }
+    
+    return EKEventAvailabilityNotSupported;
+}
+
+#pragma mark -
 #pragma mark Serializers
 
 - (NSArray *)serializeCalendarEvents:(NSArray *)calendarEvents
@@ -350,7 +408,8 @@ RCT_EXPORT_MODULE()
                                          _notes: @"",
                                          _url: @"",
                                          _alarms: [NSArray array],
-                                         _recurrence: @""
+                                         _recurrence: @"",
+                                         _availability: @"",
                                          };
 
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -372,6 +431,7 @@ RCT_EXPORT_MODULE()
                                         @"title": event.calendar.title,
                                         @"source": event.calendar.source.title,
                                         @"allowsModifications": @(event.calendar.allowsContentModifications),
+                                        @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:event.calendar.supportedEventAvailabilities],
                                         }
                                forKey:@"calendar"];
     }
@@ -463,6 +523,8 @@ RCT_EXPORT_MODULE()
         NSString *frequencyType = [self nameMatchingFrequency:[[event.recurrenceRules objectAtIndex:0] frequency]];
         [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
     }
+    
+    [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
 
     return [formedCalendarEvent copy];
 }
@@ -509,7 +571,8 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
                                         @"id": calendar.calendarIdentifier,
                                         @"title": calendar.title,
                                         @"allowsModifications": @(calendar.allowsContentModifications),
-                                        @"source": calendar.source.title
+                                        @"source": calendar.source.title,
+                                        @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities]
                                         }];
         }
         resolve(eventCalendars);
