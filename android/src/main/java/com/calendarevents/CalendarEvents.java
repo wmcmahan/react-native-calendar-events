@@ -325,7 +325,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
             rows = cr.delete(uri, null, null);
         } catch (Exception e) {
-            promise.reject("calendar request error", e.getMessage());
+            e.printStackTrace();
         }
 
         return rows > 0;
