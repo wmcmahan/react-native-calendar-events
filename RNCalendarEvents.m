@@ -20,6 +20,8 @@ static NSString *const _notes = @"notes";
 static NSString *const _url = @"url";
 static NSString *const _alarms = @"alarms";
 static NSString *const _recurrence = @"recurrence";
+static NSString *const _recurrenceInterval = @"recurrenceInterval";
+static NSString *const _recurrenceEnd = @"recurrenceEnd";
 static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
@@ -93,6 +95,8 @@ RCT_EXPORT_MODULE()
     NSString *url = [RCTConvert NSString:details[_url]];
     NSArray *alarms = [RCTConvert NSArray:details[_alarms]];
     NSString *recurrence = [RCTConvert NSString:details[_recurrence]];
+    NSInteger recurrenceInterval = [RCTConvert NSInteger:details[_recurrenceInterval]];
+    id recurrenceEnd = [RCTConvert id:details[_recurrenceEnd]];
     NSString *availability = [RCTConvert NSString:details[_availability]];
 
     if (eventId) {
@@ -140,17 +144,17 @@ RCT_EXPORT_MODULE()
     }
 
     if (recurrence) {
-        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence];
+        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence interval:recurrenceInterval end:recurrenceEnd];
         if (rule) {
             calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
         }
     }
-    
+
     if (availability) {
         calendarEvent.availability = [self availablilityConstantMatchingString:availability];
     }
 
-    NSURL *URL = [NSURL URLWithString:[url stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    NSURL *URL = [NSURL URLWithString:[url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
     if (URL) {
         calendarEvent.URL = URL;
     }
@@ -189,7 +193,7 @@ RCT_EXPORT_MODULE()
     return [response copy];
 }
 
-- (NSDictionary *)deleteEvent:(NSString *)eventId span:(EKSpan *)span
+- (NSDictionary *)deleteEvent:(NSString *)eventId span:(EKSpan)span
 {
     if ([[self authorizationStatusForEventStore] isEqualToString:@"granted"]) {
         return @{@"success": [NSNull null], @"error": @"unauthorized to access calendar"};
@@ -302,15 +306,31 @@ RCT_EXPORT_MODULE()
     return recurrence;
 }
 
--(EKRecurrenceRule *)createRecurrenceRule:(NSString *)frequency
+-(EKRecurrenceRule *)createRecurrenceRule:(NSString *)frequency interval:(NSInteger)interval end:(id)end
 {
     EKRecurrenceRule *rule = nil;
+    EKRecurrenceEnd *recurrenceEnd = nil;
+    NSInteger recurrenceInterval = 1;
     NSArray *validFrequencyTypes = @[@"daily", @"weekly", @"monthly", @"yearly"];
 
     if ([validFrequencyTypes containsObject:frequency]) {
+
+        if ([end isKindOfClass:[NSString class]]) {
+            NSDate *endDate = [RCTConvert NSDate:end];
+            if (endDate) {
+                recurrenceEnd = [EKRecurrenceEnd recurrenceEndWithEndDate:endDate];
+            }
+        } else if ([end isKindOfClass:[NSNumber class]]) {
+            recurrenceEnd = [EKRecurrenceEnd recurrenceEndWithOccurrenceCount:(int)end];
+        }
+
+        if (interval > 1) {
+            recurrenceInterval = interval;
+        }
+
         rule = [[EKRecurrenceRule alloc] initRecurrenceWithFrequency:[self frequencyMatchingName:frequency]
-                                                            interval:1
-                                                                 end:nil];
+                                                            interval:recurrenceInterval
+                                                                 end:recurrenceEnd];
     }
     return rule;
 }
@@ -365,19 +385,19 @@ RCT_EXPORT_MODULE()
     if([string isEqualToString:@"busy"]) {
         return EKEventAvailabilityBusy;
     }
-    
+
     if([string isEqualToString:@"free"]) {
         return EKEventAvailabilityFree;
     }
-    
+
     if([string isEqualToString:@"tentative"]) {
         return EKEventAvailabilityTentative;
     }
-    
+
     if([string isEqualToString:@"unavailable"]) {
         return EKEventAvailabilityUnavailable;
     }
-    
+
     return EKEventAvailabilityNotSupported;
 }
 
@@ -409,6 +429,8 @@ RCT_EXPORT_MODULE()
                                          _url: @"",
                                          _alarms: [NSArray array],
                                          _recurrence: @"",
+                                         _recurrenceInterval: @"",
+                                         _recurrenceEnd: @"",
                                          _availability: @"",
                                          };
 
@@ -520,10 +542,20 @@ RCT_EXPORT_MODULE()
     [formedCalendarEvent setValue:[NSNumber numberWithBool:event.allDay] forKey:_allDay];
 
     if (event.hasRecurrenceRules) {
-        NSString *frequencyType = [self nameMatchingFrequency:[[event.recurrenceRules objectAtIndex:0] frequency]];
+        EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
+        NSString *frequencyType = [self nameMatchingFrequency:[rule frequency]];
         [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
+        [formedCalendarEvent setValue:@([rule interval]) forKey:_recurrenceInterval];
+
+        if ([[rule recurrenceEnd] endDate]) {
+            [formedCalendarEvent setValue:[dateFormatter stringFromDate:[[rule recurrenceEnd] endDate]] forKey:_recurrenceEnd];
+        }
+
+        if ([[rule recurrenceEnd] occurrenceCount]) {
+            [formedCalendarEvent setValue:@([[rule recurrenceEnd] occurrenceCount]) forKey:_recurrenceEnd];
+        }
     }
-    
+
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
 
     return [formedCalendarEvent copy];
