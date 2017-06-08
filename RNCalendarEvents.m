@@ -5,7 +5,6 @@
 
 @interface RNCalendarEvents ()
 @property (nonatomic, strong) EKEventStore *eventStore;
-@property (copy, nonatomic) NSArray *calendarEvents;
 @property (nonatomic) BOOL isAccessToEventStoreGranted;
 @end
 
@@ -41,14 +40,6 @@ RCT_EXPORT_MODULE()
         _eventStore = [[EKEventStore alloc] init];
     }
     return _eventStore;
-}
-
-- (NSArray *)calendarEvents
-{
-    if (!_calendarEvents) {
-        _calendarEvents = [[NSArray alloc] init];
-    }
-    return _calendarEvents;
 }
 
 #pragma mark -
@@ -632,10 +623,10 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
 
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        weakSelf.calendarEvents = [[weakSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
+        NSArray *calendarEvents = [[weakSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (weakSelf.calendarEvents) {
-                resolve([weakSelf serializeCalendarEvents:weakSelf.calendarEvents]);
+            if (calendarEvents) {
+                resolve([weakSelf serializeCalendarEvents:calendarEvents]);
             } else {
                 reject(@"error", @"calendar event request error", nil);
             }
