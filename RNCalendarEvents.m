@@ -19,8 +19,7 @@ static NSString *const _notes = @"notes";
 static NSString *const _url = @"url";
 static NSString *const _alarms = @"alarms";
 static NSString *const _recurrence = @"recurrence";
-static NSString *const _recurrenceInterval = @"recurrenceInterval";
-static NSString *const _recurrenceEnd = @"recurrenceEnd";
+static NSString *const _recurrenceRule = @"recurrenceRule";
 static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
@@ -86,8 +85,7 @@ RCT_EXPORT_MODULE()
     NSString *url = [RCTConvert NSString:details[_url]];
     NSArray *alarms = [RCTConvert NSArray:details[_alarms]];
     NSString *recurrence = [RCTConvert NSString:details[_recurrence]];
-    NSInteger recurrenceInterval = [RCTConvert NSInteger:details[_recurrenceInterval]];
-    id recurrenceEnd = [RCTConvert id:details[_recurrenceEnd]];
+    NSDictionary *recurrenceRule = [RCTConvert NSDictionary:details[_recurrenceRule]];
     NSString *availability = [RCTConvert NSString:details[_availability]];
 
     if (eventId) {
@@ -135,11 +133,24 @@ RCT_EXPORT_MODULE()
     }
 
     if (recurrence) {
-        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence interval:recurrenceInterval end:recurrenceEnd];
+        EKRecurrenceRule *rule = [self createRecurrenceRule:recurrence interval:0 occurrence:0 endDate:nil];
         if (rule) {
             calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
         }
     }
+
+    if (recurrenceRule) {
+        NSString *frequency = [RCTConvert NSString:recurrenceRule[@"frequency"]];
+        NSInteger interval = [RCTConvert NSInteger:recurrenceRule[@"interval"]];
+        NSInteger occurrence = [RCTConvert NSInteger:recurrenceRule[@"occurrence"]];
+        NSDate *endDate = [RCTConvert NSDate:recurrenceRule[@"endDate"]];
+
+        EKRecurrenceRule *rule = [self createRecurrenceRule:frequency interval:interval occurrence:occurrence endDate:endDate];
+        if (rule) {
+            calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
+        }
+    }
+
 
     if (availability) {
         calendarEvent.availability = [self availablilityConstantMatchingString:availability];
@@ -297,22 +308,19 @@ RCT_EXPORT_MODULE()
     return recurrence;
 }
 
--(EKRecurrenceRule *)createRecurrenceRule:(NSString *)frequency interval:(NSInteger)interval end:(id)end
+-(EKRecurrenceRule *)createRecurrenceRule:(NSString *)frequency interval:(NSInteger)interval occurrence:(NSInteger)occurrence endDate:(NSDate *)endDate
 {
     EKRecurrenceRule *rule = nil;
     EKRecurrenceEnd *recurrenceEnd = nil;
     NSInteger recurrenceInterval = 1;
     NSArray *validFrequencyTypes = @[@"daily", @"weekly", @"monthly", @"yearly"];
 
-    if ([validFrequencyTypes containsObject:frequency]) {
+    if (frequency && [validFrequencyTypes containsObject:frequency]) {
 
-        if ([end isKindOfClass:[NSString class]]) {
-            NSDate *endDate = [RCTConvert NSDate:end];
-            if (endDate) {
-                recurrenceEnd = [EKRecurrenceEnd recurrenceEndWithEndDate:endDate];
-            }
-        } else if ([end isKindOfClass:[NSNumber class]]) {
-            recurrenceEnd = [EKRecurrenceEnd recurrenceEndWithOccurrenceCount:(int)end];
+        if (endDate) {
+            recurrenceEnd = [EKRecurrenceEnd recurrenceEndWithEndDate:endDate];
+        } else if (occurrence && occurrence > 0) {
+            recurrenceEnd = [EKRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrence];
         }
 
         if (interval > 1) {
@@ -420,8 +428,12 @@ RCT_EXPORT_MODULE()
                                          _url: @"",
                                          _alarms: [NSArray array],
                                          _recurrence: @"",
-                                         _recurrenceInterval: @"",
-                                         _recurrenceEnd: @"",
+                                         _recurrenceRule: @{
+                                                 @"frequency": @"",
+                                                 @"interval": @"",
+                                                 @"occurrence": @"",
+                                                 @"endDate": @""
+                                                 },
                                          _availability: @"",
                                          };
 
@@ -536,15 +548,22 @@ RCT_EXPORT_MODULE()
         EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
         NSString *frequencyType = [self nameMatchingFrequency:[rule frequency]];
         [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
-        [formedCalendarEvent setValue:@([rule interval]) forKey:_recurrenceInterval];
+
+        NSMutableDictionary *recurrenceRule = [NSMutableDictionary dictionaryWithDictionary:@{@"frequency": frequencyType}];
+
+        if ([rule interval]) {
+            [recurrenceRule setValue:@([rule interval]) forKey:@"interval"];
+        }
 
         if ([[rule recurrenceEnd] endDate]) {
-            [formedCalendarEvent setValue:[dateFormatter stringFromDate:[[rule recurrenceEnd] endDate]] forKey:_recurrenceEnd];
+            [recurrenceRule setValue:[dateFormatter stringFromDate:[[rule recurrenceEnd] endDate]] forKey:@"endDate"];
         }
 
         if ([[rule recurrenceEnd] occurrenceCount]) {
-            [formedCalendarEvent setValue:@([[rule recurrenceEnd] occurrenceCount]) forKey:_recurrenceEnd];
+            [recurrenceRule setValue:@([[rule recurrenceEnd] occurrenceCount]) forKey:@"occurrence"];
         }
+
+        [formedCalendarEvent setValue:recurrenceRule forKey:_recurrenceRule];
     }
 
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
