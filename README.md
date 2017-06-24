@@ -92,7 +92,7 @@ import RNCalendarEvents from 'react-native-calendar-events';
 > **NOTE**: Starting from `1.0.0`, this package will use Promises instead of Events.
 
 
-## Properties
+## Event Properties
 
 | Property        | Value            | Description |
 | :--------------- | :---------------- | :----------- |
@@ -104,10 +104,6 @@ import RNCalendarEvents from 'react-native-calendar-events';
 | allDay          | Bool             | Indicates whether the event is an all-day event. |
 | recurrence      | String           | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |
 | recurrenceRule  | Object           | The events recurrence settings. |
-| - frequency     | String           | Event recurring frequency `daily`, `weekly`, `monthly`, `yearly` |
-| - endDate       | Date             | Event recurring end date. This overrides occurrence |
-| - occurrence    | Number           | Number of event occurrences. |
-| - interval      | Number           | The interval between events of this recurrence. |
 | occurrenceDate (ios only)| Date (read-only) | The original occurrence date of an event if it is part of a recurring series. |
 | isDetached (ios only)| Bool        | Indicates whether an event is a detached instance of a repeating event. |
 | location        | String           | The location associated with the calendar event. |
@@ -115,6 +111,14 @@ import RNCalendarEvents from 'react-native-calendar-events';
 | description (android only)| String | The description associated with the calendar event. |
 | alarms          | Array            | The alarms associated with the calendar event, as an array of alarm objects. |
 | calendar        | Object (read-only) | The calendar containing the event.|
+
+### Recurrence Rule properties:
+| Property        | Value            | Description |
+| :--------------- | :---------------- | :----------- |
+| frequency     | String           | Event recurring frequency `daily`, `weekly`, `monthly`, `yearly` |
+| endDate       | Date             | Event recurring end date. This overrides occurrence |
+| occurrence    | Number           | Number of event occurrences. |
+| interval      | Number           | The interval between events of this recurrence. |
 
 
 ## authorizationStatus
