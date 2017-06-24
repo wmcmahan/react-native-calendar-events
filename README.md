@@ -1,9 +1,9 @@
-# React-Native-Calendar-Events
+# React Native Calendar Events
 React Native Module for IOS and Android Calendar Events
 
 ## Install
 ```
-npm install react-native-calendar-events
+npm install --save react-native-calendar-events
 ```
 
 And link
@@ -103,8 +103,13 @@ import RNCalendarEvents from 'react-native-calendar-events';
 | endDate         | Date             | The end date of the calendar event. |
 | allDay          | Bool             | Indicates whether the event is an all-day event. |
 | recurrence      | String           | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |
+| recurrenceRule  | Object           | The events recurrence settings. |
+| - frequency     | String           | Event recurring frequency `daily`, `weekly`, `monthly`, `yearly` |
+| - endDate       | Date             | Event recurring end date. This overrides occurrence |
+| - occurrence    | Number           | Number of event occurrences. |
+| - interval      | Number           | The interval between events of this recurrence. |
 | occurrenceDate (ios only)| Date (read-only) | The original occurrence date of an event if it is part of a recurring series. |
-| isDetached (ios only)| Bool             | Indicates whether an event is a detached instance of a repeating event. |
+| isDetached (ios only)| Bool        | Indicates whether an event is a detached instance of a repeating event. |
 | location        | String           | The location associated with the calendar event. |
 | notes (ios only)| String           | The notes associated with the calendar event. |
 | description (android only)| String | The description associated with the calendar event. |
@@ -338,11 +343,15 @@ RNCalendarEvents.saveEvent('title', {
   location: 'location',
   notes: 'notes',
   startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z',
+  endDate: '2017-08-29T19:26:00.000Z',
   alarms: [{
     date: -1 // or absolute date - iOS Only
   }],
-  recurrence: 'daily'
+  recurrenceRule: {
+    frequency: 'daily'
+    interval: 2,
+    endDate: '2017-08-29T19:26:00.000Z'
+  }
 });
 ```
 
