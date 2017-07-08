@@ -353,7 +353,7 @@ RCT_EXPORT_MODULE()
 
 - (NSMutableArray *)calendarSupportedAvailabilitiesFromMask:(EKCalendarEventAvailabilityMask)types
 {
-    NSMutableArray *availabilitiesStrings = @[].mutableCopy;
+    NSMutableArray *availabilitiesStrings = [[NSMutableArray alloc] init];
 
     if(types & EKCalendarEventAvailabilityBusy) [availabilitiesStrings addObject:@"busy"];
     if(types & EKCalendarEventAvailabilityFree) [availabilitiesStrings addObject:@"free"];
@@ -376,6 +376,8 @@ RCT_EXPORT_MODULE()
             return @"tentative";
         case EKEventAvailabilityUnavailable:
             return @"unavailable";
+        default:
+            return @"notSupported";
     }
 }
 
