@@ -648,6 +648,8 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
         dispatch_async(dispatch_get_main_queue(), ^{
             if (calendarEvents) {
                 resolve([weakSelf serializeCalendarEvents:calendarEvents]);
+            } else if (calendarEvents == nil) {
+                resolve(@[]);
             } else {
                 reject(@"error", @"calendar event request error", nil);
             }
