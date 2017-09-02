@@ -253,8 +253,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         if (title != null) {
             eventValues.put(CalendarContract.Events.TITLE, title);
         }
-        if (details.hasKey("notes")) {
-            eventValues.put(CalendarContract.Events.DESCRIPTION, details.getString("notes"));
+        if (details.hasKey("description")) {
+            eventValues.put(CalendarContract.Events.DESCRIPTION, details.getString("description"));
         }
         if (details.hasKey("location")) {
             eventValues.put(CalendarContract.Events.EVENT_LOCATION, details.getString("location"));
