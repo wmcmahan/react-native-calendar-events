@@ -172,7 +172,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Instances.EVENT_LOCATION,
                 CalendarContract.Instances.RRULE,
                 CalendarContract.Instances.CALENDAR_ID,
-                CalendarContract.Instances.AVAILABILITY
+                CalendarContract.Instances.AVAILABILITY,
+                CalendarContract.Instances.HAS_ALARM
         }, selection, null, null);
 
         return serializeEvents(cursor);
@@ -197,7 +198,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Events.EVENT_LOCATION,
                 CalendarContract.Events.RRULE,
                 CalendarContract.Events.CALENDAR_ID,
-                CalendarContract.Events.AVAILABILITY
+                CalendarContract.Events.AVAILABILITY,
+                CalendarContract.Events.HAS_ALARM
         }, selection, null, null);
 
         if (cursor.getCount() > 0) {
@@ -253,9 +255,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         if (title != null) {
             eventValues.put(CalendarContract.Events.TITLE, title);
         }
+
         if (details.hasKey("description")) {
             eventValues.put(CalendarContract.Events.DESCRIPTION, details.getString("description"));
         }
+
         if (details.hasKey("location")) {
             eventValues.put(CalendarContract.Events.EVENT_LOCATION, details.getString("location"));
         }
@@ -344,7 +348,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         if (details.hasKey("allDay")) {
             eventValues.put(CalendarContract.Events.ALL_DAY, details.getBoolean("allDay"));
         }
+
         eventValues.put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
+
         if (details.hasKey("alarms")) {
             eventValues.put(CalendarContract.Events.HAS_ALARM, true);
         }
@@ -357,6 +363,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             Uri updateUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, Integer.parseInt(details.getString("id")));
             cr.update(updateUri, eventValues, null, null);
             event.putInt("eventID", Integer.parseInt(details.getString("id")));
+
+            if (details.hasKey("alarms")) {
+                createRemindersForEvent(cr, Integer.parseInt(details.getString("id")), details.getArray("alarms"));
+            }
+
         } else {
 
             if (details.hasKey("calendarId")) {
@@ -404,11 +415,23 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     //region Reminders
     private void createRemindersForEvent(ContentResolver resolver, int eventID, ReadableArray reminders) {
+
+        Cursor cursor = CalendarContract.Reminders.query(resolver, eventID, new String[] {
+                CalendarContract.Reminders._ID
+        });
+
+        while (cursor.moveToNext()) {
+            long reminderId = cursor.getLong(0);
+            Uri reminderUri = ContentUris.withAppendedId(CalendarContract.Reminders.CONTENT_URI, reminderId);
+            int rows = resolver.delete(reminderUri, null, null);
+        }
+        cursor.close();
+
         for (int i = 0; i < reminders.size(); i++) {
             ReadableMap reminder = reminders.getMap(i);
             ReadableType type = reminder.getType("date");
             if (type == ReadableType.Number) {
-                int minutes = -reminder.getInt("date");
+                int minutes = reminder.getInt("date");
                 ContentValues reminderValues = new ContentValues();
 
                 reminderValues.put(CalendarContract.Reminders.EVENT_ID, eventID);
@@ -418,6 +441,35 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 resolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues);
             }
         }
+    }
+
+    public WritableNativeArray findReminderByEventId(String eventID, long startDate) {
+
+        WritableNativeArray results = new WritableNativeArray();
+        ContentResolver cr = reactContext.getContentResolver();
+        String selection = "(" + CalendarContract.Reminders.EVENT_ID + " = ?)";
+
+        Cursor cursor = cr.query(CalendarContract.Reminders.CONTENT_URI, new String[]{
+                CalendarContract.Reminders.MINUTES
+        }, selection, new String[] {eventID}, null);
+
+        while (cursor.moveToNext()) {
+            WritableNativeMap alarm = new WritableNativeMap();
+
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+            cal.setTimeInMillis(startDate);
+            cal.add(Calendar.MINUTE, Integer.parseInt(cursor.getString(0)));
+
+            alarm.putString("date", sdf.format(cal.getTime()));
+
+            results.pushMap(alarm);
+        }
+
+        cursor.close();
+
+        return results;
     }
     //endregion
 
@@ -576,6 +628,13 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         event.putBoolean("allDay", allDay);
         event.putString("location", cursor.getString(6));
         event.putString("availability", availabilityStringMatchingConstant(cursor.getInt(9)));
+
+        if (cursor.getInt(10) > 0) {
+            event.putArray("alarms", findReminderByEventId(cursor.getString(0), Long.parseLong(cursor.getString(3))));
+        } else {
+            WritableNativeArray emptyAlarms = new WritableNativeArray();
+            event.putArray("alarms", emptyAlarms);
+        }
 
         return event;
     }
