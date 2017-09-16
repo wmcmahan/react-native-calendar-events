@@ -6,6 +6,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.Manifest;
 import android.net.Uri;
 import android.provider.CalendarContract;
@@ -36,9 +37,10 @@ import java.util.TimeZone;
 
 public class CalendarEvents extends ReactContextBaseJavaModule {
 
-    public static int PERMISSION_REQUEST_CODE = 37;
-    private ReactContext reactContext;
-    private static HashMap<Integer, Promise> permissionsPromises = new HashMap<>();
+    private static int PERMISSION_REQUEST_CODE = 37;
+    private final ReactContext reactContext;
+    private static final String RNC_PREFS = "REACT_NATIVE_CALENDAR_PREFERENCES";
+    private static final HashMap<Integer, Promise> permissionsPromises = new HashMap<>();
 
     public CalendarEvents(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -60,40 +62,39 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
         PERMISSION_REQUEST_CODE++;
         permissionsPromises.put(PERMISSION_REQUEST_CODE, promise);
-        ActivityCompat.requestPermissions(currentActivity,
-                new String[]{ Manifest.permission.WRITE_CALENDAR, Manifest.permission.READ_CALENDAR },
-                PERMISSION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(currentActivity, new String[]{
+                Manifest.permission.WRITE_CALENDAR,
+                Manifest.permission.READ_CALENDAR
+        }, PERMISSION_REQUEST_CODE);
     }
 
     public static void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (permissionsPromises.containsKey(requestCode)) {
+
             // If request is cancelled, the result arrays are empty.
             Promise permissionsPromise = permissionsPromises.get(requestCode);
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 permissionsPromise.resolve("authorized");
-            } else if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            } else if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 permissionsPromise.resolve("denied");
-            } else if (permissionsPromises.size() == 1) { // there should only be one
+            } else if (permissionsPromises.size() == 1) {
                 permissionsPromise.reject("permissions - unknown error", grantResults.length > 0 ? String.valueOf(grantResults[0]) : "Request was cancelled");
             }
             permissionsPromises.remove(requestCode);
         }
     }
 
-    private boolean haveCalendarReadWritePermissions()
-    {
-        int permissionCheck = ContextCompat.checkSelfPermission(reactContext,
-                Manifest.permission.WRITE_CALENDAR);
+    private boolean haveCalendarReadWritePermissions() {
+        int permissionCheck = ContextCompat.checkSelfPermission(reactContext, Manifest.permission.WRITE_CALENDAR);
 
         return permissionCheck == PackageManager.PERMISSION_GRANTED;
     }
     //endregion
 
-    public WritableNativeArray findEventCalendars() {
+    private WritableNativeArray findEventCalendars() {
 
-        Cursor cursor = null;
+        Cursor cursor;
         ContentResolver cr = reactContext.getContentResolver();
 
         Uri uri = CalendarContract.Calendars.CONTENT_URI;
@@ -111,7 +112,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     //region Event Accessors
-    public WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars) {
+    private WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars) {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -135,7 +136,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             e.printStackTrace();
         }
 
-        Cursor cursor = null;
+        Cursor cursor;
         ContentResolver cr = reactContext.getContentResolver();
 
         Uri.Builder uriBuilder = CalendarContract.Instances.CONTENT_URI.buildUpon();
@@ -179,10 +180,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return serializeEvents(cursor);
     }
 
-    public WritableNativeMap findEventsById(String eventID) {
+    private WritableNativeMap findEventsById(String eventID) {
 
-        WritableNativeMap result = new WritableNativeMap();
-        Cursor cursor = null;
+        WritableNativeMap result;
+        Cursor cursor;
         ContentResolver cr = reactContext.getContentResolver();
         Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, Integer.parseInt(eventID));
 
@@ -202,22 +203,20 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Events.HAS_ALARM
         }, selection, null, null);
 
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
+        if (cursor != null && cursor.moveToFirst()) {
             result = serializeEvent(cursor);
+            cursor.close();
         } else {
             result = null;
         }
 
-        cursor.close();
-
         return result;
     }
 
-    public WritableNativeMap findCalendarById(String calendarID) {
+    private WritableNativeMap findCalendarById(String calendarID) {
 
-        WritableNativeMap result = new WritableNativeMap();
-        Cursor cursor = null;
+        WritableNativeMap result;
+        Cursor cursor;
         ContentResolver cr = reactContext.getContentResolver();
         Uri uri = ContentUris.withAppendedId(CalendarContract.Calendars.CONTENT_URI, Integer.parseInt(calendarID));
 
@@ -230,19 +229,17 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Calendars.ALLOWED_AVAILABILITY
         }, null, null, null);
 
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
+        if (cursor != null && cursor.moveToFirst()) {
             result = serializeEventCalendar(cursor);
+            cursor.close();
         } else {
             result = null;
         }
 
-        cursor.close();
-
         return result;
     }
 
-    public WritableMap addEvent(String title, ReadableMap details) throws ParseException {
+    private WritableMap addEvent(String title, ReadableMap details) throws ParseException {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -299,9 +296,6 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
 
         if (details.hasKey("recurrence")) {
-            Integer interval = 1;
-            String recurrenceEnd = null;
-
             String rule = createRecurrenceRule(details.getString("recurrence"), null, null, null);
             if (rule != null) {
                 eventValues.put(CalendarContract.Events.RRULE, rule);
@@ -383,20 +377,21 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 eventValues.put(CalendarContract.Events.CALENDAR_ID, 1);
             }
 
-            Uri eventsUri = CalendarContract.Events.CONTENT_URI;
-            Uri eventUri = cr.insert(eventsUri, eventValues);
-            int eventID = Integer.parseInt(eventUri.getLastPathSegment());
+            Uri eventUri = cr.insert(CalendarContract.Events.CONTENT_URI, eventValues);
+            if (eventUri != null) {
+                int eventID = Integer.parseInt(eventUri.getLastPathSegment());
 
-            if (details.hasKey("alarms")) {
-                createRemindersForEvent(cr, eventID, details.getArray("alarms"));
+                if (details.hasKey("alarms")) {
+                    createRemindersForEvent(cr, eventID, details.getArray("alarms"));
+                }
+                event.putInt("eventID", eventID);
             }
-            event.putInt("eventID", eventID);
         }
 
         return event;
     }
 
-    public boolean removeEvent(String eventID) {
+    private boolean removeEvent(String eventID) {
         int rows = 0;
 
         try {
@@ -423,7 +418,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         while (cursor.moveToNext()) {
             long reminderId = cursor.getLong(0);
             Uri reminderUri = ContentUris.withAppendedId(CalendarContract.Reminders.CONTENT_URI, reminderId);
-            int rows = resolver.delete(reminderUri, null, null);
+            resolver.delete(reminderUri, null, null);
         }
         cursor.close();
 
@@ -443,7 +438,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
     }
 
-    public WritableNativeArray findReminderByEventId(String eventID, long startDate) {
+    private WritableNativeArray findReminderByEventId(String eventID, long startDate) {
 
         WritableNativeArray results = new WritableNativeArray();
         ContentResolver cr = reactContext.getContentResolver();
@@ -453,7 +448,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Reminders.MINUTES
         }, selection, new String[] {eventID}, null);
 
-        while (cursor.moveToNext()) {
+        while (cursor != null && cursor.moveToNext()) {
             WritableNativeMap alarm = new WritableNativeMap();
 
             Calendar cal = Calendar.getInstance();
@@ -467,7 +462,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             results.pushMap(alarm);
         }
 
-        cursor.close();
+        if (cursor != null) {
+            cursor.close();
+        }
 
         return results;
     }
@@ -521,7 +518,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     //region Recurrence Rule
     private String createRecurrenceRule(String recurrence, Integer interval, String endDate, Integer occurrence) {
-        String rrule = "";
+        String rrule;
 
         if (recurrence.equals("daily")) {
             rrule=  "FREQ=DAILY";
@@ -550,7 +547,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     //endregion
 
     // region Serialize Events
-    public WritableNativeArray serializeEvents(Cursor cursor) {
+    private WritableNativeArray serializeEvents(Cursor cursor) {
         WritableNativeArray results = new WritableNativeArray();
 
         while (cursor.moveToNext()) {
@@ -562,7 +559,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return results;
     }
 
-    public WritableNativeMap serializeEvent(Cursor cursor) {
+    private WritableNativeMap serializeEvent(Cursor cursor) {
 
         WritableNativeMap event = new WritableNativeMap();
 
@@ -639,7 +636,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return event;
     }
 
-    public WritableNativeArray serializeEventCalendars(Cursor cursor) {
+    private WritableNativeArray serializeEventCalendars(Cursor cursor) {
         WritableNativeArray results = new WritableNativeArray();
 
         while (cursor.moveToNext()) {
@@ -651,14 +648,14 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return results;
     }
 
-    public WritableNativeMap serializeEventCalendar(Cursor cursor) {
+    private WritableNativeMap serializeEventCalendar(Cursor cursor) {
 
         WritableNativeMap calendar = new WritableNativeMap();
 
         calendar.putString("id", cursor.getString(0));
         calendar.putString("title", cursor.getString(1));
         calendar.putString("source", cursor.getString(2));
-        calendar.putBoolean("isPrimary", cursor.getString(3) == "1");
+        calendar.putBoolean("isPrimary", cursor.getString(3).equals("1"));
         calendar.putArray("allowedAvailabilities", calendarAllowedAvailabilitiesFromDBString(cursor.getString(5)));
 
         int accesslevel = cursor.getInt(4);
@@ -679,8 +676,14 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     //region React Native Methods
     @ReactMethod
     public void getCalendarPermissions(Promise promise) {
+        SharedPreferences sharedPreferences = reactContext.getSharedPreferences(RNC_PREFS, ReactContext.MODE_PRIVATE);
+        boolean permissionRequested = sharedPreferences.getBoolean("permissionRequested", false);
+
+
         if (this.haveCalendarReadWritePermissions()) {
             promise.resolve("authorized");
+        } else if (!permissionRequested) {
+            promise.resolve("undetermined");
         } else {
             promise.resolve("denied");
         }
@@ -688,6 +691,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void requestCalendarPermissions(Promise promise) {
+        SharedPreferences sharedPreferences = reactContext.getSharedPreferences(RNC_PREFS, ReactContext.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("permissionRequested", true);
+        editor.apply();
+
         if (this.haveCalendarReadWritePermissions()) {
             promise.resolve("authorized");
         } else {
@@ -722,13 +730,13 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 Thread thread = new Thread(new Runnable(){
                     @Override
                     public void run() {
-                        WritableMap event = null;
+                        WritableMap event;
                         try {
                             event = addEvent(title, details);
+                            promise.resolve(event.getInt("eventID"));
                         } catch (ParseException e) {
                             promise.reject("add event error", e.getMessage());
                         }
-                        promise.resolve(event.getInt("eventID"));
                     }
                 });
                 thread.start();
