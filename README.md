@@ -113,6 +113,7 @@ import RNCalendarEvents from 'react-native-calendar-events';
 | recurrenceRule  | Object           | The events recurrence settings. |
 | occurrenceDate (ios only)| Date (read-only) | The original occurrence date of an event if it is part of a recurring series. |
 | isDetached (ios only)| Bool        | Indicates whether an event is a detached instance of a repeating event. |
+| url (ios only)  | String           | The url associated with the calendar event. |
 | location        | String           | The location associated with the calendar event. |
 | notes (ios only)| String           | The notes associated with the calendar event. |
 | description (android only)| String | The description associated with the calendar event. |
