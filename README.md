@@ -106,8 +106,8 @@ import RNCalendarEvents from 'react-native-calendar-events';
 | id              | String (read-only) | Unique id for the calendar event. |
 | calendarId      | String (write-only)| Unique id for the calendar where the event will be saved. Defaults to the device's default calendar. |
 | title           | String             | The title for the calendar event. |
-| startDate       | Date             | The start date of the calendar event. |
-| endDate         | Date             | The end date of the calendar event. |
+| startDate       | Date             | The start date of the calendar event in ISO format. |
+| endDate         | Date             | The end date of the calendar event in ISO format. |
 | allDay          | Bool             | Indicates whether the event is an all-day event. |
 | recurrence      | String           | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |
 | recurrenceRule  | Object           | The events recurrence settings. |
