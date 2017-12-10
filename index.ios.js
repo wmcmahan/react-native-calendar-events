@@ -26,8 +26,8 @@ export default {
     return RNCalendarEvents.findEventById(id);
   },
 
-  saveEvent (title, details) {
-    return RNCalendarEvents.saveEvent(title, details)
+  saveEvent (title, details, options = {exception: false}) {
+    return RNCalendarEvents.saveEvent(title, details, options)
   },
 
   removeEvent (id) {

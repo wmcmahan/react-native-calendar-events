@@ -25,12 +25,12 @@ export default {
     return CalendarEvents.requestCalendarPermissions()
   },
 
-  async saveEvent (title, details) {
-    return CalendarEvents.saveEvent(title, details)
+  async saveEvent (title, details, options = {exception: false, sync: false}) {
+    return CalendarEvents.saveEvent(title, details, options)
   },
 
-  async removeEvent (id) {
-    return CalendarEvents.removeEvent(id)
+  async removeEvent (id, options = {exception: false, sync: false}) {
+    return CalendarEvents.removeEvent(id, options)
   },
 
   async uriForCalendar () {

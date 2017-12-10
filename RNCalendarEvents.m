@@ -67,7 +67,7 @@ RCT_EXPORT_MODULE()
 #pragma mark -
 #pragma mark Event Store Accessors
 
-- (NSDictionary *)buildAndSaveEvent:(NSDictionary *)details
+- (NSDictionary *)buildAndSaveEvent:(NSDictionary *)details options:(NSDictionary *)options
 {
     if ([[self authorizationStatusForEventStore] isEqualToString:@"granted"]) {
         return @{@"success": [NSNull null], @"error": @"unauthorized to access calendar"};
@@ -148,6 +148,8 @@ RCT_EXPORT_MODULE()
         EKRecurrenceRule *rule = [self createRecurrenceRule:frequency interval:interval occurrence:occurrence endDate:endDate];
         if (rule) {
             calendarEvent.recurrenceRules = [NSArray arrayWithObject:rule];
+        } else {
+            calendarEvent.recurrenceRules = nil;
         }
     }
 
@@ -161,15 +163,21 @@ RCT_EXPORT_MODULE()
         calendarEvent.URL = URL;
     }
 
-    return [self saveEvent:calendarEvent];
+    return [self saveEvent:calendarEvent options:options];
 }
 
-- (NSDictionary *)saveEvent:(EKEvent *)calendarEvent
+- (NSDictionary *)saveEvent:(EKEvent *)calendarEvent options:(NSDictionary *)options
 {
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:@{@"success": [NSNull null], @"error": [NSNull null]}];
+    Boolean spanEvents = [RCTConvert BOOL:options[@"exception"]];
+    EKSpan eventSpan = EKSpanThisEvent;
+
+    if (spanEvents) {
+        eventSpan = EKSpanFutureEvents;
+    }
 
     NSError *error = nil;
-    BOOL success = [self.eventStore saveEvent:calendarEvent span:EKSpanFutureEvents commit:YES error:&error];
+    BOOL success = [self.eventStore saveEvent:calendarEvent span:eventSpan commit:YES error:&error];
 
     if (!success) {
         [response setValue:[error.userInfo valueForKey:@"NSLocalizedDescription"] forKey:@"error"];
@@ -266,7 +274,7 @@ RCT_EXPORT_MODULE()
     return [calendarEventAlarms copy];
 }
 
-- (void)addCalendarEventAlarm:(NSString *)eventId alarm:(NSDictionary *)alarm
+- (void)addCalendarEventAlarm:(NSString *)eventId alarm:(NSDictionary *)alarm options:(NSDictionary *)options
 {
     if (!self.isAccessToEventStoreGranted) {
         return;
@@ -276,10 +284,10 @@ RCT_EXPORT_MODULE()
     EKAlarm *calendarEventAlarm = [self createCalendarEventAlarm:alarm];
     [calendarEvent addAlarm:calendarEventAlarm];
 
-    [self saveEvent:calendarEvent];
+    [self saveEvent:calendarEvent options:options];
 }
 
-- (void)addCalendarEventAlarms:(NSString *)eventId alarms:(NSArray *)alarms
+- (void)addCalendarEventAlarms:(NSString *)eventId alarms:(NSArray *)alarms options:(NSDictionary *)options
 {
     if (!self.isAccessToEventStoreGranted) {
         return;
@@ -288,7 +296,7 @@ RCT_EXPORT_MODULE()
     EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
     calendarEvent.alarms = [self createCalendarEventAlarms:alarms];
 
-    [self saveEvent:calendarEvent];
+    [self saveEvent:calendarEvent options:options];
 }
 
 #pragma mark -
@@ -296,7 +304,7 @@ RCT_EXPORT_MODULE()
 
 -(EKRecurrenceFrequency)frequencyMatchingName:(NSString *)name
 {
-    EKRecurrenceFrequency recurrence = EKRecurrenceFrequencyDaily;
+    EKRecurrenceFrequency recurrence = nil;
 
     if ([name isEqualToString:@"weekly"]) {
         recurrence = EKRecurrenceFrequencyWeekly;
@@ -304,6 +312,8 @@ RCT_EXPORT_MODULE()
         recurrence = EKRecurrenceFrequencyMonthly;
     } else if ([name isEqualToString:@"yearly"]) {
         recurrence = EKRecurrenceFrequencyYearly;
+    } else if ([name isEqualToString:@"daily"]) {
+        recurrence = EKRecurrenceFrequencyDaily;
     }
     return recurrence;
 }
@@ -343,8 +353,10 @@ RCT_EXPORT_MODULE()
             return @"monthly";
         case EKRecurrenceFrequencyYearly:
             return @"yearly";
-        default:
+        case EKRecurrenceFrequencyDaily:
             return @"daily";
+        default:
+            return @"";
     }
 }
 
@@ -668,12 +680,16 @@ RCT_EXPORT_METHOD(findEventById:(NSString *)eventId resolver:(RCTPromiseResolveB
     }
 }
 
-RCT_EXPORT_METHOD(saveEvent:(NSString *)title details:(NSDictionary *)details resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(saveEvent:(NSString *)title
+                  settings:(NSDictionary *)settings
+                  options:(NSDictionary *)options
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSMutableDictionary *options = [NSMutableDictionary dictionaryWithDictionary:details];
-    [options setValue:title forKey:_title];
+    NSMutableDictionary *details = [NSMutableDictionary dictionaryWithDictionary:settings];
+    [details setValue:title forKey:_title];
 
-    NSDictionary *response = [self buildAndSaveEvent:options];
+    NSDictionary *response = [self buildAndSaveEvent:details options:options];
 
     if ([response valueForKey:@"success"] != [NSNull null]) {
         resolve([response valueForKey:@"success"]);
