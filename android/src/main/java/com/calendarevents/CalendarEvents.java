@@ -353,6 +353,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             eventValues.put(CalendarContract.Events.AVAILABILITY, availabilityConstantMatchingString(details.getString("availability")));
         }
 
+
         if (details.hasKey("id")) {
             Uri updateUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, Integer.parseInt(details.getString("id")));
             cr.update(updateUri, eventValues, null, null);
@@ -360,6 +361,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
             if (details.hasKey("alarms")) {
                 createRemindersForEvent(cr, Integer.parseInt(details.getString("id")), details.getArray("alarms"));
+            }
+
+            if (details.hasKey("attendees")) {
+                createAttendeesForEvent(cr, Integer.parseInt(details.getString("id")), details.getArray("attendees"));
             }
 
         } else {
@@ -384,6 +389,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 if (details.hasKey("alarms")) {
                     createRemindersForEvent(cr, eventID, details.getArray("alarms"));
                 }
+
+                if (details.hasKey("attendees")) {
+                    createAttendeesForEvent(cr, eventID, details.getArray("attendees"));
+                }
                 event.putInt("eventID", eventID);
             }
         }
@@ -407,6 +416,37 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
     //endregion
 
+    //region Attendees
+    private void createAttendeesForEvent(ContentResolver resolver, int eventID, ReadableArray attendees) {
+        Cursor cursor = CalendarContract.Attendees.query(resolver, eventID, new String[] {
+            CalendarContract.Attendees._ID
+        });
+
+        while (cursor.moveToNext()) {
+            long attendeeId = cursor.getLong(0);
+            Uri attendeeUri = ContentUris.withAppendedId(CalendarContract.Attendees.CONTENT_URI, attendeeId);
+            resolver.delete(attendeeUri, null, null);
+        }
+        cursor.close();
+
+        for (int i = 0; i < attendees.size(); i++) {
+            ReadableMap attendee = attendees.getMap(i);
+            ReadableType type = attendee.getType("url");
+            ReadableType fNameType = attendee.getType("firstName");
+            if (type == ReadableType.String) {
+                ContentValues attendeeValues = new ContentValues();
+                attendeeValues.put(CalendarContract.Attendees.EVENT_ID, eventID);
+                attendeeValues.put(CalendarContract.Attendees.ATTENDEE_EMAIL, attendee.getString("url"));
+                attendeeValues.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ATTENDEE);
+
+                if (fNameType == ReadableType.String) {
+                    attendeeValues.put(CalendarContract.Attendees.ATTENDEE_NAME, attendee.getString("firstName"));
+                }
+                resolver.insert(CalendarContract.Attendees.CONTENT_URI, attendeeValues);
+            }
+        }
+    }
+    //endregion
 
     //region Reminders
     private void createRemindersForEvent(ContentResolver resolver, int eventID, ReadableArray reminders) {
