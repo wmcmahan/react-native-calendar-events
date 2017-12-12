@@ -135,7 +135,6 @@ RCT_EXPORT_MODULE()
     }
 
     if (attendees) {
-        NSLog(@"%@",attendees);
         [calendarEvent setValue:[self createCalendarEventAttendees:attendees] forKey:_attendees];
     }
 
