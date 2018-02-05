@@ -99,11 +99,13 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
         Uri uri = CalendarContract.Calendars.CONTENT_URI;
 
+        String IS_PRIMARY = CalendarContract.Calendars.IS_PRIMARY == null ? "0" : CalendarContract.Calendars.IS_PRIMARY;
+
         cursor = cr.query(uri, new String[]{
                 CalendarContract.Calendars._ID,
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
                 CalendarContract.Calendars.ACCOUNT_NAME,
-                CalendarContract.Calendars.IS_PRIMARY,
+                IS_PRIMARY,
                 CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
                 CalendarContract.Calendars.ALLOWED_AVAILABILITY
         }, null, null, null);
@@ -220,11 +222,13 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         ContentResolver cr = reactContext.getContentResolver();
         Uri uri = ContentUris.withAppendedId(CalendarContract.Calendars.CONTENT_URI, Integer.parseInt(calendarID));
 
+        String IS_PRIMARY = CalendarContract.Calendars.IS_PRIMARY == null ? "0" : CalendarContract.Calendars.IS_PRIMARY;
+            
         cursor = cr.query(uri, new String[]{
                 CalendarContract.Calendars._ID,
                 CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
                 CalendarContract.Calendars.ACCOUNT_NAME,
-                CalendarContract.Calendars.IS_PRIMARY,
+                IS_PRIMARY,
                 CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
                 CalendarContract.Calendars.ALLOWED_AVAILABILITY
         }, null, null, null);
