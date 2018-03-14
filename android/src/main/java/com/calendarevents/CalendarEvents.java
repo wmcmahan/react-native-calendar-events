@@ -430,7 +430,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             ReadableMap reminder = reminders.getMap(i);
             ReadableType type = reminder.getType("date");
             if (type == ReadableType.Number) {
-                int minutes = reminder.getInt("date");
+                int minutes = Math.abs(reminder.getInt("date"));
                 ContentValues reminderValues = new ContentValues();
 
                 reminderValues.put(CalendarContract.Reminders.EVENT_ID, eventID);
