@@ -5,8 +5,13 @@ import { NativeModules } from 'react-native'
 var CalendarEvents = NativeModules.CalendarEvents
 
 export default {
+
   async authorizationStatus () {
     return CalendarEvents.getCalendarPermissions()
+  },
+
+  async authorizeEventStore () {
+    return CalendarEvents.requestCalendarPermissions()
   },
 
   async fetchAllEvents (startDate, endDate, calendars = []) {
@@ -21,15 +26,11 @@ export default {
     return CalendarEvents.findById(id);
   },
 
-  async authorizeEventStore () {
-    return CalendarEvents.requestCalendarPermissions()
-  },
-
-  async saveEvent (title, details, options = {exception: false, sync: false}) {
+  async saveEvent (title, details, options = {sync: false}) {
     return CalendarEvents.saveEvent(title, details, options)
   },
 
-  async removeEvent (id, options = {exception: false, sync: false}) {
+  async removeEvent (id, options = {sync: false}) {
     return CalendarEvents.removeEvent(id, options)
   },
 

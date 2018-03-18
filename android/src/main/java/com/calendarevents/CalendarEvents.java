@@ -428,7 +428,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             if (eventInstance != null) {
                 ReadableMap eventCalendar = eventInstance.getMap("calendar");
 
-                if (!details.hasKey("exceptionDate")) {
+                if (!options.hasKey("exceptionDate")) {
                     Uri updateUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventID);
 
                     if (options.hasKey("sync") && options.getBoolean("sync")) {
@@ -439,14 +439,14 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
                 } else {
                     Calendar exceptionStart = Calendar.getInstance();
-                    ReadableType type = details.getType("exceptionDate");
+                    ReadableType type = options.getType("exceptionDate");
 
                     try {
                         if (type == ReadableType.String) {
-                            exceptionStart.setTime(sdf.parse(details.getString("exceptionDate")));
+                            exceptionStart.setTime(sdf.parse(options.getString("exceptionDate")));
                             eventValues.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, exceptionStart.getTimeInMillis());
                         } else if (type == ReadableType.Number) {
-                            eventValues.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, (long) details.getDouble("exceptionDate"));
+                            eventValues.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, (long) options.getDouble("exceptionDate"));
                         }
                     } catch (ParseException e) {
                         e.printStackTrace();

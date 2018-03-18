@@ -59,8 +59,8 @@ import RNCalendarEvents from 'react-native-calendar-events';
 ### Options:
 | Property        | Type            | Description |  iOS | Android |
 | :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
-| **exceptionDate**   | Date           | The start date of a recurring event's exception instance. Used for updating single event in a recurring series | | ✓ |
-| **futureEvents**   | Bool            | If `true` the update will span all recurring events. If `false` it only update the single instance.  | ✓ |  |
+| **exceptionDate**   | Date           | The start date of a recurring event's exception instance. Used for updating single event in a recurring series | ✓ | ✓ |
+| **futureEvents**   | Bool            | If `true` the update will span all future events. If `false` it only update the single instance.  | ✓ |  |
 
 <br/>
 
@@ -100,7 +100,7 @@ Returns a promise with fulfilled found events.
 RNCalendarEvents.findEventById(id)
 ```
 
-Parameters: 
+Arguments: 
  - id: String - The events unique id.
 
 Returns: **Promise**  
@@ -117,7 +117,7 @@ Returns a promise with fulfilled found events.
 RNCalendarEvents.fetchAllEvents(startDate, endDate, calendars)
 ```
 
-Parameters: 
+Arguments: 
  - startDate: Date - The start date of the range of events fetched.
  - endDate: Date - The end date of the range of events fetched.
  - calendars: Array - List of calendar id strings to specify calendar events. Defaults to all calendars if empty.
@@ -135,7 +135,7 @@ Creates calendar event.
 RNCalendarEvents.saveEvent(title, details, options);
 ```
 
-Parameters: 
+Arguments: 
  - title: String - The title of the event.
  - [details](#event-properties): Object - The event's details.
  - [options](#options): Object - Options specific to the saved event.
@@ -153,7 +153,7 @@ Give the unique calendar event **id** to update an existing calendar event.
 RNCalendarEvents.saveEvent(title, {id: 'FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE'})
 ```
 
-Parameters: 
+Arguments: 
  - title: String - The title of the event.
  - [details](#event-properties): Object - The event's details.
  - [options](#options): Object - Options specific to the saved event.
@@ -246,7 +246,7 @@ Removes calendar event.
 RNCalendarEvents.removeEvent(id, options)
 ```
 
-Parameters:
+Arguments:
  - id: String - The id of the event to remove.
  - [options](#options): Object - Options specific to event removal.
 
@@ -264,7 +264,7 @@ Removes future (recurring) calendar events.
 RNCalendarEvents.removeFutureEvents(id)
 ```
 
-Parameters:
+Arguments:
  - id: String - The id of the event to remove.
 
 Returns: **Promise** 
