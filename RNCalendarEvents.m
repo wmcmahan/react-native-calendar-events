@@ -304,17 +304,6 @@ RCT_EXPORT_MODULE()
     [self saveEvent:calendarEvent options:options];
 }
 
-// - (void)addCalendarEventAttendees:(NSSTring *)eventId attendees:(NSArray *)attendees 
-// {
-//     if (!self.isAccessToEventStoreGranted) {
-//         return;
-//     }
-
-//     EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
-//     calenderEvent.attendees = [self createCalendarEventAttendees:attendees];
-//     [self saveEvent:calendarEvent];
-// }
-
 #pragma mark -
 #pragma mark RecurrenceRules
 
