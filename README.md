@@ -1,70 +1,75 @@
 # React Native Calendar Events
-React Native Module for accessing and saving events to iOS and Android calendars.
 
-## Install
+[![npm](https://img.shields.io/npm/v/react-native-calendar-events.svg?style=flat-square)](https://www.npmjs.com/package/react-native-calendar-events)
+[![npm](https://img.shields.io/npm/dm/react-native-calendar-events.svg?style=flat-square)](https://www.npmjs.com/package/react-native-calendar-events)
+[![npm](https://img.shields.io/npm/l/react-native-calendar-events.svg?style=flat-square)](https://github.com/wmcmahan/react-native-calendar-events/blob/master/LICENSE.md)
+
+A React Native module to help access and save events to iOS and Android calendars.
+
+## Table of contents
+- [**Getting started**](#getting-started)
+  - [Install](#step-1---install)
+  - [Link the library](#step-2---link-the-library)
+  - [OS specific setup](#step-3---os-specific-setup)
+- [**API methods**](#api)
+  - [authorizationStatus](#authorizationstatus)
+  - [authorizeEventStore](#authorizeeventstore)
+  - [findCalendars](#findcalendars)
+  - [findEventById](#findeventbyid)
+  - [fetchAllEvents](#fetchallevents)
+  - [saveEvent](#saveevent)
+  - [removeEvent](#removeevent)
+- [**Event fields**](#event-fields)
+  - [Recurrence rules](#recurrence-rule)
+  - [Alarm](#alarms)
+  - [Alarm structuredLocation](#alarm-structuredlocation)
+  - [Options](#options)
+- [**Wiki**](https://github.com/wmcmahan/react-native-calendar-events/wiki)
+
+
+## Getting started
+This package assumes that you already have a React Native project or are familiar with React Native. If not, checkout the official documentation for more details about getting started with [React Native](https://facebook.github.io/react-native/docs/getting-started.html).
+<br/>
+
+The following is **required** for the package to work properly.
+
+### Step 1. - Install
+Install the `react-native-calendar-events` library with native code.
+
 ```
 npm install --save react-native-calendar-events
 ```
 
-## Link
+### Step 2. - Link the library
+Since this package contains native code, you will need to include the code as a library. The React Native documentation on ["Linking Libraries"](https://facebook.github.io/react-native/docs/linking-libraries-ios.html) also provides some details for this process.
 
-Check with React Native [documention on linking libraries](https://facebook.github.io/react-native/docs/linking-libraries-ios.html) for more details.
-
++ **Automatic linking**
 ```
 react-native link
 ```
-## OS instructions
-- [iOS setup](https://github.com/wmcmahan/react-native-calendar-events/wiki/iOS-setup) 
-- [Android setup](https://github.com/wmcmahan/react-native-calendar-events/wiki/Android-setup) 
 
-## Usage
++ **Manual linking**<br/>
+Sometimes "automatic linking" is not sufficient or is not properly including the library. Fortunately, the React Native docs on ["Manual Linking"](https://facebook.github.io/react-native/docs/linking-libraries-ios.html#manual-linking) serves a helpful guide (with pictures) in the process.
+
+### Step 3. - OS specific setup
+
+- [**iOS specific instructions**](https://github.com/wmcmahan/react-native-calendar-events/wiki/iOS-setup)<br/> iOS specific requirements, such as mandatory privacy usage descriptions and including the `EventKit.framework`.
+
+- [**Android specific instructions**](https://github.com/wmcmahan/react-native-calendar-events/wiki/Android-setup)<br/> Android specific requirements, such as mandatory application permissions.
+
+<br/>
+
+## API
+The following API allows for interacting with both iOS and Android device calendars. See the full list of available [event fields](#event-fields).
+
 
 ```javascript
 import RNCalendarEvents from 'react-native-calendar-events';
 ```
 
-### Event Properties
-
-| Property        | Type            | Description | iOS | Android |
-| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
-| **id***  | String  | Unique id for the calendar event. | ✓ | ✓ |
-| **calendarId****   | String           | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar. | ✓ | ✓ |
-| **title**           | String           | The title for the calendar event. | ✓ | ✓ |
-| **startDate**       | Date             | The start date of the calendar event in ISO format. | ✓ | ✓ |
-| **endDate**         | Date             | The end date of the calendar event in ISO format. | ✓ | ✓ |
-| **allDay**          | Bool             | Indicates whether the event is an all-day event. | ✓ | ✓ |
-| **recurrence**      | String           | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. | ✓ | ✓ |
-| [**recurrenceRule**](#recurrence-rule-properties) **  | Object           | The events recurrence settings. | ✓ | ✓ |
-| **occurrenceDate***  | Date | The original occurrence date of an event if it is part of a recurring series. | ✓ |  |
-| **isDetached**      | Bool        | Indicates whether an event is a detached instance of a repeating event. | ✓ |  |
-| **url**             | String           | The url associated with the calendar event. | ✓ | ✓ |
-| **location**        | String           | The location associated with the calendar event. | ✓ | ✓ |
-| **notes**           | String           | The notes associated with the calendar event. | ✓ |  |
-| **description**     | String           | The description associated with the calendar event. |  | ✓ |
-| [**alarms**](#create-calendar-event-with-alarms)          | Array            | The alarms associated with the calendar event, as an array of alarm objects. | ✓ | ✓ |
-| **calendar***    | Object           | The calendar containing the event.| ✓ | ✓ |
-
-<p>* <i>Read only</i>, ** <i>Write only</i> </p>
-
-### Recurrence Rule properties:
-| Property        | Type            | Description |  iOS | Android |
-| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
-| **frequency**     | String           | Event recurring frequency `daily`, `weekly`, `monthly`, `yearly` | ✓ | ✓ |
-| **endDate**       | Date             | Event recurring end date. This overrides occurrence | ✓ | ✓ |
-| **occurrence**    | Number           | Number of event occurrences. | ✓ | ✓ |
-| **interval**      | Number           | The interval between events of this recurrence. | ✓ | ✓ |
-
-<p>* <i>Read only</i>, ** <i>Write only</i> </p>
-
-### Options:
-| Property        | Type            | Description |  iOS | Android |
-| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
-| **exceptionDate**   | Date           | The start date of a recurring event's exception instance. Used for updating single event in a recurring series | ✓ | ✓ |
-| **futureEvents**   | Bool            | If `true` the update will span all future events. If `false` it only update the single instance.  | ✓ |  |
-
 <br/>
 
-## authorizationStatus
+### authorizationStatus
 Get calendar authorization status.
 
 ```javascript
@@ -77,7 +82,7 @@ Returns: **Promise**
 
 <br/>
 
-## authorizeEventStore
+### authorizeEventStore
 Request calendar authorization. Authorization must be granted before accessing calendar events.
 
 > Android note: This is only necessary for targeted SDK of 23 and higher.
@@ -92,7 +97,21 @@ Returns: **Promise**
 
 <br/>
 
-## findEventById
+
+### findCalendars
+Finds all the calendars on the device.
+
+```javascript
+RNCalendarEvents.findCalendars()
+```
+
+Returns: **Promise**
+ - fulfilled: Array - A list of known calendars on the device
+ - rejected: Error
+
+<br/>
+
+### findEventById
 Find calendar event by id.
 Returns a promise with fulfilled found events.
 
@@ -109,7 +128,7 @@ Returns: **Promise**
 
 <br/>
 
-## fetchAllEvents
+### fetchAllEvents
 Fetch all calendar events.
 Returns a promise with fulfilled found events.
 
@@ -128,16 +147,16 @@ Returns: **Promise**
 
 <br/>
 
-## saveEvent
-Creates calendar event.
+### saveEvent
+Creates or updates a calendar event. - [wiki guide](https://github.com/wmcmahan/react-native-calendar-events/wiki/Creating-basic-event)
 
-```
+```javascript
 RNCalendarEvents.saveEvent(title, details, options);
 ```
 
 Arguments: 
  - title: String - The title of the event.
- - [details](#event-properties): Object - The event's details.
+ - [details](#event-fields): Object - The event's details.
  - [options](#options): Object - Options specific to the saved event.
 
 Returns: **Promise** 
@@ -146,100 +165,15 @@ Returns: **Promise**
 
 <br/>
 
-## Update Event
-Give the unique calendar event **id** to update an existing calendar event.
+To update an event, the event `id` must be defined. - [wiki guide](https://github.com/wmcmahan/react-native-calendar-events/wiki/Updating-events)
 
-```
+```javascript
 RNCalendarEvents.saveEvent(title, {id: 'FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE'})
 ```
 
-Arguments: 
- - title: String - The title of the event.
- - [details](#event-properties): Object - The event's details.
- - [options](#options): Object - Options specific to the saved event.
-
-Returns: **Promise** 
- - fulfilled: String - Updated event's ID.
- - rejected: Error
-
 <br/>
 
-## Create calendar event with alarms
-
-### Alarm options:
-
-| Property        | Type            | Description | iOS | Android |
-| :--------------- | :------------------| :----------- | :-----------: | :-----------: | 
-| **date**           | Date or Number    | If a Date is given, an alarm will be set with an absolute date. If a Number is given, an alarm will be set with a relative offset (in minutes) from the start date. | ✓ | ✓ |
-| **structuredLocation** | Object             | The location to trigger an alarm. | ✓ |  |
-
-### Alarm structuredLocation properties:
-
-| Property        | Type            | Description | iOS | Android |
-| :--------------- | :------------------| :----------- | :-----------: | :-----------: |
-| **title**           | String  | The title of the location.| ✓ |  |
-| **proximity** | String             | A value indicating how a location-based alarm is triggered. Possible values: `enter`, `leave`, `none`. | ✓ |  |
-| **radius** | Number             | A minimum distance from the core location that would trigger the calendar event's alarm. | ✓ |  |
-| **coords** | Object             | The geolocation coordinates, as an object with latitude and longitude properties | ✓ |  |
-
-Example with date:
-
-```javascript
-RNCalendarEvents.saveEvent('title', {
-  location: 'location',
-  notes: 'notes',
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z',
-  alarms: [{
-    date: -1 // or absolute date - iOS Only
-  }]
-})
-
-```
-Example with structuredLocation (iOS Only):
-
-```javascript
-RNCalendarEvents.saveEvent('title', {
-  location: 'location',
-  notes: 'notes',
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z',
-  alarms: [{
-    structuredLocation: {
-      title: 'title',
-      proximity: 'enter',
-      radius: 500,
-      coords: {
-        latitude: 30.0000,
-        longitude: 97.0000
-      }
-    }
-  }]
-})
-```
-
-Example with recurrence:
-
-```javascript
-RNCalendarEvents.saveEvent('title', {
-  location: 'location',
-  notes: 'notes',
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-29T19:26:00.000Z',
-  alarms: [{
-    date: -1 // or absolute date - iOS Only
-  }],
-  recurrenceRule: {
-    frequency: 'daily'
-    interval: 2,
-    endDate: '2017-08-29T19:26:00.000Z'
-  }
-})
-```
-
-<br/>
-
-## removeEvent
+### removeEvent
 Removes calendar event.
 
 ```javascript
@@ -254,34 +188,84 @@ Returns: **Promise**
  - fulfilled: Bool - Successful
  - rejected: Error
 
+<br/>
+
+## Event fields
+
+| Property        | Type            | Description | iOS | Android |
+| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
+| **id***  | String  | Unique id for the calendar event. | ✓ | ✓ |
+| **calendarId****   | String           | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar. | ✓ | ✓ |
+| **title**           | String           | The title for the calendar event. | ✓ | ✓ |
+| **startDate**       | Date             | The start date of the calendar event in ISO format. | ✓ | ✓ |
+| **endDate**         | Date             | The end date of the calendar event in ISO format. | ✓ | ✓ |
+| **allDay**          | Bool             | Indicates whether the event is an all-day event. | ✓ | ✓ |
+| **recurrence**      | String           | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. | ✓ | ✓ |
+| [**recurrenceRule**](#recurrence-rule) **  | Object           | The events recurrence settings. | ✓ | ✓ |
+| **occurrenceDate***  | Date | The original occurrence date of an event if it is part of a recurring series. | ✓ |  |
+| **isDetached**      | Bool        | Indicates whether an event is a detached instance of a repeating event. | ✓ |  |
+| **url**             | String           | The url associated with the calendar event. | ✓ | ✓ |
+| **location**        | String           | The location associated with the calendar event. | ✓ | ✓ |
+| **notes**           | String           | The notes associated with the calendar event. | ✓ |  |
+| **description**     | String           | The description associated with the calendar event. |  | ✓ |
+| [**alarms**](#alarms)          | Array            | The alarms associated with the calendar event, as an array of alarm objects. | ✓ | ✓ |
+| **calendar***    | Object           | The calendar containing the event.| ✓ | ✓ |
+
+
+### Recurrence rule
+| Property        | Type            | Description |  iOS | Android |
+| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
+| **frequency**     | String           | Event recurring frequency. Allowed values are `daily`, `weekly`, `monthly`, `yearly`. | ✓ | ✓ |
+| **endDate**       | Date             | Event recurring end date. This overrides occurrence. | ✓ | ✓ |
+| **occurrence**    | Number           | Number of event occurrences. | ✓ | ✓ |
+| **interval**      | Number           | The interval between events of this recurrence. | ✓ | ✓ |
+
+
+### Alarms
+
+| Property        | Type            | Description | iOS | Android |
+| :--------------- | :------------------| :----------- | :-----------: | :-----------: | 
+| **date**           | Date or Number    | If a Date is given, an alarm will be set with an absolute date. If a Number is given, an alarm will be set with a relative offset (in minutes) from the start date. | ✓ | ✓ |
+| [**structuredLocation**](#alarm-structuredlocation) | Object             | The location to trigger an alarm. | ✓ |  |
+
+
+### Alarm structuredLocation
+
+| Property        | Type            | Description | iOS | Android |
+| :--------------- | :------------------| :----------- | :-----------: | :-----------: |
+| **title**           | String  | The title of the location.| ✓ |  |
+| **proximity** | String             | A value indicating how a location-based alarm is triggered. Possible values: `enter`, `leave`, `none`. | ✓ |  |
+| **radius** | Number             | A minimum distance from the core location that would trigger the calendar event's alarm. | ✓ |  |
+| **coords** | Object             | The geolocation coordinates, as an object with latitude and longitude properties | ✓ |  |
+
+
+### Options
+| Property        | Type            | Description |  iOS | Android |
+| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
+| **exceptionDate**   | Date           | The start date of a recurring event's exception instance. Used for updating single event in a recurring series | ✓ | ✓ |
+| **futureEvents**   | Bool            | If `true` the update will span all future events. If `false` it only update the single instance.  | ✓ |  |
+
+<p>* <i>Read only</i>, ** <i>Write only</i> </p>
 
 <br/>
 
-## removeFutureEvents (iOS Only)
-Removes future (recurring) calendar events.
+## Wiki
 
-```javascript
-RNCalendarEvents.removeFutureEvents(id)
-```
+- [Create basic event](https://github.com/wmcmahan/react-native-calendar-events/wiki/Creating-basic-event)
+- [Create recurring event](https://github.com/wmcmahan/react-native-calendar-events/wiki/Create-recurring-event)
+- [Updating events](https://github.com/wmcmahan/react-native-calendar-events/wiki/Updating-events)
+- [Adding alarms](https://github.com/wmcmahan/react-native-calendar-events/wiki/Event-alarms)
 
-Arguments:
- - id: String - The id of the event to remove.
+## Authors
 
-Returns: **Promise** 
- - fulfilled: Bool - Successful
- - rejected: Error
+* **Will McMahan** - Initial code - [github.com/wmcmahan](https://github.com/wmcmahan)
 
+See also the list of [contributors](https://github.com/wmcmahan/react-native-calendar-events/contributors) who participated in this project.
 
-<br/>
+## License
 
-## findCalendars
-Finds all the calendars on the device.
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/wmcmahan/react-native-calendar-events/blob/master/LICENSE.md) file for details
 
-```javascript
-RNCalendarEvents.findCalendars()
-```
+## Acknowledgments
 
-Returns: **Promise**
- - fulfilled: Array - A list of known calendars on the device
- - rejected: Error
-
+* Big thanks to all who have contributed, raised an issue or simply find use in this project. Cheers!
