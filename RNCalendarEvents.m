@@ -515,10 +515,24 @@ RCT_EXPORT_MODULE()
             NSString *email = [descriptionData valueForKey:@"email"];
             NSString *phone = [descriptionData valueForKey:@"phone"];
             
-            [formattedAttendee setValue:name forKey:@"name"];
-            [formattedAttendee setValue:email forKey:@"email"];
-            [formattedAttendee setValue:phone forKey:@"phone"];
-
+            if(email && ![email isEqualToString:@"(null)"]) {
+                [formattedAttendee setValue:email forKey:@"email"];
+            }
+            else {
+                [formattedAttendee setValue:@"" forKey:@"email"];
+            }
+            if(phone && ![phone isEqualToString:@"(null)"]) {
+                [formattedAttendee setValue:phone forKey:@"phone"];
+            }
+            else {
+                [formattedAttendee setValue:@"" forKey:@"phone"];
+            }
+            if(name && ![name isEqualToString:@"(null)"]) {
+                [formattedAttendee setValue:name forKey:@"name"];
+            }
+            else {
+                [formattedAttendee setValue:@"" forKey:@"name"];
+            }
             [attendees addObject:formattedAttendee];
         }
         [formedCalendarEvent setValue:attendees forKey:_attendees];
