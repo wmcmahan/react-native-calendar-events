@@ -781,11 +781,13 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     private WritableNativeArray serializeEvents(Cursor cursor) {
         WritableNativeArray results = new WritableNativeArray();
 
-        while (cursor.moveToNext()) {
-            results.pushMap(serializeEvent(cursor));
-        }
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                results.pushMap(serializeEvent(cursor));
+            }
 
-        cursor.close();
+            cursor.close();
+        }
 
         return results;
     }
