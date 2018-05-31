@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.Manifest;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
@@ -141,8 +142,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return result;
     }
 
-    private WritableNativeMap findAttendeesByEventId(String eventID) {
-        WritableNativeMap result;
+    private WritableNativeArray findAttendeesByEventId(String eventID) {
+        WritableNativeArray result;
         Cursor cursor;
         ContentResolver cr = reactContext.getContentResolver();
         String query = "(" + CalendarContract.Attendees.EVENT_ID + " = ?)";
@@ -157,11 +158,13 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Attendees.ATTENDEE_RELATIONSHIP,
                 CalendarContract.Attendees.ATTENDEE_STATUS
         }, query, args, null);
+
         if (cursor != null && cursor.moveToFirst()) {
             result = serializeAttendeeCalendar(cursor);
             cursor.close();
         } else {
-            result = null;
+            WritableNativeArray emptyAttendees = new WritableNativeArray();
+            result = emptyAttendees;
         }
 
         return result;
@@ -886,7 +889,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         event.putBoolean("allDay", allDay);
         event.putString("location", cursor.getString(6));
         event.putString("availability", availabilityStringMatchingConstant(cursor.getInt(9)));
-        event.putMap("attendees", findAttendeesByEventId(cursor.getString(cursor.getColumnIndex("event_id"))));
+        event.putArray("attendees", (WritableArray) findAttendeesByEventId(cursor.getString(cursor.getColumnIndex("event_id"))));
 
         if (cursor.getInt(10) > 0) {
             event.putArray("alarms", findReminderByEventId(cursor.getString(0), Long.parseLong(cursor.getString(3))));
@@ -946,14 +949,21 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return calendar;
     }
 
-    private WritableNativeMap serializeAttendeeCalendar(Cursor cursor) {
+    private WritableNativeArray serializeAttendeeCalendar(Cursor cursor) {
 
-        WritableNativeMap attendee = new WritableNativeMap();
+        WritableNativeArray results = new WritableNativeArray();
 
-        attendee.putString("name", cursor.getString( 2));
-        attendee.putString("email", cursor.getString(3));
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
 
-        return attendee;
+            WritableNativeMap attendee = new WritableNativeMap();
+
+            attendee.putString("name", cursor.getString( 2));
+            attendee.putString("email", cursor.getString(3));
+
+            results.pushMap(attendee);
+        }
+
+        return results;
     }
     // endregion
 
