@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.Manifest;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
@@ -141,6 +142,34 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return result;
     }
 
+    private WritableNativeArray findAttendeesByEventId(String eventID) {
+        WritableNativeArray result;
+        Cursor cursor;
+        ContentResolver cr = reactContext.getContentResolver();
+        String query = "(" + CalendarContract.Attendees.EVENT_ID + " = ?)";
+        String[] args = new String[]{eventID};
+
+        cursor = cr.query(CalendarContract.Attendees.CONTENT_URI, new String[]{
+                CalendarContract.Attendees._ID,
+                CalendarContract.Attendees.EVENT_ID,
+                CalendarContract.Attendees.ATTENDEE_NAME,
+                CalendarContract.Attendees.ATTENDEE_EMAIL,
+                CalendarContract.Attendees.ATTENDEE_TYPE,
+                CalendarContract.Attendees.ATTENDEE_RELATIONSHIP,
+                CalendarContract.Attendees.ATTENDEE_STATUS
+        }, query, args, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            result = serializeAttendeeCalendar(cursor);
+            cursor.close();
+        } else {
+            WritableNativeArray emptyAttendees = new WritableNativeArray();
+            result = emptyAttendees;
+        }
+
+        return result;
+    }
+
     //region Event Accessors
     private WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars) {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
@@ -209,7 +238,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Instances.ORIGINAL_ID,
                 CalendarContract.Instances.EVENT_ID,
                 CalendarContract.Instances.DURATION,
-                CalendarContract.Instances.ORIGINAL_SYNC_ID
+                CalendarContract.Instances.ORIGINAL_SYNC_ID,
         }, selection, null, null);
 
         return serializeEvents(cursor);
@@ -780,7 +809,6 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     // region Serialize Events
     private WritableNativeArray serializeEvents(Cursor cursor) {
         WritableNativeArray results = new WritableNativeArray();
-
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 results.pushMap(serializeEvent(cursor));
@@ -793,7 +821,6 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     private WritableNativeMap serializeEvent(Cursor cursor) {
-
         WritableNativeMap event = new WritableNativeMap();
 
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
@@ -862,6 +889,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         event.putBoolean("allDay", allDay);
         event.putString("location", cursor.getString(6));
         event.putString("availability", availabilityStringMatchingConstant(cursor.getInt(9)));
+        event.putArray("attendees", (WritableArray) findAttendeesByEventId(cursor.getString(cursor.getColumnIndex("event_id"))));
 
         if (cursor.getInt(10) > 0) {
             event.putArray("alarms", findReminderByEventId(cursor.getString(0), Long.parseLong(cursor.getString(3))));
@@ -919,6 +947,23 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
 
         return calendar;
+    }
+
+    private WritableNativeArray serializeAttendeeCalendar(Cursor cursor) {
+
+        WritableNativeArray results = new WritableNativeArray();
+
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+
+            WritableNativeMap attendee = new WritableNativeMap();
+
+            attendee.putString("name", cursor.getString( 2));
+            attendee.putString("email", cursor.getString(3));
+
+            results.pushMap(attendee);
+        }
+
+        return results;
     }
     // endregion
 
