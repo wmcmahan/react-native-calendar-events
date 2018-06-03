@@ -209,7 +209,17 @@ Returns: **Promise**
 | **notes**           | String           | The notes associated with the calendar event. | ✓ |  |
 | **description**     | String           | The description associated with the calendar event. |  | ✓ |
 | [**alarms**](#alarms)          | Array            | The alarms associated with the calendar event, as an array of alarm objects. | ✓ | ✓ |
-| **calendar***    | Object           | The calendar containing the event.| ✓ | ✓ |
+| [**attendees**](#attendees)*   | Array            | The attendees of the event, including the organizer. | ✓ | ✓ |
+| **calendar***    | Object      | The calendar containing the event.| ✓ | ✓ |
+
+
+### Attendees
+
+| Property        | Type            | Description | iOS | Android |
+| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
+| **name**  | String  | The name of the attendee. | ✓ | ✓ |
+| **email***   | String           | The email address of the attendee. | ✓ | ✓ |
+| **phone***   | String           | The phone number of the attendee. | ✓ |  |
 
 
 ### Recurrence rule
