@@ -671,7 +671,7 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
         for (EKCalendar *calendar in calendars) {
             [eventCalendars addObject:@{
                                         @"id": calendar.calendarIdentifier,
-                                        @"title": calendar.title,
+                                        @"title": calendar.title ? calendar.title : @"",
                                         @"allowsModifications": @(calendar.allowsContentModifications),
                                         @"source": calendar.source.title,
                                         @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities]
