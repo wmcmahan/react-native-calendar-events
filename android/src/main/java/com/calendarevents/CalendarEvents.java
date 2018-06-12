@@ -889,7 +889,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         event.putBoolean("allDay", allDay);
         event.putString("location", cursor.getString(6));
         event.putString("availability", availabilityStringMatchingConstant(cursor.getInt(9)));
-        event.putArray("attendees", (WritableArray) findAttendeesByEventId(cursor.getString(cursor.getColumnIndex("event_id"))));
+        event.putArray("attendees", (WritableArray) findAttendeesByEventId(cursor.getString(0)));
 
         if (cursor.getInt(10) > 0) {
             event.putArray("alarms", findReminderByEventId(cursor.getString(0), Long.parseLong(cursor.getString(3))));

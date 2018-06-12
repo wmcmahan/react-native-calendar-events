@@ -473,7 +473,7 @@ RCT_EXPORT_MODULE()
     if (event.calendar) {
         [formedCalendarEvent setValue:@{
                                         @"id": event.calendar.calendarIdentifier,
-                                        @"title": event.calendar.title,
+                                        @"title": event.calendar.title ? event.calendar.title : @"",
                                         @"source": event.calendar.source.title,
                                         @"allowsModifications": @(event.calendar.allowsContentModifications),
                                         @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:event.calendar.supportedEventAvailabilities],
@@ -500,7 +500,7 @@ RCT_EXPORT_MODULE()
     if (event.attendees) {
         NSMutableArray *attendees = [[NSMutableArray alloc] init];
         for (EKParticipant *attendee in event.attendees) {
-            
+
             NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
             for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
             {
@@ -509,12 +509,12 @@ RCT_EXPORT_MODULE()
                     continue;
                 [descriptionData setObject:[[pair objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pair objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
             }
-            
+
             NSMutableDictionary *formattedAttendee = [[NSMutableDictionary alloc] init];
             NSString *name = [descriptionData valueForKey:@"name"];
             NSString *email = [descriptionData valueForKey:@"email"];
             NSString *phone = [descriptionData valueForKey:@"phone"];
-            
+
             if(email && ![email isEqualToString:@"(null)"]) {
                 [formattedAttendee setValue:email forKey:@"email"];
             }
@@ -769,7 +769,7 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
                     break;
                 }
             }
-    
+
             if (eventInstance) {
                 NSError *error = nil;
                 EKSpan eventSpan = EKSpanThisEvent;
