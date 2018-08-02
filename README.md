@@ -204,7 +204,7 @@ Returns: **Promise**
 | [**recurrenceRule**](#recurrence-rule) **  | Object           | The events recurrence settings. | ✓ | ✓ |
 | **occurrenceDate***  | Date | The original occurrence date of an event if it is part of a recurring series. | ✓ |  |
 | **isDetached**      | Bool        | Indicates whether an event is a detached instance of a repeating event. | ✓ |  |
-| **url**             | String           | The url associated with the calendar event. | ✓ | ✓ |
+| **url**             | String           | The url associated with the calendar event. | ✓ |  |
 | **location**        | String           | The location associated with the calendar event. | ✓ | ✓ |
 | **notes**           | String           | The notes associated with the calendar event. | ✓ |  |
 | **description**     | String           | The description associated with the calendar event. |  | ✓ |
