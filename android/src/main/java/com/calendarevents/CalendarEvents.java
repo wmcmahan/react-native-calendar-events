@@ -109,7 +109,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Calendars.IS_PRIMARY,
                 CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
                 CalendarContract.Calendars.ALLOWED_AVAILABILITY,
-                CalendarContract.Calendars.ACCOUNT_TYPE
+                CalendarContract.Calendars.ACCOUNT_TYPE,
+                CalendarContract.Calendars.CALENDAR_COLOR
         }, null, null, null);
 
         return serializeEventCalendars(cursor);
@@ -129,7 +130,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Calendars.IS_PRIMARY,
                 CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL,
                 CalendarContract.Calendars.ALLOWED_AVAILABILITY,
-                CalendarContract.Calendars.ACCOUNT_TYPE
+                CalendarContract.Calendars.ACCOUNT_TYPE,
+                CalendarContract.Calendars.CALENDAR_COLOR
         }, null, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -930,6 +932,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         calendar.putString("source", cursor.getString(2));
         calendar.putArray("allowedAvailabilities", calendarAllowedAvailabilitiesFromDBString(cursor.getString(5)));
         calendar.putString("type", cursor.getString(6));
+        calendar.putString("color", cursor.getString(7));
 
         if (cursor.getString(3) != null) {
             calendar.putBoolean("isPrimary", cursor.getString(3).equals("1"));
