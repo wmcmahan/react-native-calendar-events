@@ -26,6 +26,19 @@ static NSString *const _attendees    = @"attendees";
 
 @implementation RNCalendarEvents
 
+- (NSString *)hexStringFromColor:(UIColor *)color {
+    const CGFloat *components = CGColorGetComponents(color.CGColor);
+
+    CGFloat r = components[0];
+    CGFloat g = components[1];
+    CGFloat b = components[2];
+
+    return [NSString stringWithFormat:@"#%02lX%02lX%02lX",
+            lroundf(r * 255),
+            lroundf(g * 255),
+            lroundf(b * 255)];
+}   
+
 @synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE()
@@ -435,6 +448,7 @@ RCT_EXPORT_MODULE()
                                         @"source": event.calendar.source.title,
                                         @"allowsModifications": @(event.calendar.allowsContentModifications),
                                         @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:event.calendar.supportedEventAvailabilities],
+                                        @"color": [self hexStringFromColor:[UIColor colorWithCGColor:event.calendar.CGColor]]
                                         }
                                forKey:@"calendar"];
     }
@@ -646,7 +660,8 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
                                         @"title": calendar.title ? calendar.title : @"",
                                         @"allowsModifications": @(calendar.allowsContentModifications),
                                         @"source": calendar.source.title,
-                                        @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities]
+                                        @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities],
+                                        @"color": [self hexStringFromColor:[UIColor colorWithCGColor:calendar.CGColor]]
                                         }];
         }
         resolve(eventCalendars);
