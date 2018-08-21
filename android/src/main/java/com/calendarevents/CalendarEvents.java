@@ -502,7 +502,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                             eventID = Integer.parseInt(eventUri.getLastPathSegment());
                         }
                     } catch (Exception e) {
-                        Log.d("Event exception error", e.toString());
+                        Log.d(this.getName(), "Event exception error", e);
                     }
                 }
             }
