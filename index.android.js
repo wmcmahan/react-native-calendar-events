@@ -15,37 +15,15 @@ export default {
   },
 
   async fetchAllEvents (startDate, endDate, calendars = []) {
-    return CalendarEvents.findAllEvents(startDate, endDate, calendars).then(events => {
-      return events.map(e => {
-        if (e.calendar && e.calendar.color) {
-          let color = `#${(0xFFFFFF + parseInt(e.calendar.color)).toString(16)}`;
-          e.calendar.color = color;
-        }
-        return e;
-      });
-    })
+    return CalendarEvents.findAllEvents(startDate, endDate, calendars)
   },
 
   async findCalendars () {
-    return CalendarEvents.findCalendars().then(calendars => {
-      return calendars.map(c => {
-        if (c.color) {
-          let color = `#${(0xFFFFFF + parseInt(c.color)).toString(16)}`;
-          c.color = color;
-        }
-        return c; 
-      });
-    });
+    return CalendarEvents.findCalendars()
   },
 
   async findEventById (id) {
-    return CalendarEvents.findById(id).then(event => {
-      if (event.calendar && event.calendar.color) {
-        let color = `#${(0xFFFFFF + parseInt(c.color)).toString(16)}`;
-        event.calendar.color = color;
-      }
-      return event;
-    })
+    return CalendarEvents.findById(id)
   },
 
   async saveEvent (title, details, options = {sync: false}) {

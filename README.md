@@ -210,7 +210,21 @@ Returns: **Promise**
 | **description**     | String           | The description associated with the calendar event. |  | ✓ |
 | [**alarms**](#alarms)          | Array            | The alarms associated with the calendar event, as an array of alarm objects. | ✓ | ✓ |
 | [**attendees**](#attendees)*   | Array            | The attendees of the event, including the organizer. | ✓ | ✓ |
-| **calendar***    | Object      | The calendar containing the event.| ✓ | ✓ |
+| [**calendar***](#calendar)*    | Object      | The calendar containing the event.| ✓ | ✓ |
+
+
+### Calendar
+
+| Property        | Type            | Description | iOS | Android |
+| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
+| **id**       | String   | Unique calendar ID. | ✓ | ✓ |
+| **title**       | String   | The calendar’s title. | ✓ | ✓ |
+| **type**       | String   | The calendar’s type. | ✓ | ✓ |
+| **source**       | String   | The source object representing the account to which this calendar belongs. | ✓ | ✓ |
+| **isPrimary***   | Bool | Indicates if the calendar is assigned as primary. | ✓ | ✓ |
+| **allowsModifications***   | Bool | Indicates if the calendar allows events to be written, edited or removed. | ✓ | ✓ |
+| **color***   | String   | The color assigned to the calendar represented as a hex value. | ✓ | ✓ |
+| **allowedAvailabilities***   | Array   | The event availability settings supported by the calendar. | ✓ | ✓ |
 
 
 ### Attendees

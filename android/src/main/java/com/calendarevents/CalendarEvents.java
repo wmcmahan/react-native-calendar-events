@@ -942,7 +942,18 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         calendar.putString("source", cursor.getString(2));
         calendar.putArray("allowedAvailabilities", calendarAllowedAvailabilitiesFromDBString(cursor.getString(5)));
         calendar.putString("type", cursor.getString(6));
-        calendar.putString("color", cursor.getString(7));
+
+        String colorHex = "#FFFFFF";
+        try {
+            colorHex = String.format("#%06X", (0xFFFFFF & cursor.getInt(7)));
+        } catch (Exception e) {
+            Log.d(this.getName(), "Error parsing calendar color", e);
+        }
+        calendar.putString("color", colorHex);
+
+        if (cursor.getString(3) != null) {
+            calendar.putBoolean("isPrimary", cursor.getString(3).equals("1"));
+        }
 
         if (cursor.getString(3) != null) {
             calendar.putBoolean("isPrimary", cursor.getString(3).equals("1"));
