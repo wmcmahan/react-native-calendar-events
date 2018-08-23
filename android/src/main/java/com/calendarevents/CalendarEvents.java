@@ -502,7 +502,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                             eventID = Integer.parseInt(eventUri.getLastPathSegment());
                         }
                     } catch (Exception e) {
-                        Log.d("Event exception error", e.toString());
+                        Log.d(this.getName(), "Event exception error", e);
                     }
                 }
             }
@@ -721,10 +721,16 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             cal.setTimeInMillis(startDate);
-            cal.add(Calendar.MINUTE, Integer.parseInt(cursor.getString(0)));
+            int minutes;
+            try {
+                minutes = cursor.getInt(0);
+            } catch (Exception e) {
+                Log.d(this.getName(), "Error parsing event minutes", e);
+                continue;
+            }
 
+            cal.add(Calendar.MINUTE, minutes);
             alarm.putString("date", sdf.format(cal.getTime()));
-
             results.pushMap(alarm);
         }
 
