@@ -445,7 +445,7 @@ RCT_EXPORT_MODULE()
         [formedCalendarEvent setValue:@{
                                         @"id": event.calendar.calendarIdentifier,
                                         @"title": event.calendar.title ? event.calendar.title : @"",
-                                        @"source": event.calendar.source?.title ? event.calendar.source.title : @"",
+                                        @"source": event.calendar.source && event.calendar.source.title ? event.calendar.source.title : @"",
                                         @"allowsModifications": @(event.calendar.allowsContentModifications),
                                         @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:event.calendar.supportedEventAvailabilities],
                                         @"color": [self hexStringFromColor:[UIColor colorWithCGColor:event.calendar.CGColor]]
@@ -659,7 +659,7 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
                                         @"id": calendar.calendarIdentifier,
                                         @"title": calendar.title ? calendar.title : @"",
                                         @"allowsModifications": @(calendar.allowsContentModifications),
-                                        @"source": calendar.source?.title ? calendar.source.title : @"",
+                                        @"source": calendar.source && calendar.source.title ? calendar.source.title : @"",
                                         @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities],
                                         @"color": [self hexStringFromColor:[UIColor colorWithCGColor:calendar.CGColor]]
                                         }];
