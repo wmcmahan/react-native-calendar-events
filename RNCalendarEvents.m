@@ -57,6 +57,11 @@ RCT_EXPORT_MODULE()
 #pragma mark -
 #pragma mark Event Store Authorization
 
++ (BOOL)requiresMainQueueSetup
+{
+    return NO;
+}
+
 - (BOOL)isCalendarAccessGranted
 {
     EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
