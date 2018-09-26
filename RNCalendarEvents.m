@@ -23,6 +23,7 @@ static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
 static NSString *const _attendees    = @"attendees";
+dispatch_queue_t serialQueue;
 
 @implementation RNCalendarEvents
 
@@ -50,6 +51,7 @@ RCT_EXPORT_MODULE()
     self = [super init];
     if (self) {
         _eventStore = [[EKEventStore alloc] init];
+        serialQueue = dispatch_queue_create("rncalendarevents.queue", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -296,12 +298,12 @@ RCT_EXPORT_MODULE()
         weekDay = [EKRecurrenceDayOfWeek dayOfWeek:7];
     } else if ([day isEqualToString:@"SU"]) {
         weekDay = [EKRecurrenceDayOfWeek dayOfWeek:1];
-    } 
+    }
 
     NSLog(@"%s", "dayOfTheWeek");
     NSLog(@"%@", weekDay);
     return weekDay;
-} 
+}
 
 -(NSMutableArray *) createRecurrenceDaysOfWeek: (NSArray *) days
 {
@@ -313,10 +315,10 @@ RCT_EXPORT_MODULE()
         for (NSString *day in days) {
             EKRecurrenceDayOfWeek *weekDay = [self dayOfTheWeekMatchingName: day];
             [daysOfTheWeek addObject:weekDay];
-            
+
         }
     }
-    
+
     return daysOfTheWeek;
 }
 
@@ -797,7 +799,7 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
                                                                     calendars:eventCalendars];
 
     __weak RNCalendarEvents *weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(serialQueue, ^{
         RNCalendarEvents *strongSelf = weakSelf;
         NSArray *calendarEvents = [[strongSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
         if (calendarEvents) {
@@ -818,7 +820,7 @@ RCT_EXPORT_METHOD(findEventById:(NSString *)eventId resolver:(RCTPromiseResolveB
     }
 
     __weak RNCalendarEvents *weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(serialQueue, ^{
         RNCalendarEvents *strongSelf = weakSelf;
 
         EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
@@ -845,7 +847,7 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title
     [details setValue:title forKey:_title];
 
     __weak RNCalendarEvents *weakSelf = self;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(serialQueue, ^{
         RNCalendarEvents *strongSelf = weakSelf;
 
         NSDictionary *response = [strongSelf buildAndSaveEvent:details options:options];
@@ -880,7 +882,7 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
                                                                       calendars:nil];
 
         __weak RNCalendarEvents *weakSelf = self;
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        dispatch_async(serialQueue, ^{
             RNCalendarEvents *strongSelf = weakSelf;
             NSArray *calendarEvents = [strongSelf.eventStore eventsMatchingPredicate:predicate];
             EKEvent *eventInstance;
@@ -912,19 +914,24 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
             return resolve(@(success));
         });
     } else {
-        EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
-        NSError *error = nil;
-        EKSpan eventSpan = EKSpanThisEvent;
+      __weak RNCalendarEvents *weakSelf = self;
+      dispatch_async(serialQueue, ^{
+          RNCalendarEvents *strongSelf = weakSelf;
+          
+          EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+          NSError *error = nil;
+          EKSpan eventSpan = EKSpanThisEvent;
 
-        if (futureEvents) {
-            eventSpan = EKSpanFutureEvents;
-        }
+          if (futureEvents) {
+              eventSpan = EKSpanFutureEvents;
+          }
 
-        BOOL success = [self.eventStore removeEvent:calendarEvent span:eventSpan commit:YES error:&error];
-        if (error) {
-            return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
-        }
-        return resolve(@(success));
+          BOOL success = [self.eventStore removeEvent:calendarEvent span:eventSpan commit:YES error:&error];
+          if (error) {
+              return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
+          }
+          return resolve(@(success));
+      });
     }
 }
 
