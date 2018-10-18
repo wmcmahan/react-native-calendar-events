@@ -23,6 +23,7 @@ static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
 static NSString *const _attendees    = @"attendees";
+static NSString *const _rrule = @"rrule";
 
 @implementation RNCalendarEvents
 
@@ -431,6 +432,7 @@ RCT_EXPORT_MODULE()
                                                  @"endDate": @""
                                                  },
                                          _availability: @"",
+                                         _rrule: @"",
                                          };
 
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -583,6 +585,8 @@ RCT_EXPORT_MODULE()
 
     if (event.hasRecurrenceRules) {
         EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
+        NSString *rrule = [[rule description] componentsSeparatedByString:@" RRULE "][1];
+        [formedCalendarEvent setValue:rrule forKey:_rrule];
         NSString *frequencyType = [self nameMatchingFrequency:[rule frequency]];
         [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
 
