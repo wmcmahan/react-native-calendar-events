@@ -759,6 +759,70 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title
     });
 }
 
+RCT_EXPORT_METHOD(getSources:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSArray* sources = [self.eventStore sources];
+    
+    NSMutableArray *types = [NSMutableArray arrayWithObjects: @"local", @"exchange", @"calDav", @"mobileMe", @"subscribed", @"birthdays", nil];
+    
+    if (!sources) {
+        reject(@"error", @"error finding sources", nil);
+    } else {
+        NSMutableArray *sDictionary = [[NSMutableArray alloc] init];
+        for (EKSource *s in sources) {
+            [sDictionary addObject:@{
+                                     @"sourceIdentifier": s.sourceIdentifier,
+                                     @"title": s.title,
+                                     @"type":[types objectAtIndex:s.sourceType]
+                                     }];
+        }
+        resolve(sDictionary);
+    }
+}
+
+RCT_EXPORT_METHOD(saveCalendar:(NSString *)title
+                  identifier:(NSString *)identifier
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSError *error = nil;
+    EKCalendar *cal = [EKCalendar calendarForEntityType:EKEntityTypeEvent eventStore:self.eventStore];
+    cal.title = title;
+    NSArray *arr = self.eventStore.sources;
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"sourceIdentifier == %@",identifier];
+    
+    
+    //NSPredicate *predicate = [NSPredicate predicateWithFormat:@"EKSource.sourceIdentifier == 'Apple'"];
+    NSArray *sources = [arr filteredArrayUsingPredicate:predicate];
+    
+    
+    if(sources.count <= 0){
+        reject(@"error", @"error creating calendar", nil);
+    }else{
+        cal.source = sources.firstObject;
+        
+        BOOL success = [self.eventStore saveCalendar:cal commit:YES error:&error];
+        if (!success) {
+            reject(@"error", @"error creating calendar", nil);
+        } else {
+            resolve(@"Calendar created successfuly");
+        }
+    }
+}
+
+RCT_EXPORT_METHOD(removeCalendar:(NSString *)calendarId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    EKCalendar *cal = [self.eventStore calendarWithIdentifier:calendarId];
+    NSError *error = nil;
+    BOOL success = [self.eventStore removeCalendar:cal commit:YES error:&error];
+    if (!success) {
+        reject(@"error", @"error deleting calendar", nil);
+    } else {
+        resolve(@"Calendar deleted successfuly");
+    }
+}
+
 RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     if (![self isCalendarAccessGranted]) {
