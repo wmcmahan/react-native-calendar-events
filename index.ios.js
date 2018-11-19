@@ -36,6 +36,18 @@ export default {
 
   removeFutureEvents (id, options = {futureEvents: true}) {
     return RNCalendarEvents.removeEvent(id, options)
-  }
+  },
+
+  async getSources() {
+    return CalendarEvents.getSources();
+  },
+
+  async saveCalendar(title,identifier){
+    return CalendarEvents.saveCalendar(title,identifier);
+  },
+
+  async removeCalendar(identifier){
+    return CalendarEvents.removeCalendar(identifier);
+  },
 
 }
