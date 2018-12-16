@@ -37,7 +37,7 @@ static NSString *const _attendees    = @"attendees";
             lroundf(r * 255),
             lroundf(g * 255),
             lroundf(b * 255)];
-}   
+}
 
 @synthesize bridge = _bridge;
 
@@ -88,7 +88,6 @@ RCT_EXPORT_MODULE()
     NSString *recurrence = [RCTConvert NSString:details[_recurrence]];
     NSDictionary *recurrenceRule = [RCTConvert NSDictionary:details[_recurrenceRule]];
     NSString *availability = [RCTConvert NSString:details[_availability]];
-    NSArray *attendees = [RCTConvert NSArray:details[_attendees]];
 
     if (eventId) {
         calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
@@ -133,10 +132,6 @@ RCT_EXPORT_MODULE()
 
     if (alarms) {
         calendarEvent.alarms = [self createCalendarEventAlarms:alarms];
-    }
-
-    if (attendees) {
-        [calendarEvent setValue:[self createCalendarEventAttendees:attendees] forKey:_attendees];
     }
 
     if (recurrence) {
@@ -231,24 +226,6 @@ RCT_EXPORT_MODULE()
         }
     }
     return calendarEventAlarm;
-}
-
-- (NSArray *)createCalendarEventAttendees:(NSArray *)attendees
-{
-    NSMutableArray *calendarEventAttendees = [[NSMutableArray alloc] init];
-
-    for (NSDictionary *attendeeDict in attendees) {
-        Class className = NSClassFromString(@"EKAttendee");
-        NSString *url = [attendeeDict valueForKey:@"url"];
-        NSString *fName = [attendeeDict valueForKey:@"firstName"];
-        NSString *lName = [attendeeDict valueForKey:@"lastName"];
-        id attendee = [className new];
-        [attendee setValue:fName forKey:@"firstName"];
-        [attendee setValue:lName forKey:@"lastName"];
-        [attendee setValue:url forKey:@"emailAddress"];
-        [calendarEventAttendees addObject:attendee];
-    }
-    return [calendarEventAttendees copy];
 }
 
 - (NSArray *)createCalendarEventAlarms:(NSArray *)alarms
@@ -660,11 +637,13 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
     } else {
         NSMutableArray *eventCalendars = [[NSMutableArray alloc] init];
         for (EKCalendar *calendar in calendars) {
+            BOOL isPrimary = [calendar isEqual:[self.eventStore defaultCalendarForNewEvents]];
             [eventCalendars addObject:@{
                                         @"id": calendar.calendarIdentifier,
                                         @"title": calendar.title ? calendar.title : @"",
                                         @"allowsModifications": @(calendar.allowsContentModifications),
                                         @"source": calendar.source && calendar.source.title ? calendar.source.title : @"",
+                                        @"isPrimary": @(isPrimary),
                                         @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities],
                                         @"color": [self hexStringFromColor:[UIColor colorWithCGColor:calendar.CGColor]]
                                         }];
