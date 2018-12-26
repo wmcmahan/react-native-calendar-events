@@ -29,8 +29,11 @@ import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.Dynamic;
 
+import java.sql.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.TimeZone;
@@ -298,7 +301,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         Uri uri = uriBuilder.build();
 
         String selection = "(Instances._ID = " + eventID + ")";
-            
+
         cursor = cr.query(uri, new String[]{
                 CalendarContract.Instances._ID,
                 CalendarContract.Instances.TITLE,
@@ -381,7 +384,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
 
         if (details.hasKey("recurrence")) {
-            String rule = createRecurrenceRule(details.getString("recurrence"), null, null, null);
+            String rule = createRecurrenceRule(details.getString("recurrence"), null, null, null, null, null, null);
             if (rule != null) {
                 eventValues.put(CalendarContract.Events.RRULE, rule);
             }
@@ -396,6 +399,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 Integer interval = null;
                 Integer occurrence = null;
                 String endDate = null;
+                ReadableArray daysOfWeek = null;
+                String weekStart = null;
+                Integer weekPositionInMonth = null;
 
                 if (recurrenceRule.hasKey("interval")) {
                     interval = recurrenceRule.getInt("interval");
@@ -422,7 +428,19 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                     }
                 }
 
-                String rule = createRecurrenceRule(frequency, interval, endDate, occurrence);
+                if (recurrenceRule.hasKey("daysOfWeek")) {
+                    daysOfWeek = recurrenceRule.getArray("daysOfWeek");
+                }
+
+                if (recurrenceRule.hasKey("weekStart")) {
+                    weekStart = recurrenceRule.getString("weekStart");
+                }
+
+                if (recurrenceRule.hasKey("weekPositionInMonth")) {
+                    weekPositionInMonth = recurrenceRule.getInt("weekPositionInMonth");
+                }
+
+                String rule = createRecurrenceRule(frequency, interval, endDate, occurrence, daysOfWeek, weekStart, weekPositionInMonth);
                 if (duration != null) {
                     eventValues.put(CalendarContract.Events.DURATION, duration);
                 }
@@ -788,8 +806,19 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
     //endregion
 
+    private String ReadableArrayToString (ReadableArray strArr) {
+        ArrayList<Object> array = strArr.toArrayList();
+        StringBuilder strBuilder = new StringBuilder();
+        for (int i = 0; i < array.size(); i++) {
+            strBuilder.append(array.get(i).toString() + ',');
+        }
+        String newString = strBuilder.toString();
+        newString = newString.substring(0, newString.length() - 1);
+        return newString;
+    }
+
     //region Recurrence Rule
-    private String createRecurrenceRule(String recurrence, Integer interval, String endDate, Integer occurrence) {
+    private String createRecurrenceRule(String recurrence, Integer interval, String endDate, Integer occurrence, ReadableArray daysOfWeek, String weekStart, Integer weekPositionInMonth) {
         String rrule;
 
         if (recurrence.equals("daily")) {
@@ -802,6 +831,19 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             rrule = "FREQ=YEARLY";
         } else {
             return null;
+        }
+
+        if (daysOfWeek != null && recurrence.equals("weekly")) {
+            rrule += ";BYDAY=" + ReadableArrayToString(daysOfWeek);
+        }
+
+        if (recurrence.equals("monthly") && daysOfWeek != null && weekPositionInMonth != null) {
+                rrule += ";BYSETPOS=" + weekPositionInMonth;
+                rrule += ";BYDAY=" + ReadableArrayToString(daysOfWeek);
+        }
+
+        if (weekStart != null) {
+            rrule += ";WKST=" + weekStart;
         }
 
         if (interval != null) {
