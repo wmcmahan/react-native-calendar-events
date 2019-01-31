@@ -708,6 +708,70 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
     }
 }
 
+RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if (![self isCalendarAccessGranted]) {
+        return reject(@"error", @"unauthorized to access calendar", nil);
+    }
+
+    EKCalendar *calendar = nil;
+    EKSource *calendarSource = nil;
+    NSString *title = [RCTConvert NSString:options[@"title"]];
+    NSNumber *color = [RCTConvert NSNumber:options[@"color"]];
+    NSString *type = [RCTConvert NSString:options[@"entityType"]];
+
+    // First: Check if the user has an iCloud source set-up.
+    for (EKSource *source in self.eventStore.sources) {
+        if (source.sourceType == EKSourceTypeCalDAV && [source.title isEqualToString:@"iCloud"]) {
+            calendarSource = source;
+            break;
+        }
+    }
+
+    // Second: If no iCloud source is set-up / utilised, then fall back and use the local source.
+    if (calendarSource == nil) {
+        for (EKSource *source in self.eventStore.sources) {
+            if (source.sourceType == EKSourceTypeLocal) {
+                calendarSource = source;
+                break;
+            }
+        }
+    }
+
+    if (calendarSource == nil) {
+        return reject(@"error", @"no source found to create the calendar (local & icloud)", nil);
+    }
+
+    if ([type isEqualToString:@"event"]) {
+    calendar = [EKCalendar calendarForEntityType:EKEntityTypeEvent eventStore:self.eventStore];
+    } else if ([type isEqualToString:@"reminder"]) {
+      calendar = [EKCalendar calendarForEntityType:EKEntityTypeReminder eventStore:self.eventStore];
+    } else {
+        return reject(@"error",
+             [NSString stringWithFormat:@"Calendar entityType %@ is not supported", type],
+             nil);
+    }
+
+    calendar.source = calendarSource;
+    if (title) {
+      calendar.title = title;
+    }
+
+    if (color) {
+      calendar.CGColor = [RCTConvert UIColor:color].CGColor;
+    } else if (options[@"color"] == [NSNull null]) {
+      calendar.CGColor = nil;
+    }
+
+    NSError *error = nil;
+    BOOL success = [self.eventStore saveCalendar:calendar commit:YES error:&error];
+    if (success) {
+        return resolve(calendar.calendarIdentifier);
+    }
+    return reject(@"error",
+                  [NSString stringWithFormat:@"Calendar %@ could not be saved", title], error);
+}
+
 RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate calendars:(NSArray *)calendars resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     if (![self isCalendarAccessGranted]) {
