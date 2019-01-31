@@ -162,7 +162,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Attendees.ATTENDEE_EMAIL,
                 CalendarContract.Attendees.ATTENDEE_TYPE,
                 CalendarContract.Attendees.ATTENDEE_RELATIONSHIP,
-                CalendarContract.Attendees.ATTENDEE_STATUS
+                CalendarContract.Attendees.ATTENDEE_STATUS,
+                CalendarContract.Attendees.ATTENDEE_IDENTITY,
+                CalendarContract.Attendees.ATTENDEE_ID_NAMESPACE
         }, query, args, null);
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -984,7 +986,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
             attendee.putString("name", cursor.getString( 2));
             attendee.putString("email", cursor.getString(3));
-
+            attendee.putString("type", cursor.getString(4));
+            attendee.putString("relationship", cursor.getString(5));
+            attendee.putString("status", cursor.getString(6));
+            attendee.putString("identity", cursor.getString(7));
+            attendee.putString("id_namespace", cursor.getString(8));
             results.pushMap(attendee);
         }
 
