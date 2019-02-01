@@ -15,6 +15,7 @@ A React Native module to help access and save events to iOS and Android calendar
   - [authorizationStatus](#authorizationstatus)
   - [authorizeEventStore](#authorizeeventstore)
   - [findCalendars](#findcalendars)
+  - [addCalendar](#addCalendar)
   - [findEventById](#findeventbyid)
   - [fetchAllEvents](#fetchallevents)
   - [saveEvent](#saveevent)
@@ -24,6 +25,7 @@ A React Native module to help access and save events to iOS and Android calendar
   - [Alarm](#alarms)
   - [Alarm structuredLocation](#alarm-structuredlocation)
   - [Options](#options)
+- [**Calendar**](#calendarOptions)
 - [**Wiki**](https://github.com/wmcmahan/react-native-calendar-events/wiki)
 
 
@@ -107,6 +109,22 @@ RNCalendarEvents.findCalendars()
 
 Returns: **Promise**
  - fulfilled: Array - A list of known calendars on the device
+ - rejected: Error
+
+<br/>
+
+### addCalendar
+Create a calendar.
+
+```javascript
+RNCalendarEvents.addCalendar(calendar)
+```
+
+Arguments:
+ - [calendar](#Calendar options): Object - Calendar to create.
+
+Returns: **Promise**
+ - fulfilled: The id of the created calendar
  - rejected: Error
 
 <br/>
@@ -268,6 +286,20 @@ Returns: **Promise**
 | :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
 | **exceptionDate**   | Date           | The start date of a recurring event's exception instance. Used for updating single event in a recurring series | ✓ | ✓ |
 | **futureEvents**   | Bool            | If `true` the update will span all future events. If `false` it only update the single instance.  | ✓ |  |
+
+### Calendar options
+| Property        | Type            | Description |  iOS | Android |
+| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
+| **title**   | String           | The calendar title (required) | ✓ | ✓ |
+| **color**   | String           | The calendar color (required) | ✓ | ✓ |
+| **entityType** | String        | 'event' or 'reminder' (required) | ✓ |   |
+| **name**   | String            | The calendar name (required) |   | ✓ |
+| **accessLevel**   | String     | Defines how the event shows up for others when the calendar is shared [doc](https://developer.android.com/reference/android/provider/CalendarContract.EventsColumns.html#ACCESS_LEVEL)(required) |   | ✓ |
+| **ownerAccount**  | String     | The owner account for this calendar, based on the calendar feed [doc](https://developer.android.com/reference/android/provider/CalendarContract.CalendarColumns#OWNER_ACCOUNT)(required) |   | ✓ |
+| **source**   | Object          | The calendar Account source (required) |   | ✓ |
+| **source.name**   | String          | The Account name (required) |   | ✓ |
+| **source.type**   | String          | The Account type |   | ✓ |
+| **source.isLocalAccount**   | Bool          | The source (required if **source.type** is not used)|   | ✓ |
 
 <p>* <i>Read only</i>, ** <i>Write only</i> </p>
 
