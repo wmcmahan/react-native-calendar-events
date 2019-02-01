@@ -294,7 +294,7 @@ Returns: **Promise**
 | **color**   | String           | The calendar color (required) | ✓ | ✓ |
 | **entityType** | String        | 'event' or 'reminder' (required) | ✓ |   |
 | **name**   | String            | The calendar name (required) |   | ✓ |
-| **accessLevel**   | String     | Defines how the event shows up for others when the calendar is shared [doc](https://developer.android.com/reference/android/provider/CalendarContract.EventsColumns.html#ACCESS_LEVEL)(required) |   | ✓ |
+| **accessLevel**   | String     | Defines how the event shows up for others when the calendar is shared [doc](https://developer.android.com/reference/android/provider/CalendarContract.EventsColumns.html#ACCESS_LEVEL)(required) `'contributor', 'editor', 'freebusy', 'override', 'owner', 'read', 'respond', 'root'` |   | ✓ |
 | **ownerAccount**  | String     | The owner account for this calendar, based on the calendar feed [doc](https://developer.android.com/reference/android/provider/CalendarContract.CalendarColumns#OWNER_ACCOUNT)(required) |   | ✓ |
 | **source**   | Object          | The calendar Account source (required) |   | ✓ |
 | **source.name**   | String          | The Account name (required) |   | ✓ |
