@@ -15,7 +15,7 @@ A React Native module to help access and save events to iOS and Android calendar
   - [authorizationStatus](#authorizationstatus)
   - [authorizeEventStore](#authorizeeventstore)
   - [findCalendars](#findcalendars)
-  - [addCalendar](#addCalendar)
+  - [saveCalendar](#saveCalendar)
   - [findEventById](#findeventbyid)
   - [fetchAllEvents](#fetchallevents)
   - [saveEvent](#saveevent)
@@ -113,11 +113,11 @@ Returns: **Promise**
 
 <br/>
 
-### addCalendar
+### saveCalendar
 Create a calendar.
 
 ```javascript
-RNCalendarEvents.addCalendar(calendar)
+RNCalendarEvents.saveCalendar(calendar)
 ```
 
 Arguments:
