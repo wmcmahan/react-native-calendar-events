@@ -25,7 +25,11 @@ A React Native module to help access and save events to iOS and Android calendar
   - [Alarm](#alarms)
   - [Alarm structuredLocation](#alarm-structuredlocation)
   - [Options](#options)
+<<<<<<< HEAD
 - [**Calendar**](#Calendar-options)
+=======
+- [**Calendar**](#calendarOptions)
+>>>>>>> aab2bcf3eea93be29f5d7e5e4bc78e61eb46a919
 - [**Wiki**](https://github.com/wmcmahan/react-native-calendar-events/wiki)
 
 
@@ -121,7 +125,11 @@ RNCalendarEvents.addCalendar(calendar)
 ```
 
 Arguments:
+<<<<<<< HEAD
  - [calendar](#Calendar-options): Object - Calendar to create.
+=======
+ - [calendar](#Calendar options): Object - Calendar to create.
+>>>>>>> aab2bcf3eea93be29f5d7e5e4bc78e61eb46a919
 
 Returns: **Promise**
  - fulfilled: The id of the created calendar
