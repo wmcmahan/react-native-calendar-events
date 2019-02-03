@@ -165,7 +165,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Attendees.ATTENDEE_EMAIL,
                 CalendarContract.Attendees.ATTENDEE_TYPE,
                 CalendarContract.Attendees.ATTENDEE_RELATIONSHIP,
-                CalendarContract.Attendees.ATTENDEE_STATUS
+                CalendarContract.Attendees.ATTENDEE_STATUS,
+                CalendarContract.Attendees.ATTENDEE_IDENTITY,
+                CalendarContract.Attendees.ATTENDEE_ID_NAMESPACE
         }, query, args, null);
 
         if (cursor != null && cursor.moveToFirst()) {
@@ -221,7 +223,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         if (calendars.size() > 0) {
             String calendarQuery = "AND (";
             for (int i = 0; i < calendars.size(); i++) {
-                calendarQuery += CalendarContract.Instances.CALENDAR_ID + " = " + calendars.getString(i);
+                calendarQuery += CalendarContract.Instances.CALENDAR_ID + " = " + calendars.getMap(i).toString();
                 if (i != calendars.size() - 1) {
                     calendarQuery += " OR ";
                 }
@@ -249,6 +251,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Instances.DURATION,
                 CalendarContract.Instances.ORIGINAL_SYNC_ID,
         }, selection, null, null);
+                
 
         return serializeEvents(cursor);
     }
@@ -1025,7 +1028,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
             attendee.putString("name", cursor.getString( 2));
             attendee.putString("email", cursor.getString(3));
-
+            attendee.putString("type", cursor.getString(4));
+            attendee.putString("relationship", cursor.getString(5));
+            attendee.putString("status", cursor.getString(6));
+            attendee.putString("identity", cursor.getString(7));
+            attendee.putString("id_namespace", cursor.getString(8));
             results.pushMap(attendee);
         }
 
