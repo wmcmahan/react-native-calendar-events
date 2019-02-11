@@ -1,6 +1,6 @@
 'use strict';
 
-import { NativeModules } from 'react-native';
+import { NativeModules, processColor } from 'react-native';
 
 const RNCalendarEvents = NativeModules.RNCalendarEvents
 
@@ -20,6 +20,13 @@ export default {
 
   findCalendars () {
     return RNCalendarEvents.findCalendars();
+  },
+
+  saveCalendar (options = {}) {
+    return RNCalendarEvents.saveCalendar({
+      ...options,
+      color: options.color ? processColor(options.color) : undefined,
+    });
   },
 
   findEventById (id) {

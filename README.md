@@ -15,6 +15,7 @@ A React Native module to help access and save events to iOS and Android calendar
   - [authorizationStatus](#authorizationstatus)
   - [authorizeEventStore](#authorizeeventstore)
   - [findCalendars](#findcalendars)
+  - [saveCalendar](#saveCalendar)
   - [findEventById](#findeventbyid)
   - [fetchAllEvents](#fetchallevents)
   - [saveEvent](#saveevent)
@@ -24,6 +25,7 @@ A React Native module to help access and save events to iOS and Android calendar
   - [Alarm](#alarms)
   - [Alarm structuredLocation](#alarm-structuredlocation)
   - [Options](#options)
+- [**Calendar**](#Calendar-options)
 - [**Wiki**](https://github.com/wmcmahan/react-native-calendar-events/wiki)
 
 
@@ -76,7 +78,7 @@ Get calendar authorization status.
 RNCalendarEvents.authorizationStatus()
 ```
 
-Returns: **Promise** 
+Returns: **Promise**
 - fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
 - rejected: Error
 
@@ -91,7 +93,7 @@ Request calendar authorization. Authorization must be granted before accessing c
 RNCalendarEvents.authorizeEventStore()
 ```
 
-Returns: **Promise** 
+Returns: **Promise**
  - fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
  - rejected: Error
 
@@ -111,6 +113,22 @@ Returns: **Promise**
 
 <br/>
 
+### saveCalendar
+Create a calendar.
+
+```javascript
+RNCalendarEvents.saveCalendar(calendar)
+```
+
+Arguments:
+ - [calendar](#Calendar-options): Object - Calendar to create.
+
+Returns: **Promise**
+ - fulfilled: The id of the created calendar
+ - rejected: Error
+
+<br/>
+
 ### findEventById
 Find calendar event by id.
 Returns a promise with fulfilled found events.
@@ -119,7 +137,7 @@ Returns a promise with fulfilled found events.
 RNCalendarEvents.findEventById(id)
 ```
 
-Arguments: 
+Arguments:
  - id: String - The events unique id.
 
 Returns: **Promise**  
@@ -136,7 +154,7 @@ Returns a promise with fulfilled found events.
 RNCalendarEvents.fetchAllEvents(startDate, endDate, calendars)
 ```
 
-Arguments: 
+Arguments:
  - startDate: Date - The start date of the range of events fetched.
  - endDate: Date - The end date of the range of events fetched.
  - calendars: Array - List of calendar id strings to specify calendar events. Defaults to all calendars if empty.
@@ -154,12 +172,12 @@ Creates or updates a calendar event. - [wiki guide](https://github.com/wmcmahan/
 RNCalendarEvents.saveEvent(title, details, options);
 ```
 
-Arguments: 
+Arguments:
  - title: String - The title of the event.
  - [details](#event-fields): Object - The event's details.
  - [options](#options): Object - Options specific to the saved event.
 
-Returns: **Promise** 
+Returns: **Promise**
  - fulfilled: String - Created event's ID.
  - rejected: Error
 
@@ -184,7 +202,7 @@ Arguments:
  - id: String - The id of the event to remove.
  - [options](#options): Object - Options specific to event removal.
 
-Returns: **Promise** 
+Returns: **Promise**
  - fulfilled: Bool - Successful
  - rejected: Error
 
@@ -248,7 +266,7 @@ Returns: **Promise**
 ### Alarms
 
 | Property        | Type            | Description | iOS | Android |
-| :--------------- | :------------------| :----------- | :-----------: | :-----------: | 
+| :--------------- | :------------------| :----------- | :-----------: | :-----------: |
 | **date**           | Date or Number    | If a Date is given, an alarm will be set with an absolute date. If a Number is given, an alarm will be set with a relative offset (in minutes) from the start date. | ✓ | ✓ |
 | [**structuredLocation**](#alarm-structuredlocation) | Object             | The location to trigger an alarm. | ✓ |  |
 
@@ -268,6 +286,20 @@ Returns: **Promise**
 | :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
 | **exceptionDate**   | Date           | The start date of a recurring event's exception instance. Used for updating single event in a recurring series | ✓ | ✓ |
 | **futureEvents**   | Bool            | If `true` the update will span all future events. If `false` it only update the single instance.  | ✓ |  |
+
+### Calendar options
+| Property        | Type            | Description |  iOS | Android |
+| :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
+| **title**   | String           | The calendar title (required) | ✓ | ✓ |
+| **color**   | String           | The calendar color (required) | ✓ | ✓ |
+| **entityType** | String        | 'event' or 'reminder' (required) | ✓ |   |
+| **name**   | String            | The calendar name (required) |   | ✓ |
+| **accessLevel**   | String     | Defines how the event shows up for others when the calendar is shared [doc](https://developer.android.com/reference/android/provider/CalendarContract.EventsColumns.html#ACCESS_LEVEL)(required) `'contributor', 'editor', 'freebusy', 'override', 'owner', 'read', 'respond', 'root'` |   | ✓ |
+| **ownerAccount**  | String     | The owner account for this calendar, based on the calendar feed [doc](https://developer.android.com/reference/android/provider/CalendarContract.CalendarColumns#OWNER_ACCOUNT)(required) |   | ✓ |
+| **source**   | Object          | The calendar Account source (required) |   | ✓ |
+| **source.name**   | String          | The Account name (required) |   | ✓ |
+| **source.type**   | String          | The Account type |   | ✓ |
+| **source.isLocalAccount**   | Bool          | The source (required if **source.type** is not used)|   | ✓ |
 
 <p>* <i>Read only</i>, ** <i>Write only</i> </p>
 

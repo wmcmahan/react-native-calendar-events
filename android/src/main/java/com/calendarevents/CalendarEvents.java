@@ -14,6 +14,8 @@ import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.database.Cursor;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -150,6 +152,94 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
         return result;
     }
+
+    private Integer calAccessConstantMatchingString(String string) {
+      if (string.equals("contributor")) {
+        return CalendarContract.Calendars.CAL_ACCESS_CONTRIBUTOR;
+      }
+      if (string.equals("editor")) {
+        return CalendarContract.Calendars.CAL_ACCESS_EDITOR;
+      }
+      if (string.equals("freebusy")) {
+        return CalendarContract.Calendars.CAL_ACCESS_FREEBUSY;
+      }
+      if (string.equals("override")) {
+        return CalendarContract.Calendars.CAL_ACCESS_OVERRIDE;
+      }
+      if (string.equals("owner")) {
+        return CalendarContract.Calendars.CAL_ACCESS_OWNER;
+      }
+      if (string.equals("read")) {
+        return CalendarContract.Calendars.CAL_ACCESS_READ;
+      }
+      if (string.equals("respond")) {
+        return CalendarContract.Calendars.CAL_ACCESS_RESPOND;
+      }
+      if (string.equals("root")) {
+        return CalendarContract.Calendars.CAL_ACCESS_ROOT;
+      }
+      return CalendarContract.Calendars.CAL_ACCESS_NONE;
+    }
+
+    private int addCalendar(ReadableMap details) throws Exception, SecurityException {
+
+        ContentResolver cr = reactContext.getContentResolver();
+        ContentValues calendarValues = new ContentValues();
+
+        // required fields for new calendars
+        if (!details.hasKey("source")) {
+          throw new Exception("new calendars require `source` object");
+        }
+        if (!details.hasKey("name")) {
+          throw new Exception("new calendars require `name`");
+        }
+        if (!details.hasKey("title")) {
+          throw new Exception("new calendars require `title`");
+        }
+        if (!details.hasKey("color")) {
+          throw new Exception("new calendars require `color`");
+        }
+        if (!details.hasKey("accessLevel")) {
+          throw new Exception("new calendars require `accessLevel`");
+        }
+        if (!details.hasKey("ownerAccount")) {
+          throw new Exception("new calendars require `ownerAccount`");
+        }
+
+        ReadableMap source = details.getMap("source");
+
+        if (!source.hasKey("name")) {
+          throw new Exception("new calendars require a `source` object with a `name`");
+        }
+
+        Boolean isLocalAccount = false;
+        if (source.hasKey("isLocalAccount")) {
+          isLocalAccount = source.getBoolean("isLocalAccount");
+        }
+
+        if (!source.hasKey("type") && isLocalAccount == false) {
+          throw new Exception("new calendars require a `source` object with a `type`, or `isLocalAccount`: true");
+        }
+
+        calendarValues.put(CalendarContract.Calendars.ACCOUNT_NAME, source.getString("name"));
+        calendarValues.put(CalendarContract.Calendars.ACCOUNT_TYPE, isLocalAccount ? CalendarContract.ACCOUNT_TYPE_LOCAL : source.getString("type"));
+        calendarValues.put(CalendarContract.Calendars.CALENDAR_COLOR, details.getInt("color"));
+        calendarValues.put(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, calAccessConstantMatchingString(details.getString("accessLevel")));
+        calendarValues.put(CalendarContract.Calendars.OWNER_ACCOUNT, details.getString("ownerAccount"));
+        calendarValues.put(CalendarContract.Calendars.NAME, details.getString("name"));
+        calendarValues.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, details.getString("title"));
+        // end required fields
+
+        Uri.Builder uriBuilder = CalendarContract.Calendars.CONTENT_URI.buildUpon();
+        uriBuilder.appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true");
+        uriBuilder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, source.getString("name"));
+        uriBuilder.appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, isLocalAccount ? CalendarContract.ACCOUNT_TYPE_LOCAL : source.getString("type"));
+
+        Uri calendarsUri = uriBuilder.build();
+
+        Uri calendarUri = cr.insert(calendarsUri, calendarValues);
+        return Integer.parseInt(calendarUri.getLastPathSegment());
+  }
 
     private WritableNativeArray findAttendeesByEventId(String eventID) {
         WritableNativeArray result;
@@ -1087,6 +1177,30 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         } else {
             promise.reject("add event error", "you don't have permissions to retrieve an event to the users calendar");
         }
+    }
+
+    @ReactMethod
+    public void saveCalendar(final ReadableMap options, final Promise promise) {
+      if (!this.haveCalendarReadWritePermissions()) {
+        promise.reject("save calendar error", "unauthorized to access calendar");
+        return;
+      }
+      try {
+        Thread thread = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    Integer calendarID = addCalendar(options);
+                    promise.resolve(calendarID.toString());
+                } catch (Exception e) {
+                    promise.reject("save calendar error", e.getMessage());
+                }
+            }
+        });
+        thread.start();
+      } catch (Exception e) {
+        promise.reject("save calendar error", "Calendar could not be saved", e);
+      }
     }
 
     @ReactMethod
