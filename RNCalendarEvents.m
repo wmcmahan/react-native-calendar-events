@@ -167,6 +167,17 @@ RCT_EXPORT_MODULE()
         calendarEvent.URL = URL;
     }
 
+    if ([details objectForKey:@"structuredLocation"] && [[details objectForKey:@"structuredLocation"] count]) {
+        NSDictionary *locationOptions = [details valueForKey:@"structuredLocation"];
+        NSDictionary *geo = [locationOptions valueForKey:@"coords"];
+        CLLocation *geoLocation = [[CLLocation alloc] initWithLatitude:[[geo valueForKey:@"latitude"] doubleValue]
+                                                             longitude:[[geo valueForKey:@"longitude"] doubleValue]];
+        
+        calendarEvent.structuredLocation = [EKStructuredLocation locationWithTitle:[locationOptions valueForKey:@"title"]];
+        calendarEvent.structuredLocation.geoLocation = geoLocation;
+        calendarEvent.structuredLocation.radius = [[locationOptions valueForKey:@"radius"] doubleValue];
+    }
+    
     return [self saveEvent:calendarEvent options:options];
 }
 
@@ -637,6 +648,18 @@ RCT_EXPORT_MODULE()
     }
 
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
+    
+    if (event.structuredLocation) {
+        [formedCalendarEvent setValue:@{
+                                   @"title": event.structuredLocation.title,
+                                   @"radius": @(event.structuredLocation.radius),
+                                   @"coords": @{
+                                           @"latitude": @(event.structuredLocation.geoLocation.coordinate.latitude),
+                                           @"longitude": @(event.structuredLocation.geoLocation.coordinate.longitude)
+                                           }}
+                          forKey:@"structuredLocation"];
+        
+    }
 
     return [formedCalendarEvent copy];
 }
