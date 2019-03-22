@@ -1,4 +1,5 @@
-// TypeScript version: 3.3.3333
+// Type definitions for react-native-calendar v1.7.0
+// Typescript version: 3.0
 
 type ISODateString = string;
 export type AuthorizationStatus =
