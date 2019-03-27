@@ -23,6 +23,8 @@ static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
 static NSString *const _attendees    = @"attendees";
+static NSString *const _timeZone    = @"timeZone";
+
 dispatch_queue_t serialQueue;
 
 @implementation RNCalendarEvents
@@ -115,6 +117,7 @@ RCT_EXPORT_MODULE()
     NSString *recurrence = [RCTConvert NSString:details[_recurrence]];
     NSDictionary *recurrenceRule = [RCTConvert NSDictionary:details[_recurrenceRule]];
     NSString *availability = [RCTConvert NSString:details[_availability]];
+    NSString *timeZone = [RCTConvert NSString:details[_timeZone]];
 
     if (eventId) {
         calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
@@ -131,6 +134,10 @@ RCT_EXPORT_MODULE()
                 calendarEvent.calendar = calendar;
             }
         }
+    }
+
+    if (timeZone) {
+      calendarEvent.timeZone = [NSTimeZone timeZoneWithName:timeZone];
     }
 
     if (title) {
@@ -501,6 +508,7 @@ RCT_EXPORT_MODULE()
                                                  @"endDate": @""
                                                  },
                                          _availability: @"",
+                                         _timeZone: @""
                                          };
 
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -543,7 +551,11 @@ RCT_EXPORT_MODULE()
     if (event.location) {
         [formedCalendarEvent setValue:event.location forKey:_location];
     }
-    
+
+    if (event.timeZone) {
+        [formedCalendarEvent setValue:event.timeZone forKey:_timeZone];
+    }
+
     @try {
         if (event.attendees) {
             NSMutableArray *attendees = [[NSMutableArray alloc] init];
