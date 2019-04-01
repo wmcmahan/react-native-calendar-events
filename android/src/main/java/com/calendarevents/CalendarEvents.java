@@ -273,7 +273,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     //region Event Accessors
     private WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars) {
-        String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+      String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -287,9 +287,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 eStartDate.setTimeInMillis((long)startDate.asDouble());
             }
 
-            if (startDate.getType() == ReadableType.String) {
+            if (endDate.getType() == ReadableType.String) {
                 eEndDate.setTime(sdf.parse(endDate.asString()));
-            } else if (startDate.getType() == ReadableType.Number) {
+            } else if (endDate.getType() == ReadableType.Number) {
                 eEndDate.setTimeInMillis((long)endDate.asDouble());
             }
         } catch (ParseException e) {
@@ -313,7 +313,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         if (calendars.size() > 0) {
             String calendarQuery = "AND (";
             for (int i = 0; i < calendars.size(); i++) {
-                calendarQuery += CalendarContract.Instances.CALENDAR_ID + " = " + calendars.getMap(i).toString();
+                calendarQuery += CalendarContract.Instances.CALENDAR_ID + " = " + calendars.getString(i);
                 if (i != calendars.size() - 1) {
                     calendarQuery += " OR ";
                 }
@@ -341,7 +341,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Instances.DURATION,
                 CalendarContract.Instances.ORIGINAL_SYNC_ID,
         }, selection, null, null);
-                
+
 
         return serializeEvents(cursor);
     }
