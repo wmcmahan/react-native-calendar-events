@@ -273,7 +273,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     //region Event Accessors
     private WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars) {
-      String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -341,7 +341,6 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 CalendarContract.Instances.DURATION,
                 CalendarContract.Instances.ORIGINAL_SYNC_ID,
         }, selection, null, null);
-
 
         return serializeEvents(cursor);
     }
