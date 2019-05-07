@@ -595,16 +595,20 @@ RCT_EXPORT_MODULE()
                         proximity = @"None";
                         break;
                 }
-                [formattedAlarm setValue:@{
-                                           @"title": alarm.structuredLocation.title,
-                                           @"proximity": proximity,
-                                           @"radius": @(alarm.structuredLocation.radius),
-                                           @"coords": @{
-                                                   @"latitude": @(alarm.structuredLocation.geoLocation.coordinate.latitude),
-                                                   @"longitude": @(alarm.structuredLocation.geoLocation.coordinate.longitude)
-                                                   }}
-                                  forKey:@"structuredLocation"];
-
+                NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:4];
+                [structuredLocation addEntriesFromDictionary: @{
+                                                                @"title": alarm.structuredLocation.title,
+                                                                @"proximity": proximity,
+                                                                @"radius": @(alarm.structuredLocation.radius)
+                                                                }];
+                if (alarm.structuredLocation.geoLocation) {
+                    [structuredLocation setValue: @{
+                                                    @"latitude": @(alarm.structuredLocation.geoLocation.coordinate.latitude),
+                                                    @"longitude": @(alarm.structuredLocation.geoLocation.coordinate.longitude)
+                                                    }
+                                          forKey:@"coords"];
+                }
+                [formattedAlarm setValue:structuredLocation forKey:@"structuredLocation"];
             }
             [alarms addObject:formattedAlarm];
         }
@@ -652,15 +656,19 @@ RCT_EXPORT_MODULE()
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
     
     if (event.structuredLocation) {
-        [formedCalendarEvent setValue:@{
-                                   @"title": event.structuredLocation.title,
-                                   @"radius": @(event.structuredLocation.radius),
-                                   @"coords": @{
-                                           @"latitude": @(event.structuredLocation.geoLocation.coordinate.latitude),
-                                           @"longitude": @(event.structuredLocation.geoLocation.coordinate.longitude)
-                                           }}
-                          forKey:@"structuredLocation"];
-        
+        NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:3];
+        [structuredLocation addEntriesFromDictionary: @{
+                                                        @"title": event.structuredLocation.title,
+                                                        @"radius": @(event.structuredLocation.radius)
+                                                        }];
+        if (event.structuredLocation.geoLocation) {
+            [structuredLocation setValue: @{
+                                            @"latitude": @(event.structuredLocation.geoLocation.coordinate.latitude),
+                                            @"longitude": @(event.structuredLocation.geoLocation.coordinate.longitude)
+                                            }
+                                forKey:@"coords"];
+        }
+        [formedCalendarEvent setValue: structuredLocation forKey:@"structuredLocation"];
     }
 
     return [formedCalendarEvent copy];
