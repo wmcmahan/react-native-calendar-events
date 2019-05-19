@@ -11,7 +11,6 @@ import android.Manifest;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.database.Cursor;
 import android.accounts.Account;
@@ -30,6 +29,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.Dynamic;
+import com.facebook.react.modules.core.PermissionAwareActivity;
+import com.facebook.react.modules.core.PermissionListener;
 
 import java.sql.Array;
 import java.text.ParseException;
@@ -41,7 +42,7 @@ import java.util.HashMap;
 import java.util.TimeZone;
 import android.util.Log;
 
-public class CalendarEvents extends ReactContextBaseJavaModule {
+public class CalendarEvents extends ReactContextBaseJavaModule implements PermissionListener {
 
     private static int PERMISSION_REQUEST_CODE = 37;
     private final ReactContext reactContext;
@@ -66,15 +67,21 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             promise.reject("E_ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist");
             return;
         }
+        if (!(currentActivity instanceof PermissionAwareActivity)) {
+            promise.reject("E_ACTIVITY_NOT_PERMISSION_AWARE", "Activity does not implement the PermissionAwareActivity interface");
+            return;
+        }
+        PermissionAwareActivity activity = (PermissionAwareActivity)currentActivity;
         PERMISSION_REQUEST_CODE++;
         permissionsPromises.put(PERMISSION_REQUEST_CODE, promise);
-        ActivityCompat.requestPermissions(currentActivity, new String[]{
+        activity.requestPermissions(new String[]{
                 Manifest.permission.WRITE_CALENDAR,
                 Manifest.permission.READ_CALENDAR
-        }, PERMISSION_REQUEST_CODE);
+        }, PERMISSION_REQUEST_CODE, this);
     }
 
-    public static void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    @Override
+    public boolean onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (permissionsPromises.containsKey(requestCode)) {
 
             // If request is cancelled, the result arrays are empty.
@@ -89,6 +96,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             }
             permissionsPromises.remove(requestCode);
         }
+
+        return permissionsPromises.size() == 0;
     }
 
     private boolean haveCalendarReadWritePermissions() {
