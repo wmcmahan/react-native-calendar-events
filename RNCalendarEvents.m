@@ -493,6 +493,7 @@ RCT_EXPORT_MODULE()
     }
 
     if (event.calendar) {
+        [formedCalendarEvent setValue:event.calendar.calendarIdentifier forKey:@"calendarId"];
         [formedCalendarEvent setValue:@{
                                         @"id": event.calendar.calendarIdentifier,
                                         @"title": event.calendar.title ? event.calendar.title : @"",
