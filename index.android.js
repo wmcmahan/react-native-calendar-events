@@ -14,8 +14,8 @@ export default {
     return CalendarEvents.requestCalendarPermissions()
   },
 
-  async fetchAllEvents (startDate, endDate, calendars = []) {
-    return CalendarEvents.findAllEvents(startDate, endDate, calendars)
+  async fetchAllEvents (startDate, endDate, calendars = [], androidLite = false) {
+    return CalendarEvents.findAllEvents(startDate, endDate, calendars, androidLite)
   },
 
   async findCalendars () {
