@@ -158,6 +158,7 @@ Arguments:
  - startDate: Date - The start date of the range of events fetched.
  - endDate: Date - The end date of the range of events fetched.
  - calendars: Array - List of calendar id strings to specify calendar events. Defaults to all calendars if empty.
+ - androidLite: Bool - Large queries may take a long time to complete on Android devices - [#237](https://github.com/wmcmahan/react-native-calendar-events/issues/237). This option will speed up the query, but will return events *without* `attendees` and `calendar` props for Android. Defaults to false.
 
 Returns: **Promise**  
  - fulfilled: Array - Matched events within the specified date range.
@@ -213,7 +214,7 @@ Returns: **Promise**
 | Property        | Type            | Description | iOS | Android |
 | :--------------- | :---------------- | :----------- | :-----------: | :-----------: |
 | **id***  | String  | Unique id for the calendar event. | ✓ | ✓ |
-| **calendarId****   | String           | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar. | ✓ | ✓ |
+| **calendarId**     | String           | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar. | ✓ | ✓ |
 | **title**           | String           | The title for the calendar event. | ✓ | ✓ |
 | **startDate**       | Date             | The start date of the calendar event in ISO format. | ✓ | ✓ |
 | **endDate**         | Date             | The end date of the calendar event in ISO format. | ✓ | ✓ |

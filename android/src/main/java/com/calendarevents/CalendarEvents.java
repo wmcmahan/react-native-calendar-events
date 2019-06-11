@@ -272,7 +272,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     //region Event Accessors
-    private WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars) {
+    private WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars, Boolean isLite) {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -343,7 +343,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }, selection, null, null);
 
 
-        return serializeEvents(cursor);
+        return serializeEvents(cursor, isLite);
     }
 
     private WritableNativeMap findEventById(String eventID) {
@@ -966,11 +966,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     //endregion
 
     // region Serialize Events
-    private WritableNativeArray serializeEvents(Cursor cursor) {
+    private WritableNativeArray serializeEvents(Cursor cursor, Boolean isLite) {
         WritableNativeArray results = new WritableNativeArray();
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                results.pushMap(serializeEvent(cursor));
+                results.pushMap(serializeEvent(cursor, isLite));
             }
 
             cursor.close();
@@ -980,6 +980,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     private WritableNativeMap serializeEvent(Cursor cursor) {
+        return serializeEvent(cursor, false);
+    }
+
+    private WritableNativeMap serializeEvent(Cursor cursor, Boolean isLite) {
         WritableNativeMap event = new WritableNativeMap();
 
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
@@ -1042,7 +1046,7 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
 
         event.putString("id", cursor.getString(0));
-        event.putMap("calendar", findCalendarById(cursor.getString(cursor.getColumnIndex("calendar_id"))));
+        event.putString("calendarId", cursor.getString(cursor.getColumnIndex("calendar_id")));
         event.putString("title", cursor.getString(cursor.getColumnIndex("title")));
         event.putString("description", cursor.getString(2));
         event.putString("startDate", startDateUTC);
@@ -1050,7 +1054,6 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         event.putBoolean("allDay", allDay);
         event.putString("location", cursor.getString(6));
         event.putString("availability", availabilityStringMatchingConstant(cursor.getInt(9)));
-        event.putArray("attendees", (WritableArray) findAttendeesByEventId(cursor.getString(0)));
 
         if (cursor.getInt(10) > 0) {
             event.putArray("alarms", findReminderByEventId(cursor.getString(0), Long.parseLong(cursor.getString(3))));
@@ -1065,6 +1068,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
         if (cursor.getColumnIndex(CalendarContract.Instances.ORIGINAL_SYNC_ID) != -1 && cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.ORIGINAL_SYNC_ID)) != null) {
             event.putString("syncId", cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.ORIGINAL_SYNC_ID)));
+        }
+
+        if (isLite != true) {
+            event.putMap("calendar", findCalendarById(cursor.getString(cursor.getColumnIndex("calendar_id"))));
+            event.putArray("attendees", (WritableArray) findAttendeesByEventId(cursor.getString(0)));
         }
 
         return event;
@@ -1243,14 +1251,14 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void findAllEvents(final Dynamic startDate, final Dynamic endDate, final ReadableArray calendars, final Promise promise) {
+    public void findAllEvents(final Dynamic startDate, final Dynamic endDate, final ReadableArray calendars, final Boolean isLite, final Promise promise) {
 
         if (this.haveCalendarReadWritePermissions()) {
             try {
                 Thread thread = new Thread(new Runnable(){
                     @Override
                     public void run() {
-                        WritableNativeArray results = findEvents(startDate, endDate, calendars);
+                        WritableNativeArray results = findEvents(startDate, endDate, calendars, isLite);
                         promise.resolve(results);
                     }
                 });
