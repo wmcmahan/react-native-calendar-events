@@ -15,7 +15,7 @@ export default {
   },
 
   fetchAllEvents (startDate, endDate, calendars = []) {
-    return RNCalendarEvents.fetchAllEvents(startDate, endDate, calendars, false)
+    return RNCalendarEvents.fetchAllEvents(startDate, endDate, calendars)
   },
 
   findCalendars () {
