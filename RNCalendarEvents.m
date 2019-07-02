@@ -23,7 +23,6 @@ static NSString *const _occurrenceDate = @"occurrenceDate";
 static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
 static NSString *const _attendees    = @"attendees";
-dispatch_queue_t serialQueue;
 
 @implementation RNCalendarEvents
 
@@ -51,7 +50,6 @@ RCT_EXPORT_MODULE()
     self = [super init];
     if (self) {
         _eventStore = [[EKEventStore alloc] init];
-        serialQueue = dispatch_queue_create("rncalendarevents.queue", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -169,17 +167,6 @@ RCT_EXPORT_MODULE()
         calendarEvent.URL = URL;
     }
 
-    if ([details objectForKey:@"structuredLocation"] && [[details objectForKey:@"structuredLocation"] count]) {
-        NSDictionary *locationOptions = [details valueForKey:@"structuredLocation"];
-        NSDictionary *geo = [locationOptions valueForKey:@"coords"];
-        CLLocation *geoLocation = [[CLLocation alloc] initWithLatitude:[[geo valueForKey:@"latitude"] doubleValue]
-                                                             longitude:[[geo valueForKey:@"longitude"] doubleValue]];
-        
-        calendarEvent.structuredLocation = [EKStructuredLocation locationWithTitle:[locationOptions valueForKey:@"title"]];
-        calendarEvent.structuredLocation.geoLocation = geoLocation;
-        calendarEvent.structuredLocation.radius = [[locationOptions valueForKey:@"radius"] doubleValue];
-    }
-    
     return [self saveEvent:calendarEvent options:options];
 }
 
@@ -309,12 +296,12 @@ RCT_EXPORT_MODULE()
         weekDay = [EKRecurrenceDayOfWeek dayOfWeek:7];
     } else if ([day isEqualToString:@"SU"]) {
         weekDay = [EKRecurrenceDayOfWeek dayOfWeek:1];
-    }
+    } 
 
     NSLog(@"%s", "dayOfTheWeek");
     NSLog(@"%@", weekDay);
     return weekDay;
-}
+} 
 
 -(NSMutableArray *) createRecurrenceDaysOfWeek: (NSArray *) days
 {
@@ -326,10 +313,10 @@ RCT_EXPORT_MODULE()
         for (NSString *day in days) {
             EKRecurrenceDayOfWeek *weekDay = [self dayOfTheWeekMatchingName: day];
             [daysOfTheWeek addObject:weekDay];
-
+            
         }
     }
-
+    
     return daysOfTheWeek;
 }
 
@@ -595,20 +582,16 @@ RCT_EXPORT_MODULE()
                         proximity = @"None";
                         break;
                 }
-                NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:4];
-                [structuredLocation addEntriesFromDictionary: @{
-                                                                @"title": alarm.structuredLocation.title,
-                                                                @"proximity": proximity,
-                                                                @"radius": @(alarm.structuredLocation.radius)
-                                                                }];
-                if (alarm.structuredLocation.geoLocation) {
-                    [structuredLocation setValue: @{
-                                                    @"latitude": @(alarm.structuredLocation.geoLocation.coordinate.latitude),
-                                                    @"longitude": @(alarm.structuredLocation.geoLocation.coordinate.longitude)
-                                                    }
-                                          forKey:@"coords"];
-                }
-                [formattedAlarm setValue:structuredLocation forKey:@"structuredLocation"];
+                [formattedAlarm setValue:@{
+                                           @"title": alarm.structuredLocation.title,
+                                           @"proximity": proximity,
+                                           @"radius": @(alarm.structuredLocation.radius),
+                                           @"coords": @{
+                                                   @"latitude": @(alarm.structuredLocation.geoLocation.coordinate.latitude),
+                                                   @"longitude": @(alarm.structuredLocation.geoLocation.coordinate.longitude)
+                                                   }}
+                                  forKey:@"structuredLocation"];
+
             }
             [alarms addObject:formattedAlarm];
         }
@@ -654,22 +637,6 @@ RCT_EXPORT_MODULE()
     }
 
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
-    
-    if (event.structuredLocation) {
-        NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:3];
-        [structuredLocation addEntriesFromDictionary: @{
-                                                        @"title": event.structuredLocation.title,
-                                                        @"radius": @(event.structuredLocation.radius)
-                                                        }];
-        if (event.structuredLocation.geoLocation) {
-            [structuredLocation setValue: @{
-                                            @"latitude": @(event.structuredLocation.geoLocation.coordinate.latitude),
-                                            @"longitude": @(event.structuredLocation.geoLocation.coordinate.longitude)
-                                            }
-                                forKey:@"coords"];
-        }
-        [formedCalendarEvent setValue: structuredLocation forKey:@"structuredLocation"];
-    }
 
     return [formedCalendarEvent copy];
 }
@@ -830,7 +797,7 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
                                                                     calendars:eventCalendars];
 
     __weak RNCalendarEvents *weakSelf = self;
-    dispatch_async(serialQueue, ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         RNCalendarEvents *strongSelf = weakSelf;
         NSArray *calendarEvents = [[strongSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
         if (calendarEvents) {
@@ -851,7 +818,7 @@ RCT_EXPORT_METHOD(findEventById:(NSString *)eventId resolver:(RCTPromiseResolveB
     }
 
     __weak RNCalendarEvents *weakSelf = self;
-    dispatch_async(serialQueue, ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         RNCalendarEvents *strongSelf = weakSelf;
 
         EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
@@ -878,7 +845,7 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title
     [details setValue:title forKey:_title];
 
     __weak RNCalendarEvents *weakSelf = self;
-    dispatch_async(serialQueue, ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         RNCalendarEvents *strongSelf = weakSelf;
 
         NSDictionary *response = [strongSelf buildAndSaveEvent:details options:options];
@@ -902,18 +869,11 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
     NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
 
     if (exceptionDate) {
-      NSCalendar *cal = [NSCalendar currentCalendar];
-      NSDate *endDate = [cal dateByAddingUnit:NSCalendarUnitDay
-                                     value:1
-                                    toDate:exceptionDate
-                                   options:0];
-
-      NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:exceptionDate
-                                                                        endDate:endDate
-                                                                      calendars:nil];
-
+        NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:exceptionDate
+                                                                          endDate:[NSDate distantFuture]
+                                                                        calendars:nil];
         __weak RNCalendarEvents *weakSelf = self;
-        dispatch_async(serialQueue, ^{
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             RNCalendarEvents *strongSelf = weakSelf;
             NSArray *calendarEvents = [strongSelf.eventStore eventsMatchingPredicate:predicate];
             EKEvent *eventInstance;
@@ -945,24 +905,19 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
             return resolve(@(success));
         });
     } else {
-      __weak RNCalendarEvents *weakSelf = self;
-      dispatch_async(serialQueue, ^{
-          RNCalendarEvents *strongSelf = weakSelf;
-          
-          EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
-          NSError *error = nil;
-          EKSpan eventSpan = EKSpanThisEvent;
+        EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+        NSError *error = nil;
+        EKSpan eventSpan = EKSpanThisEvent;
 
-          if (futureEvents) {
-              eventSpan = EKSpanFutureEvents;
-          }
+        if (futureEvents) {
+            eventSpan = EKSpanFutureEvents;
+        }
 
-          BOOL success = [self.eventStore removeEvent:calendarEvent span:eventSpan commit:YES error:&error];
-          if (error) {
-              return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
-          }
-          return resolve(@(success));
-      });
+        BOOL success = [self.eventStore removeEvent:calendarEvent span:eventSpan commit:YES error:&error];
+        if (error) {
+            return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
+        }
+        return resolve(@(success));
     }
 }
 
