@@ -8,14 +8,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.Manifest;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.database.Cursor;
-import android.accounts.Account;
-import android.accounts.AccountManager;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -31,11 +28,9 @@ import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.Dynamic;
 
-import java.sql.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.TimeZone;
@@ -1072,13 +1067,12 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
 
     private WritableNativeArray serializeEventCalendars(Cursor cursor) {
         WritableNativeArray results = new WritableNativeArray();
-
-        while (cursor.moveToNext()) {
-            results.pushMap(serializeEventCalendar(cursor));
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                results.pushMap(serializeEventCalendar(cursor));
+            }
+            cursor.close();
         }
-
-        cursor.close();
-
         return results;
     }
 
