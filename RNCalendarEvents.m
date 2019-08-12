@@ -779,6 +779,13 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
         return;
     }
 
+    // TODO: This is a workaround for the error we are facing
+    // TOOD: fail with the proper error
+    if (startDate == nil) {
+        reject@(@"error", @"startDate is invalid", nil);
+        return;
+    }
+
     NSMutableArray *eventCalendars;
 
     if (calendars.count) {
