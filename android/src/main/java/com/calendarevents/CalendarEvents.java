@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.Manifest;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.support.v4.app.ActivityCompat;
@@ -868,8 +867,23 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     //region Availability
     private WritableNativeArray calendarAllowedAvailabilitiesFromDBString(String dbString) {
         WritableNativeArray availabilitiesStrings = new WritableNativeArray();
-        for(String availabilityId: dbString.split(",")) {
-            switch(Integer.parseInt(availabilityId)) {
+        for(String availabilityStr: dbString.split(",")) {
+            int availabilityId = -1;
+
+            try {
+                availabilityId = Integer.parseInt(availabilityStr);
+            } catch(NumberFormatException e) {
+                // Some devices seem to just use strings.
+                if (availabilityStr.equals("AVAILABILITY_BUSY")) {
+                    availabilityId = CalendarContract.Events.AVAILABILITY_BUSY;
+                } else if (availabilityStr.equals("AVAILABILITY_FREE")) {
+                    availabilityId = CalendarContract.Events.AVAILABILITY_FREE;
+                } else if (availabilityStr.equals("AVAILABILITY_TENTATIVE")) {
+                    availabilityId = CalendarContract.Events.AVAILABILITY_TENTATIVE;
+                }
+            }
+
+            switch(availabilityId) {
                 case CalendarContract.Events.AVAILABILITY_BUSY:
                     availabilitiesStrings.pushString("busy");
                     break;
