@@ -129,6 +129,22 @@ Returns: **Promise**
 
 <br/>
 
+### removeCalendar
+Removes a calendar.
+
+```javascript
+RNCalendarEvents.removeCalendar(id)
+```
+
+Arguments:
+ - id: String - The id of the calendar to remove.
+ 
+Returns: **Promise**
+ - fulfilled: Bool - Successful
+ - rejected: Error
+
+<br/>
+
 ### findEventById
 Find calendar event by id.
 Returns a promise with fulfilled found events.

@@ -29,6 +29,10 @@ export default {
     });
   },
 
+  async removeCalendar (id) {
+    return CalendarEvents.removeCalendar(id)
+  },
+
   async findEventById (id) {
     return CalendarEvents.findById(id)
   },
