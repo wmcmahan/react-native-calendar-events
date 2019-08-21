@@ -229,6 +229,7 @@ Returns: **Promise**
 | [**alarms**](#alarms)          | Array            | The alarms associated with the calendar event, as an array of alarm objects. | ✓ | ✓ |
 | [**attendees**](#attendees)*   | Array            | The attendees of the event, including the organizer. | ✓ | ✓ |
 | [**calendar**](#calendar)*    | Object      | The calendar containing the event.| ✓ | ✓ |
+| **skipAndroidTimezone**    | Bool      | Skip the process of setting automatic timezone on android|  | ✓ |
 
 
 ### Calendar
