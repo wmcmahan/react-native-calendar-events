@@ -30,10 +30,19 @@ dispatch_queue_t serialQueue;
 - (NSString *)hexStringFromColor:(UIColor *)color {
     const CGFloat *components = CGColorGetComponents(color.CGColor);
 
-    CGFloat r = components[0];
-    CGFloat g = components[1];
-    CGFloat b = components[2];
-
+    CGFloat r;
+    CGFloat g;
+    CGFloat b;
+    if(components && sizeof(components) >= 3){
+        r = components[0];
+        g = components[1];
+        b = components[2];
+    }else{
+        r = 1;
+        g = 1;
+        b = 1;
+    }
+    
     return [NSString stringWithFormat:@"#%02lX%02lX%02lX",
             lroundf(r * 255),
             lroundf(g * 255),
