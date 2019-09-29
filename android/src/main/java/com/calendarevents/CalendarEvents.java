@@ -98,6 +98,16 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return writePermission == PackageManager.PERMISSION_GRANTED &&
                 readPermission == PackageManager.PERMISSION_GRANTED;
     }
+    
+    private boolean shouldShowRequestPermissionRationale() {
+                Activity currentActivity = getCurrentActivity();
+
+        boolean permission = ActivityCompat.shouldShowRequestPermissionRationale(currentActivity,
+                    Manifest.permission.WRITE_CALENDAR);
+
+        return permission;
+    }
+
     //endregion
 
     private WritableNativeArray findEventCalendars() {
@@ -1150,8 +1160,10 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             promise.resolve("authorized");
         } else if (!permissionRequested) {
             promise.resolve("undetermined");
+        } else if(this.shouldShowRequestPermissionRationale()) {
+            promise.resolve("denied"); 
         } else {
-            promise.resolve("denied");
+            promise.resolve("restricted");
         }
     }
 
