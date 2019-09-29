@@ -503,7 +503,7 @@ RCT_EXPORT_MODULE()
 
     if (event.calendar) {
         [formedCalendarEvent setValue:@{
-                                        @"id": event.calendar.calendarIdentifier,
+                                        @"id": event.calendar.calendarIdentifier?event.calendar.calendarIdentifier: @"tempCalendar",
                                         @"title": event.calendar.title ? event.calendar.title : @"",
                                         @"source": event.calendar.source && event.calendar.source.title ? event.calendar.source.title : @"",
                                         @"allowsModifications": @(event.calendar.allowsContentModifications),
