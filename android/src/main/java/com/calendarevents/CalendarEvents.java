@@ -425,8 +425,13 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
     private int addEvent(String title, ReadableMap details, ReadableMap options) throws ParseException {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-
+        boolean skipTimezone = false;
+        if(details.hasKey("skipAndroidTimezone") && details.getBoolean("skipAndroidTimezone")){
+            skipTimezone = true;
+        }
+        if(!skipTimezone){
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        }
         ContentResolver cr = reactContext.getContentResolver();
         ContentValues eventValues = new ContentValues();
 
