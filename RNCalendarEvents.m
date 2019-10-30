@@ -458,8 +458,12 @@ RCT_EXPORT_MODULE()
     NSMutableArray *serializedCalendarEvents = [[NSMutableArray alloc] init];
 
     for (EKEvent *event in calendarEvents) {
-
+        @try {
         [serializedCalendarEvents addObject:[self serializeCalendarEvent:event]];
+        }
+        @catch (NSException *exception) {
+        NSLog(@"%@", exception.reason);
+        }
     }
 
     return [serializedCalendarEvents copy];
@@ -840,6 +844,7 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
 
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
+
         RNCalendarEvents *strongSelf = weakSelf;
         NSArray *calendarEvents = [[strongSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
         if (calendarEvents) {
