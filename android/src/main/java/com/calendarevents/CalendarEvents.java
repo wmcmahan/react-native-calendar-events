@@ -836,8 +836,11 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                 reminderValues.put(CalendarContract.Reminders.EVENT_ID, eventID);
                 reminderValues.put(CalendarContract.Reminders.MINUTES, minutes);
                 reminderValues.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
+            try{
+ resolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues);
+}catch(Exception e){
 
-                resolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues);
+}
             }
         }
     }
@@ -1246,6 +1249,9 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
                                 promise.reject("add event error", "Unable to save event");
                             }
                         } catch (ParseException e) {
+                            promise.reject("add event error", e.getMessage());
+                        }
+                        catch (Exception e) {
                             promise.reject("add event error", e.getMessage());
                         }
                     }
