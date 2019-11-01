@@ -824,7 +824,7 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
         reject(@"error", @"unauthorized to access calendar", nil);
         return;
     }
-
+  
     NSMutableArray *eventCalendars;
 
     if (calendars.count) {
@@ -844,7 +844,7 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
 
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
-
+     @try{
         RNCalendarEvents *strongSelf = weakSelf;
         NSArray *calendarEvents = [[strongSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
         if (calendarEvents) {
@@ -853,6 +853,10 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
             resolve(@[]);
         } else {
             reject(@"error", @"calendar event request error", nil);
+        }
+         }
+        @catch (NSException *exception) {
+              reject(@"error", @"calendar event request error", nil);
         }
     });
 }
