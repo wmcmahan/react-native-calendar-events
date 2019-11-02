@@ -461,9 +461,6 @@ RCT_EXPORT_MODULE()
         @try {
         [serializedCalendarEvents addObject:[self serializeCalendarEvent:event]];
         }
-        @catch (NSInvalidArgumentException *exception) {
-        NSLog(@"%@", exception.reason);
-        }
         @catch (NSException *exception) {
         NSLog(@"%@", exception.reason);
         }
