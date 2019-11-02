@@ -461,6 +461,9 @@ RCT_EXPORT_MODULE()
         @try {
         [serializedCalendarEvents addObject:[self serializeCalendarEvent:event]];
         }
+        @catch (NSInvalidArgumentException *exception) {
+        NSLog(@"%@", exception.reason);
+        }
         @catch (NSException *exception) {
         NSLog(@"%@", exception.reason);
         }
@@ -645,23 +648,23 @@ RCT_EXPORT_MODULE()
     [formedCalendarEvent setValue:[NSNumber numberWithBool:event.allDay] forKey:_allDay];
 
     if (event.hasRecurrenceRules) {
-        EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
-        NSString *frequencyType = [self nameMatchingFrequency:[rule frequency]];
+        //EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
+        NSString *frequencyType = @"Recurrence";//[self nameMatchingFrequency:[rule frequency]];
         [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
 
         NSMutableDictionary *recurrenceRule = [NSMutableDictionary dictionaryWithDictionary:@{@"frequency": frequencyType}];
 
-        if ([rule interval]) {
-            [recurrenceRule setValue:@([rule interval]) forKey:@"interval"];
-        }
+        // if ([rule interval]) {
+        //     [recurrenceRule setValue:@([rule interval]) forKey:@"interval"];
+        // }
 
-        if ([[rule recurrenceEnd] endDate]) {
-            [recurrenceRule setValue:[dateFormatter stringFromDate:[[rule recurrenceEnd] endDate]] forKey:@"endDate"];
-        }
+        // if ([[rule recurrenceEnd] endDate]) {
+        //     [recurrenceRule setValue:[dateFormatter stringFromDate:[[rule recurrenceEnd] endDate]] forKey:@"endDate"];
+        // }
 
-        if ([[rule recurrenceEnd] occurrenceCount]) {
-            [recurrenceRule setValue:@([[rule recurrenceEnd] occurrenceCount]) forKey:@"occurrence"];
-        }
+        // if ([[rule recurrenceEnd] occurrenceCount]) {
+        //     [recurrenceRule setValue:@([[rule recurrenceEnd] occurrenceCount]) forKey:@"occurrence"];
+        // }
 
         [formedCalendarEvent setValue:recurrenceRule forKey:_recurrenceRule];
     }
@@ -674,13 +677,13 @@ RCT_EXPORT_MODULE()
                                                         @"title": event.structuredLocation.title,
                                                         @"radius": @(event.structuredLocation.radius)
                                                         }];
-        if (event.structuredLocation.geoLocation) {
-            [structuredLocation setValue: @{
-                                            @"latitude": @(event.structuredLocation.geoLocation.coordinate.latitude),
-                                            @"longitude": @(event.structuredLocation.geoLocation.coordinate.longitude)
-                                            }
-                                forKey:@"coords"];
-        }
+        // if (event.structuredLocation.geoLocation) {
+        //     [structuredLocation setValue: @{
+        //                                     @"latitude": @(event.structuredLocation.geoLocation.coordinate.latitude),
+        //                                     @"longitude": @(event.structuredLocation.geoLocation.coordinate.longitude)
+        //                                     }
+        //                         forKey:@"coords"];
+        // }
         [formedCalendarEvent setValue: structuredLocation forKey:@"structuredLocation"];
     }
 
