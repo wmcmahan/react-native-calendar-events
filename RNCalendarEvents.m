@@ -524,15 +524,38 @@ RCT_EXPORT_MODULE()
     if (event.URL) {
         [formedCalendarEvent setValue:[event.URL absoluteString] forKey:_url];
     }
+    
 
     if (event.location) {
         [formedCalendarEvent setValue:event.location forKey:_location];
     }
 
     if (event.attendees) {
-        NSMutableArray *attendees = [[NSMutableArray alloc] init];
-        for (EKParticipant *attendee in event.attendees) {
+        
+        NSString *orgemail = @"";
+        
+        if(event.organizer) {
+        
+        EKParticipant *organizer = event.organizer;
 
+        NSString *organizerDescription = [organizer description];
+        
+         NSMutableDictionary *descriptionDataOrganizer = [NSMutableDictionary dictionary];
+                   for (NSString *pairString in [organizerDescription componentsSeparatedByString:@";"])
+                   {
+                       NSArray *pairorg = [pairString componentsSeparatedByString:@"="];
+                       if ( [pairorg count] != 2)
+                           continue;
+                       [descriptionDataOrganizer setObject:[[pairorg objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pairorg objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+                   }
+        
+        orgemail = [descriptionDataOrganizer valueForKey:@"email"];
+       }
+        
+        NSMutableArray *attendees = [[NSMutableArray alloc] init];
+        
+        for (EKParticipant *attendee in event.attendees) {
+            
             NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
             for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
             {
@@ -546,6 +569,9 @@ RCT_EXPORT_MODULE()
             NSString *name = [descriptionData valueForKey:@"name"];
             NSString *email = [descriptionData valueForKey:@"email"];
             NSString *phone = [descriptionData valueForKey:@"phone"];
+            NSString *relationship = [NSString stringWithFormat: @"%ld", (long)attendee.participantRole] ;
+            NSString *status = [NSString stringWithFormat: @"%ld", (long)attendee.participantStatus];
+            NSString *type = [NSString stringWithFormat: @"%ld", (long)attendee.participantType];
 
             if(email && ![email isEqualToString:@"(null)"]) {
                 [formattedAttendee setValue:email forKey:@"email"];
@@ -565,6 +591,29 @@ RCT_EXPORT_MODULE()
             else {
                 [formattedAttendee setValue:@"" forKey:@"name"];
             }
+            if(relationship && ![relationship isEqualToString:@"(null)"]) {
+                if([orgemail isEqualToString:email]){
+                    [formattedAttendee setValue:@"2" forKey:@"relationship"];
+                }else {
+                    [formattedAttendee setValue:relationship forKey:@"relationship"];
+                }
+            }
+            else {
+                [formattedAttendee setValue:@"" forKey:@"relationship"];
+            }
+            if(status && ![status isEqualToString:@"(null)"]) {
+                [formattedAttendee setValue:status forKey:@"status"];
+            }
+            else {
+                [formattedAttendee setValue:@"" forKey:@"status"];
+            }
+            if(type && ![type isEqualToString:@"(null)"]) {
+                [formattedAttendee setValue:type forKey:@"type"];
+            }
+            else {
+                [formattedAttendee setValue:@"" forKey:@"type"];
+            }
+            
             [attendees addObject:formattedAttendee];
         }
         [formedCalendarEvent setValue:attendees forKey:_attendees];
