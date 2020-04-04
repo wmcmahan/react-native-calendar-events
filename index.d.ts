@@ -110,6 +110,8 @@ export interface CalendarEventReadable extends CalendarEventBase {
   occurrenceDate?: ISODateString;
   /** The alarms associated with the calendar event, as an array of alarm objects. */
   alarms?: Array<Alarm<ISODateString>>;
+  /** Added by devang patel for calander event requirements */
+  priority?: string;
 }
 
 export interface CalendarEventWritable extends CalendarEventBase {
