@@ -533,6 +533,7 @@ RCT_EXPORT_MODULE()
     if (event.attendees) {
         
         NSString *orgemail = @"";
+        NSString *orgphone = @"";
         
         if(event.organizer) {
         
@@ -550,10 +551,12 @@ RCT_EXPORT_MODULE()
                    }
         
         orgemail = [descriptionDataOrganizer valueForKey:@"email"];
-       }
+        orgphone = [descriptionDataOrganizer valueForKey:@"phone"];
+        }
         
         NSMutableArray *attendees = [[NSMutableArray alloc] init];
         
+        Boolean organizerFound = NO;
         for (EKParticipant *attendee in event.attendees) {
             
             NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
@@ -593,6 +596,7 @@ RCT_EXPORT_MODULE()
             }
             if(relationship && ![relationship isEqualToString:@"(null)"]) {
                 if([orgemail isEqualToString:email]){
+                    organizerFound = YES;
                     [formattedAttendee setValue:@"2" forKey:@"relationship"];
                 }else {
                     [formattedAttendee setValue:relationship forKey:@"relationship"];
@@ -616,6 +620,27 @@ RCT_EXPORT_MODULE()
             
             [attendees addObject:formattedAttendee];
         }
+        
+        if (!organizerFound) {
+            NSString *status = [NSString stringWithFormat: @"%ld", (long)event.organizer.participantStatus];
+            NSString *type = [NSString stringWithFormat: @"%ld", (long)event.organizer.participantType];
+            
+            NSMutableDictionary *formattedOrganizer = [[NSMutableDictionary alloc] init];
+            [formattedOrganizer setValue:orgemail forKey:@"email"];
+            [formattedOrganizer setValue:@"2" forKey:@"relationship"];
+            if(orgphone && ![orgphone isEqualToString:@"(null)"]) {
+                [formattedOrganizer setValue:orgphone forKey:@"phone"];
+            }
+            else {
+                [formattedOrganizer setValue:@"" forKey:@"phone"];
+            }
+            [formattedOrganizer setValue:status forKey:@"status"];
+            [formattedOrganizer setValue:type forKey:@"type"];
+            [formattedOrganizer setValue:event.organizer.name forKey:@"name"];
+
+            [attendees addObject:formattedOrganizer];
+        }
+
         [formedCalendarEvent setValue:attendees forKey:_attendees];
     }
     if (event.hasAlarms) {
