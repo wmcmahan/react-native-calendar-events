@@ -29,6 +29,10 @@ export default {
     });
   },
 
+  removeCalendar (id) {
+    return RNCalendarEvents.removeCalendar(id)
+  },
+
   findEventById (id) {
     return RNCalendarEvents.findEventById(id);
   },

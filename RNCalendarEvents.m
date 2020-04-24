@@ -814,6 +814,27 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
                   [NSString stringWithFormat:@"Calendar %@ could not be saved", title], error);
 }
 
+RCT_EXPORT_METHOD(removeCalendar:(NSString *)calendarId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if (![self isCalendarAccessGranted]) {
+        reject(@"error", @"unauthorized to access calendar", nil);
+        return;
+    }
+
+
+    dispatch_async(serialQueue, ^{
+        
+        EKCalendar *calendar = (EKCalendar *)[self.eventStore calendarWithIdentifier:calendarId];
+        NSError *error = nil;
+
+        BOOL success = [self.eventStore removeCalendar:calendar commit:YES error:&error];
+        if (error) {
+            return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
+        }
+        return resolve(@(success));
+    });
+}
+
 RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate calendars:(NSArray *)calendars resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     if (![self isCalendarAccessGranted]) {

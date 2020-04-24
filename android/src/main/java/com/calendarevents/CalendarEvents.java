@@ -251,6 +251,22 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         return Integer.parseInt(calendarUri.getLastPathSegment());
     }
 
+    private boolean removeCalendar(String calendarID) {
+        int rows = 0;
+
+        try {
+            ContentResolver cr = reactContext.getContentResolver();
+
+            Uri uri = ContentUris.withAppendedId(CalendarContract.Calendars.CONTENT_URI, (long) Integer.parseInt(calendarID));
+            rows = cr.delete(uri, null, null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return rows > 0;
+    }
+
     private WritableNativeArray findAttendeesByEventId(String eventID) {
         WritableNativeArray result;
         Cursor cursor;
@@ -1230,6 +1246,27 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void removeCalendar(final String CalendarID, final Promise promise) {
+        if (this.haveCalendarReadWritePermissions()) {
+            try {
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        boolean successful = removeCalendar(CalendarID);
+                        promise.resolve(successful);
+                    }
+                });
+                thread.start();
+
+            } catch (Exception e) {
+                promise.reject("error removing calendar", e.getMessage());
+            }
+        } else {
+            promise.reject("remove calendar error", "you don't have permissions to remove a calendar");
+        }
+
+    }
     @ReactMethod
     public void saveEvent(final String title, final ReadableMap details, final ReadableMap options, final Promise promise) {
         if (this.haveCalendarReadWritePermissions()) {
