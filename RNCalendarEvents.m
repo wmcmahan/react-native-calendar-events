@@ -8,6 +8,7 @@
 @end
 
 static NSString *const _id = @"id";
+static NSString *const _eventIdentifier = @"eventIdentifier";
 static NSString *const _calendarId = @"calendarId";
 static NSString *const _title = @"title";
 static NSString *const _location = @"location";
@@ -469,6 +470,7 @@ RCT_EXPORT_MODULE()
 {
 
     NSDictionary *emptyCalendarEvent = @{
+                                         _eventIdentifier: @"",
                                          _title: @"",
                                          _location: @"",
                                          _startDate: @"",
@@ -511,6 +513,10 @@ RCT_EXPORT_MODULE()
                                         @"color": [self hexStringFromColor:[UIColor colorWithCGColor:event.calendar.CGColor]]
                                         }
                                forKey:@"calendar"];
+    }
+
+    if (event.eventIdentifier) {
+      [formedCalendarEvent setValue:event.eventIdentifier forKey:_eventIdentifier];
     }
 
     if (event.title) {
