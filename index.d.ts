@@ -100,6 +100,8 @@ interface CalendarEventBase {
 export interface CalendarEventReadable extends CalendarEventBase {
   /** Unique id for the calendar event */
   id: string;
+  /** iOS ONLY - iOS's own unique identifier for calendar events */
+  eventIdentifier?: string;
   /** The title for the calendar event. */
   title: string;
   /** The attendees of the event, including the organizer. */
