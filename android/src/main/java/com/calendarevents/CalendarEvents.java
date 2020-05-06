@@ -967,10 +967,8 @@ public class CalendarEvents extends ReactContextBaseJavaModule {
             while (cursor.moveToNext()) {
                 results.pushMap(serializeEvent(cursor));
             }
-
             cursor.close();
         }
-
         return results;
     }
 
