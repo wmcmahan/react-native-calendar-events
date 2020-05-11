@@ -537,40 +537,39 @@ RCT_EXPORT_MODULE()
     }
 
     if (event.attendees) {
+        NSString *organizerEmail = @"";
+        NSString *organizerPhone = @"";
         
-        NSString *orgemail = @"";
-        NSString *orgphone = @"";
+        if (event.organizer) {
+            EKParticipant *organizer = event.organizer;
+            NSString *organizerDescription = [organizer description];
+            NSMutableDictionary *organizerDescriptionData = [NSMutableDictionary dictionary];
+            
+            for (NSString *pairString in [organizerDescription componentsSeparatedByString:@";"]) {
+                NSArray *pair = [pairString componentsSeparatedByString:@"="];
+                
+                if ([pair count] != 2)
+                    continue;
+                
+                [organizerDescriptionData setObject:[[pair objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pair objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+            }
         
-        if(event.organizer) {
-        
-        EKParticipant *organizer = event.organizer;
-
-        NSString *organizerDescription = [organizer description];
-        
-         NSMutableDictionary *descriptionDataOrganizer = [NSMutableDictionary dictionary];
-                   for (NSString *pairString in [organizerDescription componentsSeparatedByString:@";"])
-                   {
-                       NSArray *pairorg = [pairString componentsSeparatedByString:@"="];
-                       if ( [pairorg count] != 2)
-                           continue;
-                       [descriptionDataOrganizer setObject:[[pairorg objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pairorg objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-                   }
-        
-        orgemail = [descriptionDataOrganizer valueForKey:@"email"];
-        orgphone = [descriptionDataOrganizer valueForKey:@"phone"];
+            organizerEmail = [organizerDescriptionData valueForKey:@"email"];
+            organizer = [organizerDescriptionData valueForKey:@"phone"];
         }
         
         NSMutableArray *attendees = [[NSMutableArray alloc] init];
-        
         Boolean organizerFound = NO;
+        
         for (EKParticipant *attendee in event.attendees) {
-            
             NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
-            for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
-            {
+            
+            for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"]) {
                 NSArray *pair = [pairString componentsSeparatedByString:@"="];
-                if ( [pair count] != 2)
+                
+                if ([pair count] != 2)
                     continue;
+                
                 [descriptionData setObject:[[pair objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pair objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
             }
 
@@ -578,70 +577,62 @@ RCT_EXPORT_MODULE()
             NSString *name = [descriptionData valueForKey:@"name"];
             NSString *email = [descriptionData valueForKey:@"email"];
             NSString *phone = [descriptionData valueForKey:@"phone"];
-            NSString *relationship = [NSString stringWithFormat: @"%ld", (long)attendee.participantRole] ;
-            NSString *status = [NSString stringWithFormat: @"%ld", (long)attendee.participantStatus];
-            NSString *type = [NSString stringWithFormat: @"%ld", (long)attendee.participantType];
+            NSString *status = [NSString stringWithFormat: @"%d", (int)attendee.participantStatus];
 
-            if(email && ![email isEqualToString:@"(null)"]) {
+            if (email && ![email isEqualToString:@"(null)"]) {
                 [formattedAttendee setValue:email forKey:@"email"];
             }
             else {
                 [formattedAttendee setValue:@"" forKey:@"email"];
             }
+            
             if(phone && ![phone isEqualToString:@"(null)"]) {
                 [formattedAttendee setValue:phone forKey:@"phone"];
             }
             else {
                 [formattedAttendee setValue:@"" forKey:@"phone"];
             }
+            
             if(name && ![name isEqualToString:@"(null)"]) {
                 [formattedAttendee setValue:name forKey:@"name"];
             }
             else {
                 [formattedAttendee setValue:@"" forKey:@"name"];
             }
-            if(relationship && ![relationship isEqualToString:@"(null)"]) {
-                if([orgemail isEqualToString:email]){
-                    organizerFound = YES;
-                    [formattedAttendee setValue:@"2" forKey:@"relationship"];
-                }else {
-                    [formattedAttendee setValue:relationship forKey:@"relationship"];
-                }
+            
+            if ([organizerEmail isEqualToString:email]){
+                organizerFound = YES;
+                [formattedAttendee setValue:@"2" forKey:@"relationship"];
             }
             else {
-                [formattedAttendee setValue:@"" forKey:@"relationship"];
+                [formattedAttendee setValue:@"1" forKey:@"relationship"];
             }
+            
             if(status && ![status isEqualToString:@"(null)"]) {
                 [formattedAttendee setValue:status forKey:@"status"];
             }
             else {
                 [formattedAttendee setValue:@"" forKey:@"status"];
             }
-            if(type && ![type isEqualToString:@"(null)"]) {
-                [formattedAttendee setValue:type forKey:@"type"];
-            }
-            else {
-                [formattedAttendee setValue:@"" forKey:@"type"];
-            }
             
             [attendees addObject:formattedAttendee];
         }
         
         if (!organizerFound) {
-            NSString *status = [NSString stringWithFormat: @"%ld", (long)event.organizer.participantStatus];
-            NSString *type = [NSString stringWithFormat: @"%ld", (long)event.organizer.participantType];
-            
+            NSString *status = [NSString stringWithFormat: @"%d", (int)event.organizer.participantStatus];
             NSMutableDictionary *formattedOrganizer = [[NSMutableDictionary alloc] init];
-            [formattedOrganizer setValue:orgemail forKey:@"email"];
+            
+            [formattedOrganizer setValue:organizerEmail forKey:@"email"];
             [formattedOrganizer setValue:@"2" forKey:@"relationship"];
-            if(orgphone && ![orgphone isEqualToString:@"(null)"]) {
-                [formattedOrganizer setValue:orgphone forKey:@"phone"];
+            
+            if (organizerPhone && ![organizerPhone isEqualToString:@"(null)"]) {
+                [formattedOrganizer setValue:organizerPhone forKey:@"phone"];
             }
             else {
                 [formattedOrganizer setValue:@"" forKey:@"phone"];
             }
+            
             [formattedOrganizer setValue:status forKey:@"status"];
-            [formattedOrganizer setValue:type forKey:@"type"];
             [formattedOrganizer setValue:event.organizer.name forKey:@"name"];
 
             [attendees addObject:formattedOrganizer];
