@@ -30,19 +30,10 @@ dispatch_queue_t serialQueue;
 - (NSString *)hexStringFromColor:(UIColor *)color {
     const CGFloat *components = CGColorGetComponents(color.CGColor);
 
-    CGFloat r;
-    CGFloat g;
-    CGFloat b;
-    if(components && sizeof(components) >= 3){
-        r = components[0];
-        g = components[1];
-        b = components[2];
-    }else{
-        r = 1;
-        g = 1;
-        b = 1;
-    }
-    
+    CGFloat r = components[0];
+    CGFloat g = components[1];
+    CGFloat b = components[2];
+
     return [NSString stringWithFormat:@"#%02lX%02lX%02lX",
             lroundf(r * 255),
             lroundf(g * 255),
@@ -173,7 +164,7 @@ RCT_EXPORT_MODULE()
         calendarEvent.availability = [self availablilityConstantMatchingString:availability];
     }
 
-    NSURL *URL = [NSURL URLWithString:[url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
+    NSURL *URL = [NSURL URLWithString:[url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
     if (URL) {
         calendarEvent.URL = URL;
     }
@@ -458,8 +449,10 @@ RCT_EXPORT_MODULE()
     NSMutableArray *serializedCalendarEvents = [[NSMutableArray alloc] init];
 
     for (EKEvent *event in calendarEvents) {
-
-        [serializedCalendarEvents addObject:[self serializeCalendarEvent:event]];
+        NSDictionary * sCalendarEvent = [self serializeCalendarEvent:event];
+        if(sCalendarEvent != nil){
+            [serializedCalendarEvents addObject:sCalendarEvent];
+        }
     }
 
     return [serializedCalendarEvents copy];
@@ -467,7 +460,9 @@ RCT_EXPORT_MODULE()
 
 - (NSDictionary *)serializeCalendarEvent:(EKEvent *)event
 {
-
+    
+    @try {
+       
     NSDictionary *emptyCalendarEvent = @{
                                          _title: @"",
                                          _location: @"",
@@ -503,7 +498,7 @@ RCT_EXPORT_MODULE()
 
     if (event.calendar) {
         [formedCalendarEvent setValue:@{
-                                        @"id": event.calendar.calendarIdentifier?event.calendar.calendarIdentifier: @"tempCalendar",
+                                        @"id": event.calendar.calendarIdentifier,
                                         @"title": event.calendar.title ? event.calendar.title : @"",
                                         @"source": event.calendar.source && event.calendar.source.title ? event.calendar.source.title : @"",
                                         @"allowsModifications": @(event.calendar.allowsContentModifications),
@@ -664,7 +659,7 @@ RCT_EXPORT_MODULE()
 
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
     
-    if (event.structuredLocation && event.structuredLocation.title && event.structuredLocation.radius) {
+    if (event.structuredLocation) {
         NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:3];
         [structuredLocation addEntriesFromDictionary: @{
                                                         @"title": event.structuredLocation.title,
@@ -680,7 +675,11 @@ RCT_EXPORT_MODULE()
         [formedCalendarEvent setValue: structuredLocation forKey:@"structuredLocation"];
     }
 
-    return [formedCalendarEvent copy];
+        return [formedCalendarEvent copy];
+    } @catch (NSException *exception) {
+        return nil;
+    }
+
 }
 
 #pragma mark -
@@ -814,27 +813,6 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
                   [NSString stringWithFormat:@"Calendar %@ could not be saved", title], error);
 }
 
-RCT_EXPORT_METHOD(removeCalendar:(NSString *)calendarId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
-{
-    if (![self isCalendarAccessGranted]) {
-        reject(@"error", @"unauthorized to access calendar", nil);
-        return;
-    }
-
-
-    dispatch_async(serialQueue, ^{
-        
-        EKCalendar *calendar = (EKCalendar *)[self.eventStore calendarWithIdentifier:calendarId];
-        NSError *error = nil;
-
-        BOOL success = [self.eventStore removeCalendar:calendar commit:YES error:&error];
-        if (error) {
-            return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
-        }
-        return resolve(@(success));
-    });
-}
-
 RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate calendars:(NSArray *)calendars resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     if (![self isCalendarAccessGranted]) {
@@ -864,7 +842,13 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
         RNCalendarEvents *strongSelf = weakSelf;
         NSArray *calendarEvents = [[strongSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
         if (calendarEvents) {
-            resolve([strongSelf serializeCalendarEvents:calendarEvents]);
+           
+            NSDictionary * sCalendarEvent = [strongSelf serializeCalendarEvents:calendarEvents];
+            if(sCalendarEvent != nil){
+                    resolve(sCalendarEvent);
+            }else{
+                    resolve(@[]);
+            }
         } else if (calendarEvents == nil) {
             resolve(@[]);
         } else {
@@ -886,7 +870,16 @@ RCT_EXPORT_METHOD(findEventById:(NSString *)eventId resolver:(RCTPromiseResolveB
 
         EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
         if (calendarEvent) {
-            resolve([strongSelf serializeCalendarEvent:calendarEvent]);
+            
+            
+            NSDictionary * sCalendarEvent = [strongSelf serializeCalendarEvent:calendarEvent];
+            if(sCalendarEvent != nil){
+                resolve(sCalendarEvent);
+                //[serializedCalendarEvents addObject:sCalendarEvent];
+            }else{
+                reject(@"error", @"error finding event", nil);
+            }
+            
         } else {
             reject(@"error", @"error finding event", nil);
         }
