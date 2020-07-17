@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.Manifest;
 import android.net.Uri;
 import android.provider.CalendarContract;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.database.Cursor;
 import android.accounts.Account;
@@ -109,12 +108,20 @@ public class CalendarEvents extends ReactContextBaseJavaModule implements Permis
     }
     
     private boolean shouldShowRequestPermissionRationale() {
-                Activity currentActivity = getCurrentActivity();
+        Activity currentActivity = getCurrentActivity();
 
-        boolean permission = ActivityCompat.shouldShowRequestPermissionRationale(currentActivity,
-                    Manifest.permission.WRITE_CALENDAR);
+        if (currentActivity == null) {
+            Log.w(this.getName(), "Activity doesn't exist");
+            return false;
+        }
+        if (!(currentActivity instanceof PermissionAwareActivity)) {
+            Log.w(this.getName(), "Activity does not implement the PermissionAwareActivity interface");
+            return false;
+        }
 
-        return permission;
+        PermissionAwareActivity activity = (PermissionAwareActivity)currentActivity;
+
+        return activity.shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CALENDAR);
     }
 
     //endregion
