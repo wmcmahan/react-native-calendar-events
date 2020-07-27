@@ -41,21 +41,21 @@ import java.util.HashMap;
 import java.util.TimeZone;
 import android.util.Log;
 
-public class CalendarEvents extends ReactContextBaseJavaModule implements PermissionListener {
+public class RNCalendarEvents extends ReactContextBaseJavaModule implements PermissionListener {
 
     private static int PERMISSION_REQUEST_CODE = 37;
     private final ReactContext reactContext;
     private static final String RNC_PREFS = "REACT_NATIVE_CALENDAR_PREFERENCES";
     private static final HashMap<Integer, Promise> permissionsPromises = new HashMap<>();
 
-    public CalendarEvents(ReactApplicationContext reactContext) {
+    public RNCalendarEvents(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
     }
 
     @Override
     public String getName() {
-        return "CalendarEvents";
+        return "RNCalendarEvents";
     }
 
     //region Calendar Permissions
