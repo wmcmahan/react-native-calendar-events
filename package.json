@@ -2,7 +2,11 @@
   "name": "react-native-calendar-events",
   "version": "2.0.0",
   "description": "React Native module for IOS Calendar Events",
-  "repository": "https://github.com/wmcmahan/react-native-calendar-events.git",
+  "homepage": "https://github.com/wmcmahan/react-native-calendar-events",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/wmcmahan/react-native-calendar-events.git"
+  },
   "author": "Will McMahan",
   "license": "MIT",
   "keywords": [
