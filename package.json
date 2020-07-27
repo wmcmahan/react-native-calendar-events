@@ -18,6 +18,14 @@
     "reminders",
     "calendar-events"
   ],
+  "main": "src/index.js",
+  "files": [
+    "android/",
+    "ios/",
+    "src/",
+    "package.json",
+    "RNCalendarEvents.podspec"
+  ],
   "peerDependencies": {
     "react-native": ">=0.60.0"
   },
