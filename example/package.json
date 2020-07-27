@@ -1,0 +1,33 @@
+{
+  "name": "RNCalendarEventsExample",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "ios:dependencies": "bundle install",
+    "ios:dependencies:install": "cd ios && bundle exec pod install --repo-update",
+    "prepare": "yarn ios:dependencies && yarn ios:dependencies:install",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "react": "^16.13.0",
+    "react-native": "^0.63.0",
+    "react-native-calendar-events": "file:../"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.0",
+    "@babel/runtime": "^7.8.0",
+    "@react-native-community/eslint-config": "^1.1.0",
+    "babel-jest": "^25.1.0",
+    "eslint": "^6.5.0",
+    "jest": "^25.1.0",
+    "metro-react-native-babel-preset": "^0.59.0",
+    "react-test-renderer": "^16.13.0"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}
