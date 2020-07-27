@@ -78,7 +78,7 @@ interface CalendarEventBase {
   /** The start date of the calendar event in ISO format */
   startDate: ISODateString;
   /** The end date of the calendar event in ISO format. */
-  endDate: ISODateString;
+  endDate?: ISODateString;
   /** Unique id for the calendar where the event will be saved. Defaults to the device's default  calendar. */
   calendarId?: string;
   /** Indicates whether the event is an all-day event. */
