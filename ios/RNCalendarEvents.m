@@ -606,7 +606,8 @@ RCT_EXPORT_MODULE()
                 }
                 NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:4];
                 [structuredLocation addEntriesFromDictionary: @{
-                                                                @"title": alarm.structuredLocation.title,
+                                                                @"title": alarm.structuredLocation.title
+                                                                    ? alarm.structuredLocation.title : @"",
                                                                 @"proximity": proximity,
                                                                 @"radius": @(alarm.structuredLocation.radius)
                                                                 }];
