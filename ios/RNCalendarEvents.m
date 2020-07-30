@@ -27,6 +27,22 @@ dispatch_queue_t serialQueue;
 
 @implementation RNCalendarEvents
 
+- (NSError *)exceptionToError:(NSException *)exception {
+    NSMutableDictionary * info = [NSMutableDictionary dictionary];
+    [info setValue:exception.name forKey:@"ExceptionName"];
+    [info setValue:exception.reason forKey:@"ExceptionReason"];
+    [info setValue:exception.callStackReturnAddresses forKey:@"ExceptionCallStackReturnAddresses"];
+    [info setValue:exception.callStackSymbols forKey:@"ExceptionCallStackSymbols"];
+    [info setValue:exception.userInfo forKey:@"ExceptionUserInfo"];
+
+    NSError *error = [[NSError alloc]
+                      initWithDomain:@"RNCalendarEvents"
+                      code:-1
+                      userInfo:info
+                      ];
+    return error;
+}
+
 - (NSString *)hexStringFromColor:(UIColor *)color {
     const CGFloat *components = CGColorGetComponents(color.CGColor);
 
@@ -458,7 +474,6 @@ RCT_EXPORT_MODULE()
     NSMutableArray *serializedCalendarEvents = [[NSMutableArray alloc] init];
 
     for (EKEvent *event in calendarEvents) {
-
         [serializedCalendarEvents addObject:[self serializeCalendarEvent:event]];
     }
 
@@ -528,101 +543,112 @@ RCT_EXPORT_MODULE()
     if (event.location) {
         [formedCalendarEvent setValue:event.location forKey:_location];
     }
+    
+    @try {
+        if (event.attendees) {
+            NSMutableArray *attendees = [[NSMutableArray alloc] init];
+            for (EKParticipant *attendee in event.attendees) {
 
-    if (event.attendees) {
-        NSMutableArray *attendees = [[NSMutableArray alloc] init];
-        for (EKParticipant *attendee in event.attendees) {
+                NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
+                for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
+                {
+                    NSArray *pair = [pairString componentsSeparatedByString:@"="];
+                    if ( [pair count] != 2)
+                        continue;
+                    [descriptionData setObject:[[pair objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pair objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+                }
 
-            NSMutableDictionary *descriptionData = [NSMutableDictionary dictionary];
-            for (NSString *pairString in [attendee.description componentsSeparatedByString:@";"])
-            {
-                NSArray *pair = [pairString componentsSeparatedByString:@"="];
-                if ( [pair count] != 2)
-                    continue;
-                [descriptionData setObject:[[pair objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pair objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
-            }
+                NSMutableDictionary *formattedAttendee = [[NSMutableDictionary alloc] init];
+                NSString *name = [descriptionData valueForKey:@"name"];
+                NSString *email = [descriptionData valueForKey:@"email"];
+                NSString *phone = [descriptionData valueForKey:@"phone"];
 
-            NSMutableDictionary *formattedAttendee = [[NSMutableDictionary alloc] init];
-            NSString *name = [descriptionData valueForKey:@"name"];
-            NSString *email = [descriptionData valueForKey:@"email"];
-            NSString *phone = [descriptionData valueForKey:@"phone"];
-
-            if(email && ![email isEqualToString:@"(null)"]) {
-                [formattedAttendee setValue:email forKey:@"email"];
+                if(email && ![email isEqualToString:@"(null)"]) {
+                    [formattedAttendee setValue:email forKey:@"email"];
+                }
+                else {
+                    [formattedAttendee setValue:@"" forKey:@"email"];
+                }
+                if(phone && ![phone isEqualToString:@"(null)"]) {
+                    [formattedAttendee setValue:phone forKey:@"phone"];
+                }
+                else {
+                    [formattedAttendee setValue:@"" forKey:@"phone"];
+                }
+                if(name && ![name isEqualToString:@"(null)"]) {
+                    [formattedAttendee setValue:name forKey:@"name"];
+                }
+                else {
+                    [formattedAttendee setValue:@"" forKey:@"name"];
+                }
+                [attendees addObject:formattedAttendee];
             }
-            else {
-                [formattedAttendee setValue:@"" forKey:@"email"];
-            }
-            if(phone && ![phone isEqualToString:@"(null)"]) {
-                [formattedAttendee setValue:phone forKey:@"phone"];
-            }
-            else {
-                [formattedAttendee setValue:@"" forKey:@"phone"];
-            }
-            if(name && ![name isEqualToString:@"(null)"]) {
-                [formattedAttendee setValue:name forKey:@"name"];
-            }
-            else {
-                [formattedAttendee setValue:@"" forKey:@"name"];
-            }
-            [attendees addObject:formattedAttendee];
+            [formedCalendarEvent setValue:attendees forKey:_attendees];
         }
-        [formedCalendarEvent setValue:attendees forKey:_attendees];
     }
-    if (event.hasAlarms) {
-        NSMutableArray *alarms = [[NSMutableArray alloc] init];
+    @catch (NSException *exception) {
+        NSLog(@"RNCalendarEvents encountered an issue will serializing event (attendees) '%@': %@", event.title, exception.reason);
+    }
+    
+    @try {
+        if (event.hasAlarms) {
+            NSMutableArray *alarms = [[NSMutableArray alloc] init];
 
-        for (EKAlarm *alarm in event.alarms) {
+            for (EKAlarm *alarm in event.alarms) {
 
-            NSMutableDictionary *formattedAlarm = [[NSMutableDictionary alloc] init];
-            NSString *alarmDate = nil;
+                NSMutableDictionary *formattedAlarm = [[NSMutableDictionary alloc] init];
+                NSString *alarmDate = nil;
 
-            if (alarm.absoluteDate) {
-                alarmDate = [dateFormatter stringFromDate:alarm.absoluteDate];
-            } else if (alarm.relativeOffset) {
-                NSDate *calendarEventStartDate = nil;
-                if (event.startDate) {
-                    calendarEventStartDate = event.startDate;
-                } else {
-                    calendarEventStartDate = [NSDate date];
+                if (alarm.absoluteDate) {
+                    alarmDate = [dateFormatter stringFromDate:alarm.absoluteDate];
+                } else if (alarm.relativeOffset) {
+                    NSDate *calendarEventStartDate = nil;
+                    if (event.startDate) {
+                        calendarEventStartDate = event.startDate;
+                    } else {
+                        calendarEventStartDate = [NSDate date];
+                    }
+                    alarmDate = [dateFormatter stringFromDate:[NSDate dateWithTimeInterval:alarm.relativeOffset
+                                                                                 sinceDate:calendarEventStartDate]];
                 }
-                alarmDate = [dateFormatter stringFromDate:[NSDate dateWithTimeInterval:alarm.relativeOffset
-                                                                             sinceDate:calendarEventStartDate]];
+                [formattedAlarm setValue:alarmDate forKey:@"date"];
+
+                if (alarm.structuredLocation) {
+                    NSString *proximity = nil;
+                    switch (alarm.proximity) {
+                        case EKAlarmProximityEnter:
+                            proximity = @"enter";
+                            break;
+                        case EKAlarmProximityLeave:
+                            proximity = @"leave";
+                            break;
+                        default:
+                            proximity = @"None";
+                            break;
+                    }
+                    NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:4];
+                    [structuredLocation addEntriesFromDictionary: @{
+                                                                    @"title": alarm.structuredLocation.title
+                                                                        ? alarm.structuredLocation.title : @"",
+                                                                    @"proximity": proximity,
+                                                                    @"radius": @(alarm.structuredLocation.radius)
+                                                                    }];
+                    if (alarm.structuredLocation.geoLocation) {
+                        [structuredLocation setValue: @{
+                                                        @"latitude": @(alarm.structuredLocation.geoLocation.coordinate.latitude),
+                                                        @"longitude": @(alarm.structuredLocation.geoLocation.coordinate.longitude)
+                                                        }
+                                              forKey:@"coords"];
+                    }
+                    [formattedAlarm setValue:structuredLocation forKey:@"structuredLocation"];
+                }
+                [alarms addObject:formattedAlarm];
             }
-            [formattedAlarm setValue:alarmDate forKey:@"date"];
-
-            if (alarm.structuredLocation) {
-                NSString *proximity = nil;
-                switch (alarm.proximity) {
-                    case EKAlarmProximityEnter:
-                        proximity = @"enter";
-                        break;
-                    case EKAlarmProximityLeave:
-                        proximity = @"leave";
-                        break;
-                    default:
-                        proximity = @"None";
-                        break;
-                }
-                NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:4];
-                [structuredLocation addEntriesFromDictionary: @{
-                                                                @"title": alarm.structuredLocation.title
-                                                                    ? alarm.structuredLocation.title : @"",
-                                                                @"proximity": proximity,
-                                                                @"radius": @(alarm.structuredLocation.radius)
-                                                                }];
-                if (alarm.structuredLocation.geoLocation) {
-                    [structuredLocation setValue: @{
-                                                    @"latitude": @(alarm.structuredLocation.geoLocation.coordinate.latitude),
-                                                    @"longitude": @(alarm.structuredLocation.geoLocation.coordinate.longitude)
-                                                    }
-                                          forKey:@"coords"];
-                }
-                [formattedAlarm setValue:structuredLocation forKey:@"structuredLocation"];
-            }
-            [alarms addObject:formattedAlarm];
+            [formedCalendarEvent setValue:alarms forKey:_alarms];
         }
-        [formedCalendarEvent setValue:alarms forKey:_alarms];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"RNCalendarEvents encountered an issue will serializing event (alarms) '%@': %@", event.title, exception.reason);
     }
 
     if (event.startDate) {
@@ -640,45 +666,55 @@ RCT_EXPORT_MODULE()
     [formedCalendarEvent setValue:[NSNumber numberWithBool:event.isDetached] forKey:_isDetached];
 
     [formedCalendarEvent setValue:[NSNumber numberWithBool:event.allDay] forKey:_allDay];
+    
+    @try {
+        if (event.hasRecurrenceRules) {
+            EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
+            NSString *frequencyType = [self nameMatchingFrequency:[rule frequency]];
+            [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
 
-    if (event.hasRecurrenceRules) {
-        EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
-        NSString *frequencyType = [self nameMatchingFrequency:[rule frequency]];
-        [formedCalendarEvent setValue:frequencyType forKey:_recurrence];
+            NSMutableDictionary *recurrenceRule = [NSMutableDictionary dictionaryWithDictionary:@{@"frequency": frequencyType}];
 
-        NSMutableDictionary *recurrenceRule = [NSMutableDictionary dictionaryWithDictionary:@{@"frequency": frequencyType}];
+            if ([rule interval]) {
+                [recurrenceRule setValue:@([rule interval]) forKey:@"interval"];
+            }
 
-        if ([rule interval]) {
-            [recurrenceRule setValue:@([rule interval]) forKey:@"interval"];
+            if ([[rule recurrenceEnd] endDate]) {
+                [recurrenceRule setValue:[dateFormatter stringFromDate:[[rule recurrenceEnd] endDate]] forKey:@"endDate"];
+            }
+
+            if ([[rule recurrenceEnd] occurrenceCount]) {
+                [recurrenceRule setValue:@([[rule recurrenceEnd] occurrenceCount]) forKey:@"occurrence"];
+            }
+
+            [formedCalendarEvent setValue:recurrenceRule forKey:_recurrenceRule];
         }
-
-        if ([[rule recurrenceEnd] endDate]) {
-            [recurrenceRule setValue:[dateFormatter stringFromDate:[[rule recurrenceEnd] endDate]] forKey:@"endDate"];
-        }
-
-        if ([[rule recurrenceEnd] occurrenceCount]) {
-            [recurrenceRule setValue:@([[rule recurrenceEnd] occurrenceCount]) forKey:@"occurrence"];
-        }
-
-        [formedCalendarEvent setValue:recurrenceRule forKey:_recurrenceRule];
     }
-
+    @catch (NSException *exception) {
+        NSLog(@"RNCalendarEvents encountered an issue will serializing event (recurrenceRules) '%@': %@", event.title, exception.reason);
+    }
+    
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
     
-    if (event.structuredLocation && event.structuredLocation.title && event.structuredLocation.radius) {
-        NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:3];
-        [structuredLocation addEntriesFromDictionary: @{
-                                                        @"title": event.structuredLocation.title,
-                                                        @"radius": @(event.structuredLocation.radius)
-                                                        }];
-        if (event.structuredLocation.geoLocation) {
-            [structuredLocation setValue: @{
-                                            @"latitude": @(event.structuredLocation.geoLocation.coordinate.latitude),
-                                            @"longitude": @(event.structuredLocation.geoLocation.coordinate.longitude)
-                                            }
-                                forKey:@"coords"];
+    @try {
+        if (event.structuredLocation && event.structuredLocation.title && event.structuredLocation.radius) {
+            NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:3];
+            [structuredLocation addEntriesFromDictionary: @{
+                                                            @"title": event.structuredLocation.title,
+                                                            @"radius": @(event.structuredLocation.radius)
+                                                            }];
+            if (event.structuredLocation.geoLocation) {
+                [structuredLocation setValue: @{
+                                                @"latitude": @(event.structuredLocation.geoLocation.coordinate.latitude),
+                                                @"longitude": @(event.structuredLocation.geoLocation.coordinate.longitude)
+                                                }
+                                    forKey:@"coords"];
+            }
+            [formedCalendarEvent setValue: structuredLocation forKey:@"structuredLocation"];
         }
-        [formedCalendarEvent setValue: structuredLocation forKey:@"structuredLocation"];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"RNCalendarEvents encountered an issue will serializing event (structuredLocation) '%@': %@", event.title, exception.reason);
     }
 
     return [formedCalendarEvent copy];
@@ -729,25 +765,30 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
         return;
     }
 
-    NSArray* calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
+    @try {
+        NSArray* calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
 
-    if (!calendars) {
-        reject(@"error", @"error finding calendars", nil);
-    } else {
-        NSMutableArray *eventCalendars = [[NSMutableArray alloc] init];
-        for (EKCalendar *calendar in calendars) {
-            BOOL isPrimary = [calendar isEqual:[self.eventStore defaultCalendarForNewEvents]];
-            [eventCalendars addObject:@{
-                                        @"id": calendar.calendarIdentifier,
-                                        @"title": calendar.title ? calendar.title : @"",
-                                        @"allowsModifications": @(calendar.allowsContentModifications),
-                                        @"source": calendar.source && calendar.source.title ? calendar.source.title : @"",
-                                        @"isPrimary": @(isPrimary),
-                                        @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities],
-                                        @"color": [self hexStringFromColor:[UIColor colorWithCGColor:calendar.CGColor]]
-                                        }];
+        if (!calendars) {
+            reject(@"error", @"error finding calendars", nil);
+        } else {
+            NSMutableArray *eventCalendars = [[NSMutableArray alloc] init];
+            for (EKCalendar *calendar in calendars) {
+                BOOL isPrimary = [calendar isEqual:[self.eventStore defaultCalendarForNewEvents]];
+                [eventCalendars addObject:@{
+                                            @"id": calendar.calendarIdentifier,
+                                            @"title": calendar.title ? calendar.title : @"",
+                                            @"allowsModifications": @(calendar.allowsContentModifications),
+                                            @"source": calendar.source && calendar.source.title ? calendar.source.title : @"",
+                                            @"isPrimary": @(isPrimary),
+                                            @"allowedAvailabilities": [self calendarSupportedAvailabilitiesFromMask:calendar.supportedEventAvailabilities],
+                                            @"color": [self hexStringFromColor:[UIColor colorWithCGColor:calendar.CGColor]]
+                                            }];
+            }
+            resolve(eventCalendars);
         }
-        resolve(eventCalendars);
+    }
+    @catch (NSException *exception) {
+        reject(@"error", @"saveCalendar error", [self exceptionToError:exception]);
     }
 }
 
@@ -756,63 +797,68 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
     if (![self isCalendarAccessGranted]) {
         return reject(@"error", @"unauthorized to access calendar", nil);
     }
+    
+    @try {
+        EKCalendar *calendar = nil;
+        EKSource *calendarSource = nil;
+        NSString *title = [RCTConvert NSString:options[@"title"]];
+        NSNumber *color = [RCTConvert NSNumber:options[@"color"]];
+        NSString *type = [RCTConvert NSString:options[@"entityType"]];
 
-    EKCalendar *calendar = nil;
-    EKSource *calendarSource = nil;
-    NSString *title = [RCTConvert NSString:options[@"title"]];
-    NSNumber *color = [RCTConvert NSNumber:options[@"color"]];
-    NSString *type = [RCTConvert NSString:options[@"entityType"]];
-
-    // First: Check if the user has an iCloud source set-up.
-    for (EKSource *source in self.eventStore.sources) {
-        if (source.sourceType == EKSourceTypeCalDAV && [source.title isEqualToString:@"iCloud"]) {
-            calendarSource = source;
-            break;
-        }
-    }
-
-    // Second: If no iCloud source is set-up / utilised, then fall back and use the local source.
-    if (calendarSource == nil) {
+        // First: Check if the user has an iCloud source set-up.
         for (EKSource *source in self.eventStore.sources) {
-            if (source.sourceType == EKSourceTypeLocal) {
+            if (source.sourceType == EKSourceTypeCalDAV && [source.title isEqualToString:@"iCloud"]) {
                 calendarSource = source;
                 break;
             }
         }
-    }
 
-    if (calendarSource == nil) {
-        return reject(@"error", @"no source found to create the calendar (local & icloud)", nil);
-    }
+        // Second: If no iCloud source is set-up / utilised, then fall back and use the local source.
+        if (calendarSource == nil) {
+            for (EKSource *source in self.eventStore.sources) {
+                if (source.sourceType == EKSourceTypeLocal) {
+                    calendarSource = source;
+                    break;
+                }
+            }
+        }
 
-    if ([type isEqualToString:@"event"]) {
-    calendar = [EKCalendar calendarForEntityType:EKEntityTypeEvent eventStore:self.eventStore];
-    } else if ([type isEqualToString:@"reminder"]) {
-      calendar = [EKCalendar calendarForEntityType:EKEntityTypeReminder eventStore:self.eventStore];
-    } else {
+        if (calendarSource == nil) {
+            return reject(@"error", @"no source found to create the calendar (local & icloud)", nil);
+        }
+
+        if ([type isEqualToString:@"event"]) {
+        calendar = [EKCalendar calendarForEntityType:EKEntityTypeEvent eventStore:self.eventStore];
+        } else if ([type isEqualToString:@"reminder"]) {
+          calendar = [EKCalendar calendarForEntityType:EKEntityTypeReminder eventStore:self.eventStore];
+        } else {
+            return reject(@"error",
+                 [NSString stringWithFormat:@"Calendar entityType %@ is not supported", type],
+                 nil);
+        }
+
+        calendar.source = calendarSource;
+        if (title) {
+          calendar.title = title;
+        }
+
+        if (color) {
+          calendar.CGColor = [RCTConvert UIColor:color].CGColor;
+        } else if (options[@"color"] == [NSNull null]) {
+          calendar.CGColor = nil;
+        }
+
+        NSError *error = nil;
+        BOOL success = [self.eventStore saveCalendar:calendar commit:YES error:&error];
+        if (success) {
+            return resolve(calendar.calendarIdentifier);
+        }
         return reject(@"error",
-             [NSString stringWithFormat:@"Calendar entityType %@ is not supported", type],
-             nil);
+                      [NSString stringWithFormat:@"Calendar %@ could not be saved", title], error);
     }
-
-    calendar.source = calendarSource;
-    if (title) {
-      calendar.title = title;
+    @catch (NSException *exception) {
+        reject(@"error", @"saveCalendar error", [self exceptionToError:exception]);
     }
-
-    if (color) {
-      calendar.CGColor = [RCTConvert UIColor:color].CGColor;
-    } else if (options[@"color"] == [NSNull null]) {
-      calendar.CGColor = nil;
-    }
-
-    NSError *error = nil;
-    BOOL success = [self.eventStore saveCalendar:calendar commit:YES error:&error];
-    if (success) {
-        return resolve(calendar.calendarIdentifier);
-    }
-    return reject(@"error",
-                  [NSString stringWithFormat:@"Calendar %@ could not be saved", title], error);
 }
 
 RCT_EXPORT_METHOD(removeCalendar:(NSString *)calendarId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
@@ -824,15 +870,19 @@ RCT_EXPORT_METHOD(removeCalendar:(NSString *)calendarId resolver:(RCTPromiseReso
 
 
     dispatch_async(serialQueue, ^{
-        
-        EKCalendar *calendar = (EKCalendar *)[self.eventStore calendarWithIdentifier:calendarId];
-        NSError *error = nil;
+        @try {
+            EKCalendar *calendar = (EKCalendar *)[self.eventStore calendarWithIdentifier:calendarId];
+            NSError *error = nil;
 
-        BOOL success = [self.eventStore removeCalendar:calendar commit:YES error:&error];
-        if (error) {
-            return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
+            BOOL success = [self.eventStore removeCalendar:calendar commit:YES error:&error];
+            if (error) {
+                return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
+            }
+            return resolve(@(success));
+            }
+        @catch (NSException *exception) {
+            reject(@"error", @"removeCalendar error", [self exceptionToError:exception]);
         }
-        return resolve(@(success));
     });
 }
 
@@ -862,14 +912,19 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
 
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
-        RNCalendarEvents *strongSelf = weakSelf;
-        NSArray *calendarEvents = [[strongSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
-        if (calendarEvents) {
-            resolve([strongSelf serializeCalendarEvents:calendarEvents]);
-        } else if (calendarEvents == nil) {
-            resolve(@[]);
-        } else {
-            reject(@"error", @"calendar event request error", nil);
+        @try {
+            RNCalendarEvents *strongSelf = weakSelf;
+            NSArray *calendarEvents = [[strongSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
+            if (calendarEvents) {
+                resolve([strongSelf serializeCalendarEvents:calendarEvents]);
+            } else if (calendarEvents == nil) {
+                resolve(@[]);
+            } else {
+                reject(@"error", @"calendar event request error", nil);
+            }
+        }
+        @catch (NSException *exception) {
+            reject(@"error", @"fetchAllEvents error", [self exceptionToError:exception]);
         }
     });
 }
@@ -883,13 +938,18 @@ RCT_EXPORT_METHOD(findEventById:(NSString *)eventId resolver:(RCTPromiseResolveB
 
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
-        RNCalendarEvents *strongSelf = weakSelf;
+        @try {
+            RNCalendarEvents *strongSelf = weakSelf;
 
-        EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
-        if (calendarEvent) {
-            resolve([strongSelf serializeCalendarEvent:calendarEvent]);
-        } else {
-            reject(@"error", @"error finding event", nil);
+            EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+            if (calendarEvent) {
+                resolve([strongSelf serializeCalendarEvent:calendarEvent]);
+            } else {
+                reject(@"error", @"error finding event", nil);
+            }
+        }
+        @catch (NSException *exception) {
+            reject(@"error", @"findEventById error", [self exceptionToError:exception]);
         }
     });
 }
@@ -910,14 +970,19 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title
 
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
-        RNCalendarEvents *strongSelf = weakSelf;
+        @try {
+            RNCalendarEvents *strongSelf = weakSelf;
 
-        NSDictionary *response = [strongSelf buildAndSaveEvent:details options:options];
+            NSDictionary *response = [strongSelf buildAndSaveEvent:details options:options];
 
-        if ([response valueForKey:@"success"] != [NSNull null]) {
-            resolve([response valueForKey:@"success"]);
-        } else {
-            reject(@"error", [response valueForKey:@"error"], nil);
+            if ([response valueForKey:@"success"] != [NSNull null]) {
+                resolve([response valueForKey:@"success"]);
+            } else {
+                reject(@"error", [response valueForKey:@"error"], nil);
+            }
+        }
+        @catch (NSException *exception) {
+            reject(@"error", @"saveEvent error", [self exceptionToError:exception]);
         }
     });
 }
@@ -945,54 +1010,64 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
 
         __weak RNCalendarEvents *weakSelf = self;
         dispatch_async(serialQueue, ^{
-            RNCalendarEvents *strongSelf = weakSelf;
-            NSArray *calendarEvents = [strongSelf.eventStore eventsMatchingPredicate:predicate];
-            EKEvent *eventInstance;
-            BOOL success;
+            @try {
+                RNCalendarEvents *strongSelf = weakSelf;
+                NSArray *calendarEvents = [strongSelf.eventStore eventsMatchingPredicate:predicate];
+                EKEvent *eventInstance;
+                BOOL success;
 
-            for (EKEvent *event in calendarEvents) {
-                if ([event.calendarItemIdentifier isEqualToString:eventId] && [event.startDate isEqualToDate:exceptionDate]) {
-                    eventInstance = event;
-                    break;
+                for (EKEvent *event in calendarEvents) {
+                    if ([event.calendarItemIdentifier isEqualToString:eventId] && [event.startDate isEqualToDate:exceptionDate]) {
+                        eventInstance = event;
+                        break;
+                    }
                 }
+
+                if (eventInstance) {
+                    NSError *error = nil;
+                    EKSpan eventSpan = EKSpanThisEvent;
+
+                    if (futureEvents) {
+                        eventSpan = EKSpanFutureEvents;
+                    }
+
+                    success = [strongSelf.eventStore removeEvent:eventInstance span:eventSpan commit:YES error:&error];
+                    if (error) {
+                        return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
+                    }
+                } else {
+                    return reject(@"error", @"No event found.", nil);
+                }
+
+                return resolve(@(success));
             }
-
-            if (eventInstance) {
-                NSError *error = nil;
-                EKSpan eventSpan = EKSpanThisEvent;
-
-                if (futureEvents) {
-                    eventSpan = EKSpanFutureEvents;
-                }
-
-                success = [strongSelf.eventStore removeEvent:eventInstance span:eventSpan commit:YES error:&error];
-                if (error) {
-                    return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
-                }
-            } else {
-                return reject(@"error", @"No event found.", nil);
+            @catch (NSException *exception) {
+                reject(@"error", @"removeEvent error", [self exceptionToError:exception]);
             }
-
-            return resolve(@(success));
         });
     } else {
       __weak RNCalendarEvents *weakSelf = self;
       dispatch_async(serialQueue, ^{
-          RNCalendarEvents *strongSelf = weakSelf;
-          
-          EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
-          NSError *error = nil;
-          EKSpan eventSpan = EKSpanThisEvent;
+          @try {
+              RNCalendarEvents *strongSelf = weakSelf;
+              
+              EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+              NSError *error = nil;
+              EKSpan eventSpan = EKSpanThisEvent;
 
-          if (futureEvents) {
-              eventSpan = EKSpanFutureEvents;
-          }
+              if (futureEvents) {
+                  eventSpan = EKSpanFutureEvents;
+              }
 
-          BOOL success = [self.eventStore removeEvent:calendarEvent span:eventSpan commit:YES error:&error];
-          if (error) {
-              return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
+              BOOL success = [self.eventStore removeEvent:calendarEvent span:eventSpan commit:YES error:&error];
+              if (error) {
+                  return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
+              }
+              return resolve(@(success));
+              }
+          @catch (NSException *exception) {
+              reject(@"error", @"removeEvent error", [self exceptionToError:exception]);
           }
-          return resolve(@(success));
       });
     }
 }
