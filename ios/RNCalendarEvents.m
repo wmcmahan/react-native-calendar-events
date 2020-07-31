@@ -587,7 +587,7 @@ RCT_EXPORT_MODULE()
         }
     }
     @catch (NSException *exception) {
-        NSLog(@"RNCalendarEvents encountered an issue will serializing event (attendees) '%@': %@", event.title, exception.reason);
+        NSLog(@"RNCalendarEvents encountered an issue while serializing event (attendees) '%@': %@", event.title, exception.reason);
     }
     
     @try {
@@ -648,7 +648,7 @@ RCT_EXPORT_MODULE()
         }
     }
     @catch (NSException *exception) {
-        NSLog(@"RNCalendarEvents encountered an issue will serializing event (alarms) '%@': %@", event.title, exception.reason);
+        NSLog(@"RNCalendarEvents encountered an issue while serializing event (alarms) '%@': %@", event.title, exception.reason);
     }
 
     if (event.startDate) {
@@ -691,7 +691,7 @@ RCT_EXPORT_MODULE()
         }
     }
     @catch (NSException *exception) {
-        NSLog(@"RNCalendarEvents encountered an issue will serializing event (recurrenceRules) '%@': %@", event.title, exception.reason);
+        NSLog(@"RNCalendarEvents encountered an issue while serializing event (recurrenceRules) '%@': %@", event.title, exception.reason);
     }
     
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
@@ -714,7 +714,7 @@ RCT_EXPORT_MODULE()
         }
     }
     @catch (NSException *exception) {
-        NSLog(@"RNCalendarEvents encountered an issue will serializing event (structuredLocation) '%@': %@", event.title, exception.reason);
+        NSLog(@"RNCalendarEvents encountered an issue while serializing event (structuredLocation) '%@': %@", event.title, exception.reason);
     }
 
     return [formedCalendarEvent copy];
