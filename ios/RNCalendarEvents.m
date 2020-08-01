@@ -697,10 +697,11 @@ RCT_EXPORT_MODULE()
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
     
     @try {
-        if (event.structuredLocation && event.structuredLocation.title && event.structuredLocation.radius) {
+        if (event.structuredLocation && event.structuredLocation.radius) {
             NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:3];
             [structuredLocation addEntriesFromDictionary: @{
-                                                            @"title": event.structuredLocation.title,
+                                                            @"title": event.structuredLocation.title
+                                                                ? event.structuredLocation.title : @"",
                                                             @"radius": @(event.structuredLocation.radius)
                                                             }];
             if (event.structuredLocation.geoLocation) {
