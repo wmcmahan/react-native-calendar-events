@@ -38,7 +38,7 @@ const App: () => React$Node = () => {
                 <Button
                   title="Request auth"
                   onPress={() => {
-                    RNCalendarEvents.authorizeEventStore().then(
+                    RNCalendarEvents.requestPermissions().then(
                       (result) => {
                         Alert.alert('Auth requested', result);
                       },
@@ -52,7 +52,7 @@ const App: () => React$Node = () => {
                 <Button
                   title="Check auth"
                   onPress={() => {
-                    RNCalendarEvents.authorizationStatus().then(
+                    RNCalendarEvents.checkPermissions().then(
                       (result) => {
                         Alert.alert('Auth check', result);
                       },

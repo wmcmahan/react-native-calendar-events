@@ -1,17 +1,14 @@
-'use strict';
-
 import { NativeModules, processColor } from 'react-native';
 
 const RNCalendarEvents = NativeModules.RNCalendarEvents
 
 export default {
 
-  authorizationStatus () {
-    return RNCalendarEvents.authorizationStatus()
+  checkPermissions () {
+    return RNCalendarEvents.checkPermissions()
   },
-
-  authorizeEventStore () {
-    return RNCalendarEvents.authorizeEventStore()
+  requestPermissions () {
+    return RNCalendarEvents.requestPermissions()
   },
 
   fetchAllEvents (startDate, endDate, calendars = []) {

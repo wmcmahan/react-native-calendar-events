@@ -3,9 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "clean": "trash ./node_modules ./ios/Pods",
+    "reinstall": "yarn clean && yarn",
     "ios:dependencies": "bundle install",
     "ios:dependencies:install": "cd ios && bundle exec pod install --repo-update",
-    "prepare": "yarn ios:dependencies && yarn ios:dependencies:install",
+    "clean-modules": "trash ./node_modules/react-native-calendar-events/{example,node_modules}",
+    "prepare": "yarn clean-modules && yarn ios:dependencies && yarn ios:dependencies:install",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",

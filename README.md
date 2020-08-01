@@ -110,12 +110,12 @@ The following API allows for interacting with both iOS and Android device calend
 import RNCalendarEvents from 'react-native-calendar-events';
 ```
 
-### `authorizationStatus`
+### `checkPermissions`
 
 Get calendar authorization status.
 
 ```javascript
-RNCalendarEvents.authorizationStatus()
+RNCalendarEvents.checkPermissions()
 ```
 
 Returns: **Promise**
@@ -123,12 +123,12 @@ Returns: **Promise**
 - fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
 - rejected: Error
 
-### `authorizeEventStore`
+### `requestPermissions`
 
 Request calendar authorization. Authorization must be granted before accessing calendar events.
 
 ```javascript
-RNCalendarEvents.authorizeEventStore()
+RNCalendarEvents.requestPermissions()
 ```
 
 > Android note: This is necessary for targeted SDK of >=23.

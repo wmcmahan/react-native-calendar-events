@@ -166,9 +166,10 @@ export type CalendarAccountSourceAndroid =
 
 export default class ReactNativeCalendarEvents {
   /** Get calendar authorization status. */
-  static authorizationStatus(): Promise<AuthorizationStatus>;
+  static checkPermissions(): Promise<AuthorizationStatus>;
   /** Request calendar authorization. Authorization must be granted before accessing calendar events. */
-  static authorizeEventStore(): Promise<AuthorizationStatus>;
+  static checkPermissions(): Promise<AuthorizationStatus>;
+
   /** Finds all the calendars on the device. */
   static findCalendars(): Promise<Calendar[]>;
   /** Create a calendar.

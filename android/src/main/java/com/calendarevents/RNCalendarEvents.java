@@ -1205,7 +1205,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
 
     //region React Native Methods
     @ReactMethod
-    public void getCalendarPermissions(Promise promise) {
+    public void checkPermissions(Promise promise) {
         SharedPreferences sharedPreferences = reactContext.getSharedPreferences(RNC_PREFS, ReactContext.MODE_PRIVATE);
         boolean permissionRequested = sharedPreferences.getBoolean("permissionRequested", false);
 
@@ -1221,7 +1221,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
     }
 
     @ReactMethod
-    public void requestCalendarPermissions(Promise promise) {
+    public void requestPermissions(Promise promise) {
         SharedPreferences sharedPreferences = reactContext.getSharedPreferences(RNC_PREFS, ReactContext.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("permissionRequested", true);
