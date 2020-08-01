@@ -31,11 +31,13 @@
   },
   "scripts": {
     "format": "prettier --write \"**/*.{md,json,js,css}\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "release": "npmpub",
+    "test": "echo \"Everything is awesome!\""
   },
   "devDependencies": {
     "husky": "^4.0.0",
     "lint-staged": "^10.0.0",
+    "npmpub": "^5.0.0",
     "prettier": "^2.0.0"
   },
   "prettier": {
