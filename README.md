@@ -4,15 +4,11 @@
 [![npm](https://img.shields.io/npm/dm/react-native-calendar-events.svg?style=flat-square)](https://www.npmjs.com/package/react-native-calendar-events)
 [![npm](https://img.shields.io/npm/l/react-native-calendar-events.svg?style=flat-square)](https://github.com/wmcmahan/react-native-calendar-events/blob/master/LICENSE.md)
 
-A React Native module to help access and save events to iOS and Android
-calendars.
+A React Native module to help access and save events to iOS and Android calendars.
 
 ## Getting started
 
-This package assumes that you already have a React Native project or are
-familiar with React Native. If not, checkout the official documentation for more
-details about getting started with
-[React Native](https://facebook.github.io/react-native/docs/getting-started.html).
+This package assumes that you already have a React Native project or are familiar with React Native. If not, checkout the official documentation for more details about getting started with [React Native](https://facebook.github.io/react-native/docs/getting-started.html).
 
 ### Support
 
@@ -21,8 +17,7 @@ details about getting started with
 | 2.0.0+     | 0.60.0+              |
 | pre 2.0.0+ | 0.40.0+              |
 
-For 0.59-, you should use
-[`jetify -r`](https://github.com/mikehardy/jetifier/blob/master/README.md#to-reverse-jetify--convert-node_modules-dependencies-to-support-libraries)
+For 0.59-, you should use [`jetify -r`](https://github.com/mikehardy/jetifier/blob/master/README.md#to-reverse-jetify--convert-node_modules-dependencies-to-support-libraries)
 
 ## Installation
 
@@ -36,9 +31,7 @@ Don't forget going into the `ios` directory to execute a `pod install`.
 
 ## 🆘 Manual linking
 
-Because this package targets React Native 0.60.0+, you will probably don't need
-to link it manually. Otherwise if it's not the case, follow this additional
-instructions:
+Because this package targets React Native 0.60.0+, you will probably don't need to link it manually. Otherwise if it's not the case, follow this additional instructions:
 
 <details>
   <summary><b>👀 See manual linking instructions</b></summary>
@@ -63,8 +56,7 @@ include ':react-native-calendar-events'
 project(':react-native-calendar-events').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-calendar-events/android')
 ```
 
-2 - Add the implementation line to the dependencies in
-`android/app/build.gradle`:
+2 - Add the implementation line to the dependencies in `android/app/build.gradle`:
 
 ```gradle
 dependencies {
@@ -99,17 +91,11 @@ public class MainApplication extends Application implements ReactApplication {
 
 ### iOS specific instructions
 
-Add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries if
-not already done.
+Add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries if not already done.
 
-Setting up privacy usage descriptions may also be required depending on which
-iOS version is supported. This involves updating the Property List,
-`Info.plist`, with the corresponding key for the EKEventStore api.
-[Info.plist reference](https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html).
+Setting up privacy usage descriptions may also be required depending on which iOS version is supported. This involves updating the Property List, `Info.plist`, with the corresponding key for the EKEventStore api. [Info.plist reference](https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html).
 
-For updating the `Info.plist` key/value via XCode, add a
-`Privacy - Calendars Usage Description` key with a usage description as the
-value. Resulting change to `Info.plist` should look something like:
+For updating the `Info.plist` key/value via XCode, add a `Privacy - Calendars Usage Description` key with a usage description as the value. Resulting change to `Info.plist` should look something like:
 
 ```xml
 <key>NSCalendarsUsageDescription</key>
@@ -118,8 +104,7 @@ value. Resulting change to `Info.plist` should look something like:
 
 ## API
 
-The following API allows for interacting with both iOS and Android device
-calendars. See the full list of available [event fields](#event-fields).
+The following API allows for interacting with both iOS and Android device calendars. See the full list of available [event fields](#event-fields).
 
 ```javascript
 import RNCalendarEvents from "react-native-calendar-events";
@@ -140,16 +125,14 @@ Returns: **Promise**
 
 ### `requestPermissions`
 
-Request calendar authorization. Authorization must be granted before accessing
-calendar events.
+Request calendar authorization. Authorization must be granted before accessing calendar events.
 
 ```javascript
 RNCalendarEvents.requestPermissions();
 ```
 
-> Android note: This is necessary for targeted SDK of >=23. iOS note: This
-> method will crash, if you didn't update `Info.plist`. Follow carefully
-> installation instruction.
+> Android note: This is necessary for targeted SDK of >=23.
+> iOS note: This method will crash, if you didn't update `Info.plist`. Follow carefully installation instruction.
 
 Returns: **Promise**
 
@@ -205,7 +188,8 @@ Returns: **Promise**
 
 ### `findEventById`
 
-Find calendar event by id. Returns a promise with fulfilled found events.
+Find calendar event by id.
+Returns a promise with fulfilled found events.
 
 ```javascript
 RNCalendarEvents.findEventById(id);
@@ -222,7 +206,8 @@ Returns: **Promise**
 
 ### `fetchAllEvents``
 
-Fetch all calendar events. Returns a promise with fulfilled found events.
+Fetch all calendar events.
+Returns a promise with fulfilled found events.
 
 ```javascript
 RNCalendarEvents.fetchAllEvents(startDate, endDate, calendars);
@@ -232,8 +217,7 @@ Arguments:
 
 - startDate: String - The start date of the range of events fetched.
 - endDate: String - The end date of the range of events fetched.
-- calendars: Array - List of calendar id strings to specify calendar events.
-  Defaults to all calendars if empty.
+- calendars: Array - List of calendar id strings to specify calendar events. Defaults to all calendars if empty.
 
 Returns: **Promise**
 
@@ -242,8 +226,7 @@ Returns: **Promise**
 
 ### `saveEvent`
 
-Creates or updates a calendar event. -
-[wiki guide](https://github.com/wmcmahan/react-native-calendar-events/wiki/Creating-basic-event)
+Creates or updates a calendar event. - [wiki guide](https://github.com/wmcmahan/react-native-calendar-events/wiki/Creating-basic-event)
 
 ```javascript
 RNCalendarEvents.saveEvent(title, details, options);
@@ -260,8 +243,7 @@ Returns: **Promise**
 - fulfilled: String - Created event's ID.
 - rejected: Error
 
-To update an event, the event `id` must be defined. -
-[wiki guide](https://github.com/wmcmahan/react-native-calendar-events/wiki/Updating-events)
+To update an event, the event `id` must be defined. - [wiki guide](https://github.com/wmcmahan/react-native-calendar-events/wiki/Updating-events)
 
 ```javascript
 RNCalendarEvents.saveEvent(title, {
@@ -390,20 +372,14 @@ Returns: **Promise**
 
 ## Authors
 
-- **Will McMahan** - Initial code -
-  [github.com/wmcmahan](https://github.com/wmcmahan)
+- **Will McMahan** - Initial code - [github.com/wmcmahan](https://github.com/wmcmahan)
 
-See also the list of
-[contributors](https://github.com/wmcmahan/react-native-calendar-events/contributors)
-who participated in this project.
+See also the list of [contributors](https://github.com/wmcmahan/react-native-calendar-events/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the MIT License - see the
-[LICENSE.md](https://github.com/wmcmahan/react-native-calendar-events/blob/master/LICENSE.md)
-file for details
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/wmcmahan/react-native-calendar-events/blob/master/LICENSE.md) file for details
 
 ## Acknowledgments
 
-Big thanks to all who have contributed, raised an issue or simply find use in
-this project. Cheers!
+Big thanks to all who have contributed, raised an issue or simply find use in this project. Cheers!

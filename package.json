@@ -40,10 +40,6 @@
     "npmpub": "^5.0.0",
     "prettier": "^2.0.0"
   },
-  "prettier": {
-    "trailingComma": "all",
-    "proseWrap": "always"
-  },
   "lint-staged": {
     "*.{md,json,js,css}": [
       "prettier --write"
