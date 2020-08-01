@@ -4,8 +4,8 @@
   "description": "React Native module for IOS Calendar Events",
   "homepage": "https://github.com/wmcmahan/react-native-calendar-events",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/wmcmahan/react-native-calendar-events.git"
+    "type": "git",
+    "url": "https://github.com/wmcmahan/react-native-calendar-events.git"
   },
   "author": "Will McMahan",
   "license": "MIT",
@@ -30,6 +30,26 @@
     "react-native": ">=0.60.0"
   },
   "scripts": {
+    "format": "prettier --write \"**/*.{md,json,js,css}\"",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "husky": "^4.0.0",
+    "lint-staged": "^10.0.0",
+    "prettier": "^2.0.0"
+  },
+  "prettier": {
+    "trailingComma": "all",
+    "proseWrap": "always"
+  },
+  "lint-staged": {
+    "*.{md,json,js,css}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
