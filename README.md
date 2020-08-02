@@ -363,6 +363,19 @@ Returns: **Promise**
 
 \* _Read only_, \*\* \_Write only
 
+## Troubleshooting
+
+These are some common issues you may run into while using `react-native-calendar-events` library.
+If you encounter something that is not listed here, try [searching in GitHub issues of `react-native-calendar-events`](https://github.com/wmcmahan/react-native-calendar-events/issues).
+
+### After saving an event, it disappear form the calendar
+
+This might be related to a sync issue.
+You need to be sure that the event you saved is matching what your device will keep in sync.
+
+For iOS, you might have not all event synced. You might need to update this iOS settings in _Settings_ > _Calendar_ > _Sync_ > **All Events**. If that's not enough, it might be worth checking [iOS iCloud sync documentation](https://support.apple.com/en-us/HT203521).  
+For Android, you can have a look to [Google Calendar sync problems documentation](https://support.google.com/calendar/answer/6261951).
+
 ## Wiki
 
 - [Create basic event](https://github.com/wmcmahan/react-native-calendar-events/wiki/Creating-basic-event)
