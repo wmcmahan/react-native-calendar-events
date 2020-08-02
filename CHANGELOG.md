@@ -1,5 +1,9 @@
 # Changelog for `react-native-calendar-events`
 
+## 2.0.1 - 2020-08-01
+
+- Fixed TypeScript definition for missing `requestPermissions` [#316](https://github.com/wmcmahan/react-native-calendar-events/pull/316) by [@wmcmahan](https://github.com/wmcmahan)
+
 ## 2.0.0 - 2020-08-01
 
 In addition to bugfixes, this release introduces some minor breaking changes:
