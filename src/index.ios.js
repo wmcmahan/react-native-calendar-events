@@ -3,10 +3,12 @@ import { NativeModules, processColor } from "react-native";
 const RNCalendarEvents = NativeModules.RNCalendarEvents;
 
 export default {
-  checkPermissions() {
+  checkPermissions(readOnly = false) {
+    // readOnly is ignored on iOS, the platform does not support it.
     return RNCalendarEvents.checkPermissions();
   },
-  requestPermissions() {
+  requestPermissions(readOnly = false) {
+    // readOnly is ignored on iOS, the platform does not support it.
     return RNCalendarEvents.requestPermissions();
   },
 

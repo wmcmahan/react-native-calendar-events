@@ -13,6 +13,7 @@ import {
   StatusBar,
   Button,
   Alert,
+  Platform,
 } from 'react-native';
 import {Header, Colors} from 'react-native/Libraries/NewAppScreen';
 import RNCalendarEvents from 'react-native-calendar-events';
@@ -33,7 +34,7 @@ const App: () => React$Node = () => {
           )}
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Auth</Text>
+              <Text style={styles.sectionTitle}>Read/Write Auth</Text>
               <Text style={styles.sectionDescription}>
                 <Button
                   title="Request auth"
@@ -64,6 +65,40 @@ const App: () => React$Node = () => {
                 />
               </Text>
             </View>
+            {Platform.OS === 'android' && (
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Read-Only Auth</Text>
+                <Text style={styles.sectionDescription}>
+                  <Button
+                    title="Request auth"
+                    onPress={() => {
+                      RNCalendarEvents.requestPermissions(true).then(
+                        (result) => {
+                          Alert.alert('Read-only Auth requested', result);
+                        },
+                        (result) => {
+                          console.error(result);
+                        },
+                      );
+                    }}
+                  />
+                  <Text>{'\n'}</Text>
+                  <Button
+                    title="Check auth"
+                    onPress={() => {
+                      RNCalendarEvents.checkPermissions(true).then(
+                        (result) => {
+                          Alert.alert('Read-only Auth check', result);
+                        },
+                        (result) => {
+                          console.error(result);
+                        },
+                      );
+                    }}
+                  />
+                </Text>
+              </View>
+            )}
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Calendars</Text>
               <Text style={styles.sectionDescription}>

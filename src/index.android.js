@@ -3,11 +3,11 @@ import { NativeModules, processColor } from "react-native";
 const RNCalendarEvents = NativeModules.RNCalendarEvents;
 
 export default {
-  async checkPermissions() {
-    return RNCalendarEvents.checkPermissions();
+  async checkPermissions(readOnly = false) {
+    return RNCalendarEvents.checkPermissions(readOnly);
   },
-  async requestPermissions() {
-    return RNCalendarEvents.requestPermissions();
+  async requestPermissions(readOnly = false) {
+    return RNCalendarEvents.requestPermissions(readOnly);
   },
 
   async fetchAllEvents(startDate, endDate, calendars = []) {
