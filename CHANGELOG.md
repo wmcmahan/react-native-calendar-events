@@ -1,6 +1,6 @@
 # Changelog for `react-native-calendar-events`
 
-## 2.1.0 - 2020-08-10
+## Unreleased
 
 - Added ability to restrict to read-only permission on Android [#320](https://github.com/wmcmahan/react-native-calendar-events/pull/320) by [@mikehardy](https://github.com/mikehardy)
 
