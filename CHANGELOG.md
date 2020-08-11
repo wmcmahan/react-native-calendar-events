@@ -1,5 +1,9 @@
 # Changelog for `react-native-calendar-events`
 
+## Unreleased
+
+- Added ability to restrict to read-only permission on Android [#320](https://github.com/wmcmahan/react-native-calendar-events/pull/320) by [@mikehardy](https://github.com/mikehardy)
+
 ## 2.0.1 - 2020-08-01
 
 - Fixed TypeScript definition for missing `requestPermissions` [#316](https://github.com/wmcmahan/react-native-calendar-events/pull/316) by [@wmcmahan](https://github.com/wmcmahan)

@@ -113,9 +113,10 @@ import RNCalendarEvents from "react-native-calendar-events";
 ### `checkPermissions`
 
 Get calendar authorization status.
+You may check for the default read/write access with no argument, or read-only access on Android by passing boolean true. iOS is always read/write.
 
 ```javascript
-RNCalendarEvents.checkPermissions();
+RNCalendarEvents.checkPermissions((readOnly = false));
 ```
 
 Returns: **Promise**
@@ -127,8 +128,20 @@ Returns: **Promise**
 
 Request calendar authorization. Authorization must be granted before accessing calendar events.
 
+Note that to restrict to read-only usage on Android (iOS is always read/write) you will need to alter the included Android permissions
+as the AndroidManifest.xml is merged during the Android build.
+
+You do that by altering your AndroidManifest.xml to "remove" the WRITE_CALENDAR permission with an entry like so:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  >
+  <uses-permission tools:node="remove" android:name="android.permission.WRITE_CALENDAR" />
+```
+
 ```javascript
-RNCalendarEvents.requestPermissions();
+RNCalendarEvents.requestPermissions((readOnly = false));
 ```
 
 > Android note: This is necessary for targeted SDK of >=23.
