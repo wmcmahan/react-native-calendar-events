@@ -68,7 +68,7 @@ dependencies {
 3 - Add the import and link the package in `MainApplication.java`:
 
 ```java
-import com.calendarevents.RNCalendarEvents.RNCalendarEventsPackage; // <- add the RNCalendarEventsPackage import
+import com.calendarevents.RNCalendarEventsPackage; // <- add the RNCalendarEventsPackage import
 
 public class MainApplication extends Application implements ReactApplication {
 
