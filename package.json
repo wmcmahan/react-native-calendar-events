@@ -19,6 +19,7 @@
     "calendar-events"
   ],
   "main": "src",
+  "types": "src/index.d.ts",
   "files": [
     "android/",
     "ios/",
