@@ -1,5 +1,10 @@
 # Changelog for `react-native-calendar-events`
 
+## 2.1.1 - 2020-10-20
+
+- Fixed TypeScript declaration in `package.json` file [#328](https://github.com/wmcmahan/react-native-calendar-events/pull/328) by [@wmcmahan](https://github.com/wmcmahan)
+- Fixed Android import into the README manual linking section [#321](https://github.com/wmcmahan/react-native-calendar-events/pull/321) by [@chiformihai](https://github.com/chiformihai)
+
 ## 2.1.0 - 2020-08-11
 
 - Added ability to restrict to read-only permission on Android [#320](https://github.com/wmcmahan/react-native-calendar-events/pull/320) by [@mikehardy](https://github.com/mikehardy)
