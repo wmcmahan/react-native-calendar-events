@@ -1,5 +1,9 @@
 # Changelog for `react-native-calendar-events`
 
+## 2.1.2 - 2020-11-08
+
+- Fixed `exceptionDate` option being optional in TypeScript bindings [#329](https://github.com/wmcmahan/react-native-calendar-events/pull/329) by [@MoOx](https://github.com/MoOx)
+
 ## 2.1.1 - 2020-10-20
 
 - Fixed TypeScript declaration in `package.json` file [#328](https://github.com/wmcmahan/react-native-calendar-events/pull/328) by [@wmcmahan](https://github.com/wmcmahan)
