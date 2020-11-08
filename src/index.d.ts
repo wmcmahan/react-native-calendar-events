@@ -23,7 +23,7 @@ interface AlarmStructuredLocation {
 
 export interface Options {
   /** The start date of a recurring event's exception instance. Used for updating single event in a recurring series. */
-  exceptionDate: ISODateString;
+  exceptionDate?: ISODateString;
   /** iOS ONLY - If true the update will span all future events. If false it only update the single instance. */
   futureEvents?: boolean;
 }
