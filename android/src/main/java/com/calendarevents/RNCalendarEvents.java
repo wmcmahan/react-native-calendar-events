@@ -355,8 +355,8 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
 
         Uri uri = uriBuilder.build();
 
-        String selection = "((" + CalendarContract.Instances.BEGIN + " >= " + eStartDate.getTimeInMillis() + ") " +
-                "AND (" + CalendarContract.Instances.END + " <= " + eEndDate.getTimeInMillis() + ") " +
+        String selection = "((" + CalendarContract.Instances.BEGIN + " < " + eEndDate.getTimeInMillis() + ") " +
+                "AND (" + CalendarContract.Instances.END + " >= " + eStartDate.getTimeInMillis() + ") " +
                 "AND (" + CalendarContract.Instances.VISIBLE + " = 1) " +
                 "AND (" + CalendarContract.Instances.STATUS + " IS NOT " + CalendarContract.Events.STATUS_CANCELED + ") ";
 
