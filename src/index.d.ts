@@ -167,12 +167,12 @@ export type CalendarAccountSourceAndroid =
 export default class ReactNativeCalendarEvents {
   /**
    * Get calendar authorization status.
-   * @param readOnly - optional, default false, use true to check for calendar read only vs calendar read/write. Android-specific, iOS is always read/write
+   * @param readOnly - optional, default false, use true to check for calendar read-only vs calendar read/write. Android-specific, iOS is always read/write
    */
   static checkPermissions(readOnly?: boolean): Promise<AuthorizationStatus>;
   /**
    * Request calendar authorization. Authorization must be granted before accessing calendar events.
-   * @param readOnly - optional, default false, use true to check for calendar read only vs calendar read/write. Android-specific, iOS is always read/write
+   * @param readOnly - optional, default false, use true to request for calendar read-only vs calendar read/write. Android-specific, iOS is always read/write
    */
   static requestPermissions(readOnly?: boolean): Promise<AuthorizationStatus>;
 
