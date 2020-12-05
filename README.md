@@ -173,6 +173,8 @@ Create a calendar.
 RNCalendarEvents.saveCalendar(calendar);
 ```
 
+⚠️ When you want to save a calendar, you need to use a valid source (find using [`findCalendars`](#findcalendars)).
+
 Arguments:
 
 - [calendar](#Calendar-options): Object - Calendar to create.
