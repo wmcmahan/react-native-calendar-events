@@ -219,7 +219,7 @@ Returns: **Promise**
 - fulfilled: Object | null - Found event with unique id.
 - rejected: Error
 
-### `fetchAllEvents``
+### `fetchAllEvents`
 
 Fetch all calendar events.
 Returns a promise with fulfilled found events.
