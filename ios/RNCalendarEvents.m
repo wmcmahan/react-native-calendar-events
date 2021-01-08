@@ -958,7 +958,7 @@ RCT_EXPORT_METHOD(findEventById:(NSString *)eventId resolver:(RCTPromiseResolveB
             if (calendarEvent) {
                 resolve([strongSelf serializeCalendarEvent:calendarEvent]);
             } else {
-                reject(@"error", @"error finding event", nil);
+                resolve([NSNull null]);
             }
         }
         @catch (NSException *exception) {
