@@ -307,7 +307,7 @@ Returns: **Promise**
 | [**attendees**](#attendees)\*               | Array  | The attendees of the event, including the organizer.                                                  |  ✓  |    ✓    |
 | [**calendar**](#calendar)\*                 | Object | The calendar containing the event.                                                                    |  ✓  |    ✓    |
 | **skipAndroidTimezone**                     | Bool   | Skip the process of setting automatic timezone on android                                             |     |    ✓    |
-| **timeZone**                                | String | The time zone associated with the event                                                 |  ✓  |         |
+| **timeZone**                                | String | The time zone associated with the event                                                               |  ✓  |         |
 
 ### Calendar
 
@@ -389,7 +389,7 @@ If you encounter something that is not listed here, try [searching in GitHub iss
 This might be related to a sync issue.
 You need to be sure that the event you saved is matching what your device will keep in sync.
 
-For iOS, you might have not all event synced. You might need to update this iOS settings in _Settings_ > _Calendar_ > _Sync_ > **All Events**. If that's not enough, it might be worth checking [iOS iCloud sync documentation](https://support.apple.com/en-us/HT203521).
+For iOS, you might have not all event synced. You might need to update this iOS settings in _Settings_ > _Calendar_ > _Sync_ > **All Events**. If that's not enough, it might be worth checking [iOS iCloud sync documentation](https://support.apple.com/en-us/HT203521).  
 For Android, you can have a look to [Google Calendar sync problems documentation](https://support.google.com/calendar/answer/6261951).
 
 ## Wiki
