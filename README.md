@@ -128,8 +128,24 @@ Returns: **Promise**
 
 Request calendar authorization. Authorization must be granted before accessing calendar events.
 
-Note that to restrict to read-only usage on Android (iOS is always read/write) you will need to alter the included Android permissions
-as the AndroidManifest.xml is merged during the Android build.
+```javascript
+RNCalendarEvents.requestPermissions((readOnly = false));
+```
+
+(readOnly is for Android only, see below)
+
+> Android note: this is necessary for targeted SDK of >=23.
+> iOS note: This method will crash, if you didn't update `Info.plist`. Follow carefully installation instruction.
+
+Returns: **Promise**
+
+- fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
+- rejected: Error
+
+### Read-Only `requestPermissions` (_Android only_)
+
+⚠️ Note that to restrict to read-only usage on Android (iOS is always read/write) you will need to alter the included Android permissions
+as the `AndroidManifest.xml` is merged during the Android build.
 
 You do that by altering your AndroidManifest.xml to "remove" the WRITE_CALENDAR permission with an entry like so:
 
@@ -137,20 +153,9 @@ You do that by altering your AndroidManifest.xml to "remove" the WRITE_CALENDAR 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   >
+  <!-- ... -->
   <uses-permission tools:node="remove" android:name="android.permission.WRITE_CALENDAR" />
 ```
-
-```javascript
-RNCalendarEvents.requestPermissions((readOnly = false));
-```
-
-> Android note: This is necessary for targeted SDK of >=23.
-> iOS note: This method will crash, if you didn't update `Info.plist`. Follow carefully installation instruction.
-
-Returns: **Promise**
-
-- fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
-- rejected: Error
 
 ### `findCalendars`
 
