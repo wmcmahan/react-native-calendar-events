@@ -111,7 +111,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         return writePermission == PackageManager.PERMISSION_GRANTED &&
                 readPermission == PackageManager.PERMISSION_GRANTED;
     }
-    
+
     private boolean shouldShowRequestPermissionRationale(boolean readOnly) {
         Activity currentActivity = getCurrentActivity();
 
@@ -322,7 +322,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
     }
 
     //region Event Accessors
-    private WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars) {
+    private WritableNativeArray findEvents(Dynamic startDate, Dynamic endDate, ReadableArray calendars, Boolean isLite) {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -393,7 +393,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         }, selection, null, null);
 
 
-        return serializeEvents(cursor);
+        return serializeEvents(cursor, isLite);
     }
 
     private WritableNativeMap findEventById(String eventID) {
@@ -422,7 +422,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
 
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
-            result = serializeEvent(cursor);
+            result = serializeEvent(cursor, false);
         } else {
             result = null;
         }
@@ -463,7 +463,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         }, selection, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
-            result = serializeEvent(cursor);
+            result = serializeEvent(cursor, false);
             cursor.close();
         } else {
             result = null;
@@ -814,7 +814,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         Cursor cursor = CalendarContract.Attendees.query(resolver, eventID, new String[] {
                 CalendarContract.Attendees._ID
         });
-        
+
         while (cursor.moveToNext()) {
             long attendeeId = cursor.getLong(0);
             Uri attendeeUri = ContentUris.withAppendedId(CalendarContract.Attendees.CONTENT_URI, attendeeId);
@@ -847,7 +847,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
 
         if (resolver != null) {
             cursor = CalendarContract.Reminders.query(resolver, eventID, new String[] {
-                CalendarContract.Reminders._ID
+                    CalendarContract.Reminders._ID
             });
         }
 
@@ -1036,11 +1036,11 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
     //endregion
 
     // region Serialize Events
-    private WritableNativeArray serializeEvents(Cursor cursor) {
+    private WritableNativeArray serializeEvents(Cursor cursor, Boolean isLite) {
         WritableNativeArray results = new WritableNativeArray();
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                results.pushMap(serializeEvent(cursor));
+                results.pushMap(serializeEvent(cursor, isLite));
             }
 
             cursor.close();
@@ -1049,7 +1049,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         return results;
     }
 
-    private WritableNativeMap serializeEvent(Cursor cursor) {
+    private WritableNativeMap serializeEvent(Cursor cursor, Boolean isLite) {
         WritableNativeMap event = new WritableNativeMap();
 
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
@@ -1091,42 +1091,54 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
                 recurrenceRule.putString("duration", cursor.getString(cursor.getColumnIndex(CalendarContract.Events.DURATION)));
             }
 
-            if (recurrenceRules.length >= 2 && recurrenceRules[1].split("=")[0].equals("INTERVAL")) {
-                recurrenceRule.putInt("interval", Integer.parseInt(recurrenceRules[1].split("=")[1]));
-            }
-
-            if (recurrenceRules.length >= 3) {
-                if (recurrenceRules[2].split("=")[0].equals("UNTIL")) {
+            for (int i = 0; i < recurrenceRules.length; i++) {
+                if (recurrenceRules[i].contains("INTERVAL")) {
+                    recurrenceRule.putInt("interval", Integer.parseInt(recurrenceRules[i].split("=")[1]));
+                }
+                if (recurrenceRules[i].contains("UNTIL")) {
                     try {
-                        recurrenceRule.putString("endDate", sdf.format(format.parse(recurrenceRules[2].split("=")[1])));
+                        recurrenceRule.putString("endDate", sdf.format(format.parse(recurrenceRules[i].split("=")[1])));
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-                } else if (recurrenceRules[2].split("=")[0].equals("COUNT")) {
-                    recurrenceRule.putInt("occurrence", Integer.parseInt(recurrenceRules[2].split("=")[1]));
                 }
-
+                if (recurrenceRules[i].contains("COUNT")) {
+                    recurrenceRule.putInt("occurrence", Integer.parseInt(recurrenceRules[i].split("=")[1]));
+                }
+                if (recurrenceRules[i].contains("BYDAY")) {
+                    String[] days = recurrenceRules[i].split("=")[1].toLowerCase().split(",");
+                    WritableNativeArray daysOfWeek = new WritableNativeArray();
+                    for (int d = 0; d < days.length; d++) {
+                        daysOfWeek.pushString(days[d]);
+                    }
+                    recurrenceRule.putArray("daysOfWeek", daysOfWeek);
+                }
             }
 
             event.putMap("recurrenceRule", recurrenceRule);
         }
 
         event.putString("id", cursor.getString(0));
-        event.putMap("calendar", findCalendarById(cursor.getString(cursor.getColumnIndex("calendar_id"))));
         event.putString("title", cursor.getString(cursor.getColumnIndex("title")));
         event.putString("description", cursor.getString(2));
         event.putString("startDate", startDateUTC);
         event.putString("endDate", endDateUTC);
         event.putBoolean("allDay", allDay);
         event.putString("location", cursor.getString(6));
-        event.putString("availability", availabilityStringMatchingConstant(cursor.getInt(9)));
-        event.putArray("attendees", (WritableArray) findAttendeesByEventId(cursor.getString(0)));
 
-        if (cursor.getInt(10) > 0) {
-            event.putArray("alarms", findReminderByEventId(cursor.getString(0), Long.parseLong(cursor.getString(3))));
+        if (isLite) {
+            event.putString("calendar_id", cursor.getString(cursor.getColumnIndex("calendar_id")));
         } else {
-            WritableNativeArray emptyAlarms = new WritableNativeArray();
-            event.putArray("alarms", emptyAlarms);
+            event.putMap("calendar", findCalendarById(cursor.getString(cursor.getColumnIndex("calendar_id"))));
+            event.putArray("attendees", (WritableArray) findAttendeesByEventId(cursor.getString(0)));
+            event.putString("availability", availabilityStringMatchingConstant(cursor.getInt(9)));
+
+            if (cursor.getInt(10) > 0) {
+                event.putArray("alarms", findReminderByEventId(cursor.getString(0), Long.parseLong(cursor.getString(3))));
+            } else {
+                WritableNativeArray emptyAlarms = new WritableNativeArray();
+                event.putArray("alarms", emptyAlarms);
+            }
         }
 
         if (cursor.getColumnIndex(CalendarContract.Events.ORIGINAL_ID) != -1 && cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ORIGINAL_ID)) != null) {
@@ -1230,7 +1242,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         } else if (!permissionRequested) {
             promise.resolve("undetermined");
         } else if(this.shouldShowRequestPermissionRationale(readOnly)) {
-            promise.resolve("denied"); 
+            promise.resolve("denied");
         } else {
             promise.resolve("restricted");
         }
@@ -1345,14 +1357,14 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
     }
 
     @ReactMethod
-    public void findAllEvents(final Dynamic startDate, final Dynamic endDate, final ReadableArray calendars, final Promise promise) {
+    public void findAllEvents(final Dynamic startDate, final Dynamic endDate, final ReadableArray calendars, final Boolean isLite, final Promise promise) {
 
         if (this.haveCalendarPermissions(true)) {
             try {
                 Thread thread = new Thread(new Runnable(){
                     @Override
                     public void run() {
-                        WritableNativeArray results = findEvents(startDate, endDate, calendars);
+                        WritableNativeArray results = findEvents(startDate, endDate, calendars, isLite);
                         promise.resolve(results);
                     }
                 });

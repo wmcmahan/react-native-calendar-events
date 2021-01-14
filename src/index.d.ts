@@ -204,7 +204,8 @@ export default class ReactNativeCalendarEvents {
   static fetchAllEvents(
     startDate: ISODateString,
     endDate: ISODateString,
-    calendarIds?: string[]
+    calendarIds?: string[],
+    isLite?: boolean
   ): Promise<CalendarEventReadable[]>;
   /**
    * Creates or updates a calendar event. To update an event, the event id must be defined.

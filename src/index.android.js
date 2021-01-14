@@ -10,8 +10,8 @@ export default {
     return RNCalendarEvents.requestPermissions(readOnly);
   },
 
-  async fetchAllEvents(startDate, endDate, calendars = []) {
-    return RNCalendarEvents.findAllEvents(startDate, endDate, calendars);
+  async fetchAllEvents(startDate, endDate, calendars = [], isLite = false) {
+    return RNCalendarEvents.findAllEvents(startDate, endDate, calendars, isLite);
   },
 
   async findCalendars() {
