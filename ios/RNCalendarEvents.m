@@ -60,7 +60,7 @@ dispatch_queue_t serialQueue;
         g = 1;
         b = 1;
     }
-    
+
     return [NSString stringWithFormat:@"#%02lX%02lX%02lX",
             lroundf(r * 255),
             lroundf(g * 255),
@@ -206,12 +206,12 @@ RCT_EXPORT_MODULE()
         NSDictionary *geo = [locationOptions valueForKey:@"coords"];
         CLLocation *geoLocation = [[CLLocation alloc] initWithLatitude:[[geo valueForKey:@"latitude"] doubleValue]
                                                              longitude:[[geo valueForKey:@"longitude"] doubleValue]];
-        
+
         calendarEvent.structuredLocation = [EKStructuredLocation locationWithTitle:[locationOptions valueForKey:@"title"]];
         calendarEvent.structuredLocation.geoLocation = geoLocation;
         calendarEvent.structuredLocation.radius = [[locationOptions valueForKey:@"radius"] doubleValue];
     }
-    
+
     return [self saveEvent:calendarEvent options:options];
 }
 
@@ -524,6 +524,10 @@ RCT_EXPORT_MODULE()
         [formedCalendarEvent setValue:event.calendarItemIdentifier forKey:_id];
     }
 
+    if (event.calendarItemExternalIdentifier) {
+        [formedCalendarEvent setValue:event.calendarItemExternalIdentifier forKey:@"externalIdentifier"];
+    }
+
     if (event.calendar) {
         [formedCalendarEvent setValue:@{
                                         @"id": event.calendar.calendarIdentifier?event.calendar.calendarIdentifier: @"tempCalendar",
@@ -601,7 +605,7 @@ RCT_EXPORT_MODULE()
     @catch (NSException *exception) {
         NSLog(@"RNCalendarEvents encountered an issue while serializing event (attendees) '%@': %@", event.title, exception.reason);
     }
-    
+
     @try {
         if (event.hasAlarms) {
             NSMutableArray *alarms = [[NSMutableArray alloc] init];
@@ -678,7 +682,7 @@ RCT_EXPORT_MODULE()
     [formedCalendarEvent setValue:[NSNumber numberWithBool:event.isDetached] forKey:_isDetached];
 
     [formedCalendarEvent setValue:[NSNumber numberWithBool:event.allDay] forKey:_allDay];
-    
+
     @try {
         if (event.hasRecurrenceRules) {
             EKRecurrenceRule *rule = [event.recurrenceRules objectAtIndex:0];
@@ -705,9 +709,9 @@ RCT_EXPORT_MODULE()
     @catch (NSException *exception) {
         NSLog(@"RNCalendarEvents encountered an issue while serializing event (recurrenceRules) '%@': %@", event.title, exception.reason);
     }
-    
+
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
-    
+
     @try {
         if (event.structuredLocation && event.structuredLocation.radius) {
             NSMutableDictionary *structuredLocation = [[NSMutableDictionary alloc] initWithCapacity:3];
@@ -810,7 +814,7 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
     if (![self isCalendarAccessGranted]) {
         return reject(@"error", @"unauthorized to access calendar", nil);
     }
-    
+
     @try {
         EKCalendar *calendar = nil;
         EKSource *calendarSource = nil;
@@ -1063,7 +1067,7 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
       dispatch_async(serialQueue, ^{
           @try {
               RNCalendarEvents *strongSelf = weakSelf;
-              
+
               EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
               NSError *error = nil;
               EKSpan eventSpan = EKSpanThisEvent;

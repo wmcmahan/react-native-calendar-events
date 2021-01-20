@@ -390,6 +390,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
                 CalendarContract.Instances.EVENT_ID,
                 CalendarContract.Instances.DURATION,
                 CalendarContract.Instances.ORIGINAL_SYNC_ID,
+                CalendarContract.Instances.ORIGINAL_INSTANCE_TIME
         }, selection, null, null);
 
 
@@ -1080,8 +1081,6 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         if (cursor.getString(7) != null) {
             WritableNativeMap recurrenceRule = new WritableNativeMap();
             String[] recurrenceRules = cursor.getString(7).split(";");
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
-
             if (recurrenceRules.length > 0 && recurrenceRules[0].split("=").length > 1) {
                 event.putString("recurrence", recurrenceRules[0].split("=")[1].toLowerCase());
                 recurrenceRule.putString("frequency", recurrenceRules[0].split("=")[1].toLowerCase());
@@ -1096,6 +1095,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
                     recurrenceRule.putInt("interval", Integer.parseInt(recurrenceRules[i].split("=")[1]));
                 }
                 if (recurrenceRules[i].contains("UNTIL")) {
+                    SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
                     try {
                         recurrenceRule.putString("endDate", sdf.format(format.parse(recurrenceRules[i].split("=")[1])));
                     } catch (ParseException e) {
@@ -1106,17 +1106,25 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
                     recurrenceRule.putInt("occurrence", Integer.parseInt(recurrenceRules[i].split("=")[1]));
                 }
                 if (recurrenceRules[i].contains("BYDAY")) {
-                    String[] days = recurrenceRules[i].split("=")[1].toLowerCase().split(",");
-                    WritableNativeArray daysOfWeek = new WritableNativeArray();
-                    for (int d = 0; d < days.length; d++) {
-                        daysOfWeek.pushString(days[d]);
+                    String days = recurrenceRules[i].split("=")[1].toLowerCase();
+                    WritableNativeArray daysOfWeekNativeArr = new WritableNativeArray();
+                    String[] daysOfWeek = days.split(",");
+                    for (int d = 0; d < daysOfWeek.length; d++) {
+                        daysOfWeekNativeArr.pushString(daysOfWeek[d]);
                     }
-                    recurrenceRule.putArray("daysOfWeek", daysOfWeek);
+                    recurrenceRule.putArray("daysOfWeek", daysOfWeekNativeArr);
                 }
             }
 
             event.putMap("recurrenceRule", recurrenceRule);
         }
+
+        if (cursor.getColumnIndex(CalendarContract.Instances.ORIGINAL_INSTANCE_TIME) != -1 && cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.ORIGINAL_INSTANCE_TIME)) != null) {
+            Calendar originalInstanceDate = Calendar.getInstance();
+            originalInstanceDate.setTimeInMillis(Long.parseLong(cursor.getString(cursor.getColumnIndex(CalendarContract.Events.ORIGINAL_INSTANCE_TIME))));
+            event.putString("originalInstanceTime", sdf.format(originalInstanceDate.getTime()));
+        }
+
 
         event.putString("id", cursor.getString(0));
         event.putString("title", cursor.getString(cursor.getColumnIndex("title")));
