@@ -24,7 +24,6 @@ static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
 static NSString *const _attendees    = @"attendees";
 static NSString *const _timeZone    = @"timeZone";
-static NSString *const _externalId = @"externalId";
 
 dispatch_queue_t serialQueue;
 
@@ -120,8 +119,39 @@ RCT_EXPORT_MODULE()
     NSString *availability = [RCTConvert NSString:details[_availability]];
     NSString *timeZone = [RCTConvert NSString:details[_timeZone]];
 
+    NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
+
     if (eventId) {
-        calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+        if (exceptionDate) {
+            NSCalendar *cal = [NSCalendar currentCalendar];
+            NSDate *endDate = [cal dateByAddingUnit:NSCalendarUnitDay
+                                           value:1
+                                          toDate:exceptionDate
+                                         options:0];
+            NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:exceptionDate
+                                                                              endDate:endDate
+                                                                            calendars:nil];
+
+            NSArray *calendarEvents = [self.eventStore eventsMatchingPredicate:predicate];
+            EKEvent *eventInstance;
+            for (EKEvent *event in calendarEvents) {
+                if ([event.calendarItemIdentifier isEqualToString:eventId] && [event.startDate isEqualToDate:exceptionDate]) {
+                    eventInstance = event;
+                    break;
+                }
+            }
+            NSLog(@"eventInstance remove %@", eventInstance);
+            if (eventInstance) {
+                calendarEvent = eventInstance;
+            } else {
+                NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:@{@"success": [NSNull null], @"error": [NSNull null]}];
+
+                [response setValue:@"No event found." forKey:@"error"];
+                return [response copy];
+            }
+        } else {
+            calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+        }
     } else {
         calendarEvent = [EKEvent eventWithEventStore:self.eventStore];
         calendarEvent.calendar = [self.eventStore defaultCalendarForNewEvents];
@@ -221,15 +251,13 @@ RCT_EXPORT_MODULE()
 {
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:@{@"success": [NSNull null], @"error": [NSNull null]}];
     NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
-    NSDate *originalEndDate = [RCTConvert NSDate:options[@"originalEndDate"]];
     EKSpan eventSpan = EKSpanFutureEvents;
 
     if (exceptionDate) {
         calendarEvent.startDate = exceptionDate;
         eventSpan = EKSpanThisEvent;
     }
-    NSLog(@"exceptionDate %@", exceptionDate);
-    NSLog(@"originalEndDate %@", originalEndDate);
+    NSLog(@"recurrenceRule %@", calendarEvent);
 
     NSError *error = nil;
     BOOL success = [self.eventStore saveEvent:calendarEvent span:eventSpan commit:YES error:&error];
@@ -994,91 +1022,23 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title
     NSLog(@"exceptionDate %@", exceptionDate);
     NSLog(@"eventId %@", eventId);
 
-    if (eventId && exceptionDate) {
-      NSCalendar *cal = [NSCalendar currentCalendar];
-      NSDate *endDate = [cal dateByAddingUnit:NSCalendarUnitDay
-                                     value:1
-                                    toDate:exceptionDate
-                                   options:0];
-      NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:exceptionDate
-                                                                        endDate:endDate
-                                                                      calendars:nil];
-        __weak RNCalendarEvents *weakSelf = self;
+    __weak RNCalendarEvents *weakSelf = self;
         dispatch_async(serialQueue, ^{
             @try {
                 RNCalendarEvents *strongSelf = weakSelf;
-                NSArray *calendarEvents = [strongSelf.eventStore eventsMatchingPredicate:predicate];
-                EKEvent *eventInstance;
-                BOOL success;
 
-                for (EKEvent *event in calendarEvents) {
-                    if ([event.calendarItemIdentifier isEqualToString:eventId] && [event.startDate isEqualToDate:exceptionDate]) {
-                        eventInstance = event;
-                        break;
-                    }
-                }
-                NSLog(@"eventInstance remove %@", eventInstance);
+                NSDictionary *response = [strongSelf buildAndSaveEvent:details options:options];
 
-                if (eventInstance) {
-                    NSError *error = nil;
-                    EKSpan eventSpan = EKSpanThisEvent;
-
-                    if (futureEvents) {
-                        eventSpan = EKSpanFutureEvents;
-                    }
-
-//                    NSLog(@"eventInstance remove %@", eventInstance);
-                    eventInstance.startDate = exceptionDate;
-                    NSString *title = [RCTConvert NSString:details[_title]];
-
-                    if (title) {
-                        eventInstance.title = title;
-                    }
-                    success = [strongSelf.eventStore saveEvent:eventInstance span:eventSpan commit:YES error:&error];
-                    if (error) {
-                        return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
-                    }
-                } else {
-                    return reject(@"error", @"No event found.", nil);
-                }
-
-                NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:@{@"success": [NSNull null], @"error": [NSNull null]}];
-                NSError *error = nil;
-
-                if (!success) {
-                    [response setValue:[error.userInfo valueForKey:@"NSLocalizedDescription"] forKey:@"error"];
-                } else {
-                    [response setValue:eventInstance.calendarItemIdentifier forKey:@"success"];
-                    NSLog(@"response %@", response);
-                }
                 if ([response valueForKey:@"success"] != [NSNull null]) {
                     resolve([response valueForKey:@"success"]);
                 } else {
                     reject(@"error", [response valueForKey:@"error"], nil);
-                }            }
+                }
+            }
             @catch (NSException *exception) {
-                reject(@"error", @"removeEvent error", [self exceptionToError:exception]);
+                reject(@"error", @"saveEvent error", [self exceptionToError:exception]);
             }
         });
-    } else {
-        __weak RNCalendarEvents *weakSelf = self;
-            dispatch_async(serialQueue, ^{
-                @try {
-                    RNCalendarEvents *strongSelf = weakSelf;
-
-                    NSDictionary *response = [strongSelf buildAndSaveEvent:details options:options];
-
-                    if ([response valueForKey:@"success"] != [NSNull null]) {
-                        resolve([response valueForKey:@"success"]);
-                    } else {
-                        reject(@"error", [response valueForKey:@"error"], nil);
-                    }
-                }
-                @catch (NSException *exception) {
-                    reject(@"error", @"saveEvent error", [self exceptionToError:exception]);
-                }
-            });
-    }
 }
 
 RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
