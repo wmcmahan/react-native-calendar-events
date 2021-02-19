@@ -829,7 +829,10 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
         // Second: If no iCloud source is set-up / utilised, then fall back and use the local source.
         if (calendarSource == nil) {
             for (EKSource *source in self.eventStore.sources) {
-                if (source.sourceType == EKSourceTypeSubscribed || source.sourceType == EKSourceTypeLocal) { // if there is another source(ex: gmail) we need to fallback to EKSourceTypeSubscribed
+                if (
+                    source.sourceType == EKSourceTypeLocal ||
+                    source.sourceType == EKSourceTypeSubscribed
+                ) {
                     calendarSource = source;
                     if (source.sourceType == EKSourceTypeLocal) {
                         break;
