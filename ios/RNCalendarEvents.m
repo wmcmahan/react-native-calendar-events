@@ -823,15 +823,20 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
             if (source.sourceType == EKSourceTypeCalDAV && [source.title isEqualToString:@"iCloud"]) {
                 calendarSource = source;
                 break;
-            }
+           }
         }
 
         // Second: If no iCloud source is set-up / utilised, then fall back and use the local source.
         if (calendarSource == nil) {
             for (EKSource *source in self.eventStore.sources) {
-                if (source.sourceType == EKSourceTypeLocal) {
+                if (
+                    source.sourceType == EKSourceTypeLocal ||
+                    source.sourceType == EKSourceTypeSubscribed
+                ) {
                     calendarSource = source;
-                    break;
+                    if (source.sourceType == EKSourceTypeLocal) {
+                        break;
+                    }
                 }
             }
         }
