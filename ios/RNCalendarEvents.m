@@ -778,15 +778,18 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
         return;
     }
 
+    __weak RNCalendarEvents *weakSelf = self;
+    dispatch_async(serialQueue, ^{
     @try {
-        NSArray* calendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
+    RNCalendarEvents *strongSelf = weakSelf;
+        NSArray* calendars = [strongSelf.eventStore calendarsForEntityType:EKEntityTypeEvent];
 
         if (!calendars) {
             reject(@"error", @"error finding calendars", nil);
         } else {
             NSMutableArray *eventCalendars = [[NSMutableArray alloc] init];
             for (EKCalendar *calendar in calendars) {
-                BOOL isPrimary = [calendar isEqual:[self.eventStore defaultCalendarForNewEvents]];
+                BOOL isPrimary = [calendar isEqual:[strongSelf.eventStore defaultCalendarForNewEvents]];
                 [eventCalendars addObject:@{
                                             @"id": calendar.calendarIdentifier,
                                             @"title": calendar.title ? calendar.title : @"",
@@ -803,6 +806,7 @@ RCT_EXPORT_METHOD(findCalendars:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
     @catch (NSException *exception) {
         reject(@"error", @"saveCalendar error", [self exceptionToError:exception]);
     }
+    });
 }
 
 RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
@@ -810,8 +814,10 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
     if (![self isCalendarAccessGranted]) {
         return reject(@"error", @"unauthorized to access calendar", nil);
     }
-    
+    __weak RNCalendarEvents *weakSelf = self;
+    dispatch_async(serialQueue, ^{
     @try {
+        RNCalendarEvents *strongSelf = weakSelf;
         EKCalendar *calendar = nil;
         EKSource *calendarSource = nil;
         NSString *title = [RCTConvert NSString:options[@"title"]];
@@ -819,11 +825,11 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
         NSString *type = [RCTConvert NSString:options[@"entityType"]];
 
         // First: Check if the user has an iCloud source set-up.
-        for (EKSource *source in self.eventStore.sources) {
+        for (EKSource *source in strongSelf.eventStore.sources) {
             if (source.sourceType == EKSourceTypeCalDAV && [source.title isEqualToString:@"iCloud"]) {
                 calendarSource = source;
                 break;
-           }
+            }
         }
 
         // Second: If no iCloud source is set-up / utilised, then fall back and use the local source.
@@ -846,9 +852,9 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
         }
 
         if ([type isEqualToString:@"event"]) {
-        calendar = [EKCalendar calendarForEntityType:EKEntityTypeEvent eventStore:self.eventStore];
+        calendar = [EKCalendar calendarForEntityType:EKEntityTypeEvent eventStore:strongSelf.eventStore];
         } else if ([type isEqualToString:@"reminder"]) {
-          calendar = [EKCalendar calendarForEntityType:EKEntityTypeReminder eventStore:self.eventStore];
+          calendar = [EKCalendar calendarForEntityType:EKEntityTypeReminder eventStore:strongSelf.eventStore];
         } else {
             return reject(@"error",
                  [NSString stringWithFormat:@"Calendar entityType %@ is not supported", type],
@@ -867,7 +873,7 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
         }
 
         NSError *error = nil;
-        BOOL success = [self.eventStore saveCalendar:calendar commit:YES error:&error];
+        BOOL success = [strongSelf.eventStore saveCalendar:calendar commit:YES error:&error];
         if (success) {
             return resolve(calendar.calendarIdentifier);
         }
@@ -877,6 +883,7 @@ RCT_EXPORT_METHOD(saveCalendar:(NSDictionary *)options resolver:(RCTPromiseResol
     @catch (NSException *exception) {
         reject(@"error", @"saveCalendar error", [self exceptionToError:exception]);
     }
+    });
 }
 
 RCT_EXPORT_METHOD(removeCalendar:(NSString *)calendarId resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
@@ -886,13 +893,14 @@ RCT_EXPORT_METHOD(removeCalendar:(NSString *)calendarId resolver:(RCTPromiseReso
         return;
     }
 
-
+    __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
-        @try {
-            EKCalendar *calendar = (EKCalendar *)[self.eventStore calendarWithIdentifier:calendarId];
+    @try {
+    RNCalendarEvents *strongSelf = weakSelf;
+            EKCalendar *calendar = (EKCalendar *)[strongSelf.eventStore calendarWithIdentifier:calendarId];
             NSError *error = nil;
 
-            BOOL success = [self.eventStore removeCalendar:calendar commit:YES error:&error];
+            BOOL success = [strongSelf.eventStore removeCalendar:calendar commit:YES error:&error];
             if (error) {
                 return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
             }
@@ -910,12 +918,15 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
         reject(@"error", @"unauthorized to access calendar", nil);
         return;
     }
-
+    __weak RNCalendarEvents *weakSelf = self;
+    dispatch_async(serialQueue, ^{
+    @try {
+    RNCalendarEvents *strongSelf = weakSelf;
     NSMutableArray *eventCalendars;
 
     if (calendars.count) {
         eventCalendars = [[NSMutableArray alloc] init];
-        NSArray *deviceCalendars = [self.eventStore calendarsForEntityType:EKEntityTypeEvent];
+        NSArray *deviceCalendars = [strongSelf.eventStore calendarsForEntityType:EKEntityTypeEvent];
 
         for (EKCalendar *calendar in deviceCalendars) {
             if ([calendars containsObject:calendar.calendarIdentifier]) {
@@ -924,14 +935,10 @@ RCT_EXPORT_METHOD(fetchAllEvents:(NSDate *)startDate endDate:(NSDate *)endDate c
         }
     }
 
-    NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:startDate
+    NSPredicate *predicate = [strongSelf.eventStore predicateForEventsWithStartDate:startDate
                                                                       endDate:endDate
                                                                     calendars:eventCalendars];
 
-    __weak RNCalendarEvents *weakSelf = self;
-    dispatch_async(serialQueue, ^{
-        @try {
-            RNCalendarEvents *strongSelf = weakSelf;
             NSArray *calendarEvents = [[strongSelf.eventStore eventsMatchingPredicate:predicate] sortedArrayUsingSelector:@selector(compareStartDateWithEvent:)];
             if (calendarEvents) {
                 resolve([strongSelf serializeCalendarEvents:calendarEvents]);
@@ -956,10 +963,10 @@ RCT_EXPORT_METHOD(findEventById:(NSString *)eventId resolver:(RCTPromiseResolveB
 
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
-        @try {
-            RNCalendarEvents *strongSelf = weakSelf;
+    @try {
+    RNCalendarEvents *strongSelf = weakSelf;
 
-            EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+            EKEvent *calendarEvent = (EKEvent *)[strongSelf.eventStore calendarItemWithIdentifier:eventId];
             if (calendarEvent) {
                 resolve([strongSelf serializeCalendarEvent:calendarEvent]);
             } else {
@@ -982,14 +989,14 @@ RCT_EXPORT_METHOD(saveEvent:(NSString *)title
         reject(@"error", @"unauthorized to access calendar", nil);
         return;
     }
-
-    NSMutableDictionary *details = [NSMutableDictionary dictionaryWithDictionary:settings];
-    [details setValue:title forKey:_title];
-
+    
     __weak RNCalendarEvents *weakSelf = self;
     dispatch_async(serialQueue, ^{
-        @try {
-            RNCalendarEvents *strongSelf = weakSelf;
+    @try {
+    RNCalendarEvents *strongSelf = weakSelf;
+    
+    NSMutableDictionary *details = [NSMutableDictionary dictionaryWithDictionary:settings];
+    [details setValue:title forKey:_title];
 
             NSDictionary *response = [strongSelf buildAndSaveEvent:details options:options];
 
@@ -1011,7 +1018,12 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
         reject(@"error", @"unauthorized to access calendar", nil);
         return;
     }
-
+    
+    __weak RNCalendarEvents *weakSelf = self;
+    dispatch_async(serialQueue, ^{
+    @try {
+    RNCalendarEvents *strongSelf = weakSelf;
+    
     Boolean futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
     NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
 
@@ -1022,14 +1034,10 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
                                     toDate:exceptionDate
                                    options:0];
 
-      NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:exceptionDate
+      NSPredicate *predicate = [strongSelf.eventStore predicateForEventsWithStartDate:exceptionDate
                                                                         endDate:endDate
                                                                       calendars:nil];
 
-        __weak RNCalendarEvents *weakSelf = self;
-        dispatch_async(serialQueue, ^{
-            @try {
-                RNCalendarEvents *strongSelf = weakSelf;
                 NSArray *calendarEvents = [strongSelf.eventStore eventsMatchingPredicate:predicate];
                 EKEvent *eventInstance;
                 BOOL success;
@@ -1058,18 +1066,8 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
                 }
 
                 return resolve(@(success));
-            }
-            @catch (NSException *exception) {
-                reject(@"error", @"removeEvent error", [self exceptionToError:exception]);
-            }
-        });
     } else {
-      __weak RNCalendarEvents *weakSelf = self;
-      dispatch_async(serialQueue, ^{
-          @try {
-              RNCalendarEvents *strongSelf = weakSelf;
-              
-              EKEvent *calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+              EKEvent *calendarEvent = (EKEvent *)[strongSelf.eventStore calendarItemWithIdentifier:eventId];
               NSError *error = nil;
               EKSpan eventSpan = EKSpanThisEvent;
 
@@ -1077,17 +1075,16 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
                   eventSpan = EKSpanFutureEvents;
               }
 
-              BOOL success = [self.eventStore removeEvent:calendarEvent span:eventSpan commit:YES error:&error];
+              BOOL success = [strongSelf.eventStore removeEvent:calendarEvent span:eventSpan commit:YES error:&error];
               if (error) {
                   return reject(@"error", [error.userInfo valueForKey:@"NSLocalizedDescription"], nil);
               }
               return resolve(@(success));
-              }
-          @catch (NSException *exception) {
-              reject(@"error", @"removeEvent error", [self exceptionToError:exception]);
-          }
-      });
     }
+    } @catch (NSException *exception) {
+        reject(@"error", @"removeEvent error", [self exceptionToError:exception]);
+    }
+});
 }
 
 @end
