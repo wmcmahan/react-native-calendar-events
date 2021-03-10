@@ -196,9 +196,11 @@ RCT_EXPORT_MODULE()
         calendarEvent.availability = [self availablilityConstantMatchingString:availability];
     }
 
-    NSURL *URL = [NSURL URLWithString:[url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
-    if (URL) {
-        calendarEvent.URL = URL;
+    if (![url isKindOfClass: [NSNull class]]) {
+        NSURL *URL = [NSURL URLWithString:[url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
+        if (URL) {
+            calendarEvent.URL = URL;
+        }
     }
 
     if ([details objectForKey:@"structuredLocation"] && [[details objectForKey:@"structuredLocation"] count]) {
