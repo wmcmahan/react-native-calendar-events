@@ -120,8 +120,25 @@ RCT_EXPORT_MODULE()
     NSString *timeZone = [RCTConvert NSString:details[_timeZone]];
 
     if (eventId) {
-        calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+        Boolean futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
+        NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
 
+        if(exceptionDate) {
+            NSPredicate *predicate = [self.eventStore predicateForEventsWithStartDate:exceptionDate
+                                                                              endDate:endDate
+                                                                            calendars:nil];
+            NSArray *calendarEvents = [self.eventStore eventsMatchingPredicate:predicate];
+
+            for (EKEvent *event in calendarEvents) {
+                if ([event.calendarItemIdentifier isEqualToString:eventId] && [event.startDate isEqualToDate:exceptionDate]) {
+                    calendarEvent = event;
+                    break;
+                }
+            }
+        }
+        else {
+            calendarEvent = (EKEvent *)[self.eventStore calendarItemWithIdentifier:eventId];
+        }
     } else {
         calendarEvent = [EKEvent eventWithEventStore:self.eventStore];
         calendarEvent.calendar = [self.eventStore defaultCalendarForNewEvents];
