@@ -256,7 +256,7 @@ Arguments:
 
 - title: String - The title of the event.
 - [details](#event-fields): Object - The event's details.
-- [options](#options): Object - Options specific to the saved event.
+- [options](#options): Object - Options specific to the saved event. Note that on Android, `saveEvent` accepts an additional option `sync` (boolean) to prevent syncing issues.
 
 Returns: **Promise**
 
@@ -269,6 +269,46 @@ To update an event, the event `id` must be defined. - [wiki guide](https://githu
 RNCalendarEvents.saveEvent(title, {
   id: "FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE",
 });
+```
+
+#### Example for saveEvent
+
+Creating events is fairly straightforward. Hopefully the following explanation can help.
+
+##### Basic `saveEvent`
+For both iOS and Android the pattern is simple; the event needs a `title` as well as a `startDate` and `endDate`. The `endDate` should also be a date later than the `startDate`.
+
+```javascript
+RNCalendarEvents.saveEvent('Title of event', {
+  startDate: '2016-08-19T19:26:00.000Z',
+  endDate: '2017-08-19T19:26:00.000Z'
+}) 
+```
+
+##### Specify a calendar `saveEvent`
+
+The example above will simply save the event to your devices default calendar. If you wish to control which calendar the event is saved to, you must provide the `calendarId`. This will ensure your event is saved to an expected calendar.
+
+```javascript
+RNCalendarEvents.saveEvent('Title of event', {
+  calendarId: '141',
+  startDate: '2016-08-19T19:26:00.000Z',
+  endDate: '2017-08-19T19:26:00.000Z'
+}) 
+```
+
+##### Additional fields with `saveEvent`
+
+There are also other writable fields available. For example, you may wish to specify the location of the event or add additional notes for the event. Complete list of fields can be found [in the wiki](https://github.com/wmcmahan/react-native-calendar-events/wiki/Event-Fields#event-details).
+
+```javascript
+RNCalendarEvents.saveEvent('Title of event', {
+  calendarId: '141',
+  startDate: '2016-08-19T19:26:00.000Z',
+  endDate: '2017-08-19T19:26:00.000Z',
+  location: 'Los Angeles, CA',
+  notes: 'Bring sunglasses'
+}) 
 ```
 
 ### `removeEvent`
@@ -396,6 +436,11 @@ You need to be sure that the event you saved is matching what your device will k
 
 For iOS, you might have not all event synced. You might need to update this iOS settings in _Settings_ > _Calendar_ > _Sync_ > **All Events**. If that's not enough, it might be worth checking [iOS iCloud sync documentation](https://support.apple.com/en-us/HT203521).  
 For Android, you can have a look to [Google Calendar sync problems documentation](https://support.google.com/calendar/answer/6261951).
+
+### Duplicated events after editing and saving an event
+
+Another symptom of syncing issue. See the issue above.
+Note that on Android, `saveEvent` accepts an additional option `sync` (boolean) to prevent syncing issues.
 
 ## Wiki
 
