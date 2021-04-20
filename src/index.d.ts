@@ -26,6 +26,8 @@ export interface Options {
   exceptionDate?: ISODateString;
   /** iOS ONLY - If true the update will span all future events. If false it only update the single instance. */
   futureEvents?: boolean;
+  /** ANDROID ONLY - If true, can help avoid syncing issues */
+  sync?: boolean;
 }
 
 interface Alarm<D = ISODateString | number> {
