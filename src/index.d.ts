@@ -116,13 +116,16 @@ export interface CalendarEventReadable extends CalendarEventBase {
   alarms?: Array<Alarm<ISODateString>>;
 }
 
-export interface CalendarEventWritable extends CalendarEventBase {
+export interface CalendarEventWritable extends Omit<CalendarEventBase, 'endDate'> {
   /** Unique id for the calendar event, used for updating existing events */
   id?: string;
   /** The event's recurrence settings */
   recurrenceRule?: RecurrenceRule;
   /** The alarms associated with the calendar event, as an array of alarm objects. */
   alarms?: Array<Alarm<ISODateString | number>>;
+
+  /** if there is no end Date, android app will crash */
+  endDate: ISODateString;
 }
 
 export interface CalendarOptions {
