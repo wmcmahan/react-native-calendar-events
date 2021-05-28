@@ -89,6 +89,8 @@ interface CalendarEventBase {
   recurrence?: RecurrenceFrequency;
   /** The location associated with the calendar event. */
   location?: string;
+  /** iOS ONLY - The location with coordinates. */
+  structuredLocation?: AlarmStructuredLocation;
   /** iOS ONLY - Indicates whether an event is a detached instance of a repeating event. */
   isDetached?: boolean;
   /** iOS ONLY - The url associated with the calendar event. */
