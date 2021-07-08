@@ -331,28 +331,29 @@ Returns: **Promise**
 
 ## Event fields
 
-| Property                                    | Type   | Description                                                                                           | iOS | Android |
-| :------------------------------------------ | :----- | :---------------------------------------------------------------------------------------------------- | :-: | :-----: |
-| **id\***                                    | String | Unique id for the calendar event.                                                                     |  ✓  |    ✓    |
-| **calendarId\*\***                          | String | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar.  |  ✓  |    ✓    |
-| **title**                                   | String | The title for the calendar event.                                                                     |  ✓  |    ✓    |
-| **startDate**                               | String | The start date of the calendar event in ISO format.                                                   |  ✓  |    ✓    |
-| **endDate**                                 | String | The end date of the calendar event in ISO format.                                                     |  ✓  |    ✓    |
-| **allDay**                                  | Bool   | Indicates whether the event is an all-day                                                             |
-| event.                                      | ✓      | ✓                                                                                                     |
-| **recurrence**                              | String | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |  ✓  |    ✓    |
-| [**recurrenceRule**](#recurrence-rule) \*\* | Object | The events recurrence settings.                                                                       |  ✓  |    ✓    |
-| **occurrenceDate\***                        | String | The original occurrence date of an event if it is part of a recurring series.                         |  ✓  |         |
-| **isDetached**                              | Bool   | Indicates whether an event is a detached instance of a repeating event.                               |  ✓  |         |
-| **url**                                     | String | The url associated with the calendar event.                                                           |  ✓  |         |
-| **location**                                | String | The location associated with the calendar event.                                                      |  ✓  |    ✓    |
-| **notes**                                   | String | The notes associated with the calendar event.                                                         |  ✓  |         |
-| **description**                             | String | The description associated with the calendar event.                                                   |     |    ✓    |
-| [**alarms**](#alarms)                       | Array  | The alarms associated with the calendar event, as an array of alarm objects.                          |  ✓  |    ✓    |
-| [**attendees**](#attendees)\*               | Array  | The attendees of the event, including the organizer.                                                  |  ✓  |    ✓    |
-| [**calendar**](#calendar)\*                 | Object | The calendar containing the event.                                                                    |  ✓  |    ✓    |
-| **skipAndroidTimezone**                     | Bool   | Skip the process of setting automatic timezone on android                                             |     |    ✓    |
-| **timeZone**                                | String | The time zone associated with the event                                                               |  ✓  |         |
+| Property                                             | Type   | Description                                                                                           | iOS | Android |
+| :--------------------------------------------------- | :----- | :---------------------------------------------------------------------------------------------------- | :-: | :-----: |
+| **id\***                                             | String | Unique id for the calendar event.                                                                     |  ✓  |    ✓    |
+| **calendarId\*\***                                   | String | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar.  |  ✓  |    ✓    |
+| **title**                                            | String | The title for the calendar event.                                                                     |  ✓  |    ✓    |
+| **startDate**                                        | String | The start date of the calendar event in ISO format.                                                   |  ✓  |    ✓    |
+| **endDate**                                          | String | The end date of the calendar event in ISO format.                                                     |  ✓  |    ✓    |
+| **allDay**                                           | Bool   | Indicates whether the event is an all-day                                                             |
+| event.                                               | ✓      | ✓                                                                                                     |
+| **recurrence**                                       | String | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |  ✓  |    ✓    |
+| [**recurrenceRule**](#recurrence-rule) \*\*          | Object | The events recurrence settings.                                                                       |  ✓  |    ✓    |
+| **occurrenceDate\***                                 | String | The original occurrence date of an event if it is part of a recurring series.                         |  ✓  |         |
+| **isDetached**                                       | Bool   | Indicates whether an event is a detached instance of a repeating event.                               |  ✓  |         |
+| **url**                                              | String | The url associated with the calendar event.                                                           |  ✓  |         |
+| **location**                                         | String | The location associated with the calendar event.                                                      |  ✓  |    ✓    |
+| [**structuredLocation**](#alarm-structuredlocation)  | String | The structuredLocation associated with the calendar event.                                            |  ✓  |         |
+| **notes**                                            | String | The notes associated with the calendar event.                                                         |  ✓  |         |
+| **description**                                      | String | The description associated with the calendar event.                                                   |     |    ✓    |
+| [**alarms**](#alarms)                                | Array  | The alarms associated with the calendar event, as an array of alarm objects.                          |  ✓  |    ✓    |
+| [**attendees**](#attendees)\*                        | Array  | The attendees of the event, including the organizer.                                                  |  ✓  |    ✓    |
+| [**calendar**](#calendar)\*                          | Object | The calendar containing the event.                                                                    |  ✓  |    ✓    |
+| **skipAndroidTimezone**                              | Bool   | Skip the process of setting automatic timezone on android                                             |     |    ✓    |
+| **timeZone**                                         | String | The time zone associated with the event                                                               |  ✓  |         |
 
 ### Calendar
 
