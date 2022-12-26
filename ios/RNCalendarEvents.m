@@ -24,6 +24,7 @@ static NSString *const _isDetached = @"isDetached";
 static NSString *const _availability = @"availability";
 static NSString *const _attendees    = @"attendees";
 static NSString *const _timeZone    = @"timeZone";
+static NSString *const _status    = @"status";
 
 dispatch_queue_t serialQueue;
 
@@ -453,6 +454,25 @@ RCT_EXPORT_MODULE()
     return availabilitiesStrings;
 }
 
+- (NSString *)statusStringMatchingConstant:(EKEventStatus)constant
+{
+    switch(constant) {
+        case EKEventStatusNone:
+            // The event has no status.
+            return @"none";
+        case EKEventStatusConfirmed:
+            // The event is confirmed.
+            return @"confirmed";
+        case EKEventStatusTentative:
+            //The event is tentative.
+            return @"tentative";
+        case EKEventStatusCanceled:
+            return @"canceled";
+        default:
+            return @"notSupported";
+    }
+}
+
 - (NSString *)availabilityStringMatchingConstant:(EKEventAvailability)constant
 {
     switch(constant) {
@@ -527,7 +547,8 @@ RCT_EXPORT_MODULE()
                                                  @"endDate": @""
                                                  },
                                          _availability: @"",
-                                         _timeZone: @""
+                                         _timeZone: @"",
+                                         _status: @""
                                          };
 
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -726,6 +747,8 @@ RCT_EXPORT_MODULE()
     }
     
     [formedCalendarEvent setValue:[self availabilityStringMatchingConstant:event.availability] forKey:_availability];
+    
+    [formedCalendarEvent setValue:[self statusStringMatchingConstant:event.status] forKey:_status];
     
     @try {
         if (event.structuredLocation && event.structuredLocation.radius) {

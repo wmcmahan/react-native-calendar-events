@@ -101,6 +101,10 @@ interface CalendarEventBase {
   description?: string;
   /** iOS ONLY - The time zone associated with the event */
   timeZone?: string;
+  /** iOS ONLY – The availability setting for the event. */
+  availability: "busy" | "free" | "tentative" | "unavailable" | "notSupported";  
+  /** iOS ONLY – The status of the event. */
+  status: "none" | "tentative" | "confirmed" | "canceled";
 }
 
 export interface CalendarEventReadable extends CalendarEventBase {
