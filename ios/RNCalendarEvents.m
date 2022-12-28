@@ -8,6 +8,7 @@
 @end
 
 static NSString *const _id = @"id";
+static NSString *const _eventId = @"eventId";
 static NSString *const _calendarId = @"calendarId";
 static NSString *const _title = @"title";
 static NSString *const _location = @"location";
@@ -562,6 +563,10 @@ RCT_EXPORT_MODULE()
 
     if (event.calendarItemIdentifier) {
         [formedCalendarEvent setValue:event.calendarItemIdentifier forKey:_id];
+    }
+
+    if (event.eventIdentifier) {
+        [formedCalendarEvent setValue:event.eventIdentifier forKey:_eventId];
     }
 
     if (event.calendar) {

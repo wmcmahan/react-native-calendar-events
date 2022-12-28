@@ -108,8 +108,10 @@ interface CalendarEventBase {
 }
 
 export interface CalendarEventReadable extends CalendarEventBase {
-  /** Unique id for the calendar event */
+  /** Unique id for the calendar item */
   id: string;
+  /** Unique id for the calendar event */
+  eventId: string;
   /** The title for the calendar event. */
   title: string;
   /** The attendees of the event, including the organizer. */
