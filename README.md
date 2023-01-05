@@ -276,13 +276,14 @@ RNCalendarEvents.saveEvent(title, {
 Creating events is fairly straightforward. Hopefully the following explanation can help.
 
 ##### Basic `saveEvent`
+
 For both iOS and Android the pattern is simple; the event needs a `title` as well as a `startDate` and `endDate`. The `endDate` should also be a date later than the `startDate`.
 
 ```javascript
-RNCalendarEvents.saveEvent('Title of event', {
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z'
-}) 
+RNCalendarEvents.saveEvent("Title of event", {
+  startDate: "2016-08-19T19:26:00.000Z",
+  endDate: "2017-08-19T19:26:00.000Z",
+});
 ```
 
 ##### Specify a calendar `saveEvent`
@@ -290,11 +291,11 @@ RNCalendarEvents.saveEvent('Title of event', {
 The example above will simply save the event to your devices default calendar. If you wish to control which calendar the event is saved to, you must provide the `calendarId`. This will ensure your event is saved to an expected calendar.
 
 ```javascript
-RNCalendarEvents.saveEvent('Title of event', {
-  calendarId: '141',
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z'
-}) 
+RNCalendarEvents.saveEvent("Title of event", {
+  calendarId: "141",
+  startDate: "2016-08-19T19:26:00.000Z",
+  endDate: "2017-08-19T19:26:00.000Z",
+});
 ```
 
 ##### Additional fields with `saveEvent`
@@ -302,13 +303,13 @@ RNCalendarEvents.saveEvent('Title of event', {
 There are also other writable fields available. For example, you may wish to specify the location of the event or add additional notes for the event. Complete list of fields can be found [in the wiki](https://github.com/wmcmahan/react-native-calendar-events/wiki/Event-Fields#event-details).
 
 ```javascript
-RNCalendarEvents.saveEvent('Title of event', {
-  calendarId: '141',
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z',
-  location: 'Los Angeles, CA',
-  notes: 'Bring sunglasses'
-}) 
+RNCalendarEvents.saveEvent("Title of event", {
+  calendarId: "141",
+  startDate: "2016-08-19T19:26:00.000Z",
+  endDate: "2017-08-19T19:26:00.000Z",
+  location: "Los Angeles, CA",
+  notes: "Bring sunglasses",
+});
 ```
 
 ### `removeEvent`
@@ -331,29 +332,30 @@ Returns: **Promise**
 
 ## Event fields
 
-| Property                                             | Type   | Description                                                                                           | iOS | Android |
-| :--------------------------------------------------- | :----- | :---------------------------------------------------------------------------------------------------- | :-: | :-----: |
-| **id\***                                             | String | Unique id for the calendar event.                                                                     |  ✓  |    ✓    |
-| **calendarId\*\***                                   | String | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar.  |  ✓  |    ✓    |
-| **title**                                            | String | The title for the calendar event.                                                                     |  ✓  |    ✓    |
-| **startDate**                                        | String | The start date of the calendar event in ISO format.                                                   |  ✓  |    ✓    |
-| **endDate**                                          | String | The end date of the calendar event in ISO format.                                                     |  ✓  |    ✓    |
-| **allDay**                                           | Bool   | Indicates whether the event is an all-day                                                             |
-| event.                                               | ✓      | ✓                                                                                                     |
-| **recurrence**                                       | String | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |  ✓  |    ✓    |
-| [**recurrenceRule**](#recurrence-rule) \*\*          | Object | The events recurrence settings.                                                                       |  ✓  |    ✓    |
-| **occurrenceDate\***                                 | String | The original occurrence date of an event if it is part of a recurring series.                         |  ✓  |         |
-| **isDetached**                                       | Bool   | Indicates whether an event is a detached instance of a repeating event.                               |  ✓  |         |
-| **url**                                              | String | The url associated with the calendar event.                                                           |  ✓  |         |
-| **location**                                         | String | The location associated with the calendar event.                                                      |  ✓  |    ✓    |
-| [**structuredLocation**](#alarm-structuredlocation)  | String | The structuredLocation associated with the calendar event.                                            |  ✓  |         |
-| **notes**                                            | String | The notes associated with the calendar event.                                                         |  ✓  |         |
-| **description**                                      | String | The description associated with the calendar event.                                                   |     |    ✓    |
-| [**alarms**](#alarms)                                | Array  | The alarms associated with the calendar event, as an array of alarm objects.                          |  ✓  |    ✓    |
-| [**attendees**](#attendees)\*                        | Array  | The attendees of the event, including the organizer.                                                  |  ✓  |    ✓    |
-| [**calendar**](#calendar)\*                          | Object | The calendar containing the event.                                                                    |  ✓  |    ✓    |
-| **skipAndroidTimezone**                              | Bool   | Skip the process of setting automatic timezone on android                                             |     |    ✓    |
-| **timeZone**                                         | String | The time zone associated with the event                                                               |  ✓  |         |
+| Property                                            | Type   | Description                                                                                           | iOS | Android |
+| :-------------------------------------------------- | :----- | :---------------------------------------------------------------------------------------------------- | :-: | :-----: |
+| **id\***                                            | String | Unique id for the calendar item.                                                                      |  ✓  |    ✓    |
+| **eventId\***                                       | String | Unique id for the calendar event.                                                                     |  ✓  |         |
+| **calendarId\*\***                                  | String | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar.  |  ✓  |    ✓    |
+| **title**                                           | String | The title for the calendar event.                                                                     |  ✓  |    ✓    |
+| **startDate**                                       | String | The start date of the calendar event in ISO format.                                                   |  ✓  |    ✓    |
+| **endDate**                                         | String | The end date of the calendar event in ISO format.                                                     |  ✓  |    ✓    |
+| **allDay**                                          | Bool   | Indicates whether the event is an all-day                                                             |  ✓  |    ✓    |
+| **recurrence**                                      | String | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |  ✓  |    ✓    |
+| [**recurrenceRule**](#recurrence-rule) \*\*         | Object | The events recurrence settings.                                                                       |  ✓  |    ✓    |
+| **occurrenceDate\***                                | String | The original occurrence date of an event if it is part of a recurring series.                         |  ✓  |         |
+| **isDetached**                                      | Bool   | Indicates whether an event is a detached instance of a repeating event.                               |  ✓  |         |
+| **status**                                          | String | The status of the calendar event `confirmed`, `tentative`, `cancelled`, `none` or `notSupported`.     |  ✓  |         |
+| **url**                                             | String | The url associated with the calendar event.                                                           |  ✓  |         |
+| **location**                                        | String | The location associated with the calendar event.                                                      |  ✓  |    ✓    |
+| [**structuredLocation**](#alarm-structuredlocation) | String | The structuredLocation associated with the calendar event.                                            |  ✓  |         |
+| **notes**                                           | String | The notes associated with the calendar event.                                                         |  ✓  |         |
+| **description**                                     | String | The description associated with the calendar event.                                                   |     |    ✓    |
+| [**alarms**](#alarms)                               | Array  | The alarms associated with the calendar event, as an array of alarm objects.                          |  ✓  |    ✓    |
+| [**attendees**](#attendees)\*                       | Array  | The attendees of the event, including the organizer.                                                  |  ✓  |    ✓    |
+| [**calendar**](#calendar)\*                         | Object | The calendar containing the event.                                                                    |  ✓  |    ✓    |
+| **skipAndroidTimezone**                             | Bool   | Skip the process of setting automatic timezone on android                                             |     |    ✓    |
+| **timeZone**                                        | String | The time zone associated with the event                                                               |  ✓  |         |
 
 ### Calendar
 
