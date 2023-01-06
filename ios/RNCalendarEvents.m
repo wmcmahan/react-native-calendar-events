@@ -120,7 +120,7 @@ RCT_EXPORT_MODULE()
     NSString *timeZone = [RCTConvert NSString:details[_timeZone]];
 
     if (eventId) {
-        Boolean futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
+        BOOL futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
         NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
 
         if(exceptionDate) {
@@ -238,11 +238,14 @@ RCT_EXPORT_MODULE()
 {
     NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:@{@"success": [NSNull null], @"error": [NSNull null]}];
     NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
-    EKSpan eventSpan = EKSpanFutureEvents;
+    BOOL futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
+
+    EKSpan eventSpan = EKSpanThisEvent;
 
     if (exceptionDate) {
-        calendarEvent.startDate = exceptionDate;
-        eventSpan = EKSpanThisEvent;
+        if (futureEvents) {
+            eventSpan = EKSpanFutureEvents;
+        }
     }
 
     NSError *error = nil;
@@ -1043,7 +1046,7 @@ RCT_EXPORT_METHOD(removeEvent:(NSString *)eventId options:(NSDictionary *)option
     @try {
     RNCalendarEvents *strongSelf = weakSelf;
     
-    Boolean futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
+    BOOL futureEvents = [RCTConvert BOOL:options[@"futureEvents"]];
     NSDate *exceptionDate = [RCTConvert NSDate:options[@"exceptionDate"]];
 
     if (exceptionDate) {
