@@ -907,7 +907,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
                 continue;
             }
 
-            cal.add(Calendar.MINUTE, minutes);
+            cal.add(Calendar.MINUTE, -minutes);
             alarm.putString("date", sdf.format(cal.getTime()));
             results.pushMap(alarm);
         }
