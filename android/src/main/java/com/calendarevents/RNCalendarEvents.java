@@ -472,7 +472,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         return result;
     }
 
-    private long addEvent(String title, ReadableMap details, ReadableMap options) throws ParseException {
+    private long addEvent(String title, ReadableMap details, ReadableMap options, final Promise promise) throws ParseException {
         String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
         SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
         boolean skipTimezone = false;
@@ -673,7 +673,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
             }
 
             if (details.hasKey("alarms")) {
-                createRemindersForEvent(cr, Long.parseLong(details.getString("id")), details.getArray("alarms"));
+                createRemindersForEvent(cr, Long.parseLong(details.getString("id")), details.getArray("alarms"), promise);
             }
 
             if (details.hasKey("attendees")) {
@@ -715,11 +715,11 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
                     eventID = Long.parseLong(rowId);
 
                     if (details.hasKey("alarms")) {
-                        createRemindersForEvent(cr, eventID, details.getArray("alarms"));
+                        createRemindersForEvent(cr, eventID, details.getArray("alarms"),promise);
                     }
 
                     if (details.hasKey("attendees")) {
-                        createAttendeesForEvent(cr, eventID, details.getArray("attendees"));
+                        createAttendeesForEvent(cr, eventID, details.getArray("attendees"),promise);
                     }
                     return eventID;
                 }
@@ -842,7 +842,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
     //endregion
 
     //region Reminders
-    private void createRemindersForEvent(ContentResolver resolver, long eventID, ReadableArray reminders) {
+    private void createRemindersForEvent(ContentResolver resolver, long eventID, ReadableArray reminders,final Promise promise) {
         Cursor cursor = null;
 
         if (resolver != null) {
@@ -1353,7 +1353,7 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
                     public void run() {
                         long eventId;
                         try {
-                            eventId = addEvent(title, details, options);
+                            eventId = addEvent(title, details, options, promise);
                             if (eventId > -1) {
                                 promise.resolve(Long.toString(eventId));
                             } else {
