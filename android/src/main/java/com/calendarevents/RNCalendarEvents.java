@@ -865,21 +865,25 @@ public class RNCalendarEvents extends ReactContextBaseJavaModule implements Perm
         if (cursor != null) {
             cursor.close();
         }
+        try {
+            for (int i = 0; i < reminders.size(); i++) {
+                ReadableMap reminder = reminders.getMap(i);
+                ReadableType type = reminder.getType("date");
+                if (type == ReadableType.Number) {
+                    int minutes = reminder.getInt("date");
+                    ContentValues reminderValues = new ContentValues();
 
-        for (int i = 0; i < reminders.size(); i++) {
-            ReadableMap reminder = reminders.getMap(i);
-            ReadableType type = reminder.getType("date");
-            if (type == ReadableType.Number) {
-                int minutes = reminder.getInt("date");
-                ContentValues reminderValues = new ContentValues();
+                    reminderValues.put(CalendarContract.Reminders.EVENT_ID, eventID);
+                    reminderValues.put(CalendarContract.Reminders.MINUTES, minutes);
+                    reminderValues.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
 
-                reminderValues.put(CalendarContract.Reminders.EVENT_ID, eventID);
-                reminderValues.put(CalendarContract.Reminders.MINUTES, minutes);
-                reminderValues.put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT);
-
-                resolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues);
+                    resolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues);
+                }
             }
+        }catch (Exception v){
+            promise.reject("add event error", "Unable to save event");
         }
+
     }
 
     private WritableNativeArray findReminderByEventId(String eventID, long startDate) {
