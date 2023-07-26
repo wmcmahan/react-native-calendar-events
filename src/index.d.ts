@@ -56,7 +56,7 @@ interface Attendee {
   /** iOS ONLY - The The phone number of the attendee. */
   phone?: string;
   role: 'Unknown' | 'Required' | 'Optional' | 'Chair' | 'NonParticipant';
-  status: 'Accepted' | 'Completed' | 'Declined' | 'Delegated' | 'InProcess' | 'Pending' | 'Tentative' | 'Unknown';
+  status: 'Accepted' | 'Completed' | 'Declined' | 'Delegated' | 'InProcess' | 'Pending' | 'Tentative' | 'Unknown' | 0 | 1 | 2 | 3 | 4;
   isMe: boolean;
   isOrganizer: boolean;
 }
