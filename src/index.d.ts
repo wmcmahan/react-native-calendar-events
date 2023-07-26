@@ -55,6 +55,10 @@ interface Attendee {
   email: string;
   /** iOS ONLY - The The phone number of the attendee. */
   phone?: string;
+  role: 'Unknown' | 'Required' | 'Optional' | 'Chair' | 'NonParticipant';
+  status: 'Accepted' | 'Completed' | 'Declined' | 'Delegated' | 'InProcess' | 'Pending' | 'Tentative' | 'Unknown';
+  isMe: boolean;
+  isOrganizer: boolean;
 }
 
 interface Calendar {

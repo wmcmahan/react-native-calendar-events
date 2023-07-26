@@ -576,6 +576,22 @@ RCT_EXPORT_MODULE()
     }
 
     @try {
+        NSMutableDictionary *attendeesRoles = [NSMutableDictionary dictionary];
+        [attendeesRoles setObject: @"Unknown" forKey: @"0"];
+        [attendeesRoles setObject: @"Required" forKey: @"1"];
+        [attendeesRoles setObject: @"Optional" forKey: @"2"];
+        [attendeesRoles setObject: @"Chair" forKey: @"3"];
+        [attendeesRoles setObject: @"NonParticipant" forKey: @"4"];
+
+        NSMutableDictionary *attendeesStatuses = [NSMutableDictionary dictionary];
+        [attendeesStatuses setObject: @"Accepted" forKey: @"2"];
+        [attendeesStatuses setObject: @"Completed" forKey: @"6"];
+        [attendeesStatuses setObject: @"Declined" forKey: @"3"];
+        [attendeesStatuses setObject: @"Delegated" forKey: @"5"];
+        [attendeesStatuses setObject: @"InProcess" forKey: @"7"];
+        [attendeesStatuses setObject: @"Pending" forKey: @"1"];
+        [attendeesStatuses setObject: @"Tentative" forKey: @"4"];
+        [attendeesStatuses setObject: @"Unknown" forKey: @"0"];
         if (event.attendees) {
             NSMutableArray *attendees = [[NSMutableArray alloc] init];
             for (EKParticipant *attendee in event.attendees) {
@@ -593,6 +609,13 @@ RCT_EXPORT_MODULE()
                 NSString *name = [descriptionData valueForKey:@"name"];
                 NSString *email = [descriptionData valueForKey:@"email"];
                 NSString *phone = [descriptionData valueForKey:@"phone"];
+                NSString *role = [descriptionData valueForKey:@"role"];
+                NSString *status = [descriptionData valueForKey:@"status"];
+                bool isMe = attendee.currentUser;
+                bool isOrganizer = email && ![email isEqualToString:@"(null)"] && [email isEqualToString:organizerEmail];
+
+                [formattedAttendee setValue:[NSNumber numberWithBool:isMe] forKey:@"isMe"];
+                [formattedAttendee setValue:[NSNumber numberWithBool:isOrganizer] forKey:@"isOrganizer"];
 
                 if(email && ![email isEqualToString:@"(null)"]) {
                     [formattedAttendee setValue:email forKey:@"email"];
@@ -612,6 +635,19 @@ RCT_EXPORT_MODULE()
                 else {
                     [formattedAttendee setValue:@"" forKey:@"name"];
                 }
+                 if (role && ![role isEqualToString:@"(null)"] && attendeesRoles[role]) {
+                    [formattedAttendee setValue:attendeesRoles[role] forKey:@"role"];
+                }
+                else {
+                    [formattedAttendee setValue:@"Unknown" forKey:@"role"];
+                }
+                if (status && ![status isEqualToString:@"(null)"] && attendeesStatuses[status]) {
+                    [formattedAttendee setValue:attendeesStatuses[status] forKey:@"status"];
+                }
+                else {
+                    [formattedAttendee setValue:@"Unknown" forKey:@"status"];
+                }
+
                 [attendees addObject:formattedAttendee];
             }
             [formedCalendarEvent setValue:attendees forKey:_attendees];
