@@ -576,7 +576,7 @@ RCT_EXPORT_MODULE()
     }
 
     @try {
-        NSMutableDictionary *attendeesRoles = [NSMutableDictionary dictionary];
+            NSMutableDictionary *attendeesRoles = [NSMutableDictionary dictionary];
         [attendeesRoles setObject: @"Unknown" forKey: @"0"];
         [attendeesRoles setObject: @"Required" forKey: @"1"];
         [attendeesRoles setObject: @"Optional" forKey: @"2"];
@@ -592,6 +592,20 @@ RCT_EXPORT_MODULE()
         [attendeesStatuses setObject: @"Pending" forKey: @"1"];
         [attendeesStatuses setObject: @"Tentative" forKey: @"4"];
         [attendeesStatuses setObject: @"Unknown" forKey: @"0"];
+
+        NSString *organizerEmail = @"";
+        if (event.organizer) {
+            EKParticipant *organizer = event.organizer;
+            NSMutableDictionary *organizerData = [NSMutableDictionary dictionary];
+            for (NSString *pairString in [organizer.description componentsSeparatedByString:@";"])
+            {
+                NSArray *pair = [pairString componentsSeparatedByString:@"="];
+                if ( [pair count] != 2)
+                    continue;
+                [organizerData setObject:[[pair objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] forKey:[[pair objectAtIndex:0]stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
+            }
+            organizerEmail = [organizerData valueForKey:@"email"];
+        }
         if (event.attendees) {
             NSMutableArray *attendees = [[NSMutableArray alloc] init];
             for (EKParticipant *attendee in event.attendees) {
