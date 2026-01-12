@@ -5,6 +5,7 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
+    namespace "com.calendarevents"
     compileSdkVersion safeExtGet('compileSdkVersion', 28)
     buildToolsVersion safeExtGet('buildToolsVersion', '28.0.3')
 
