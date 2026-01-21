@@ -35,7 +35,7 @@ Don't forget going into the `ios` directory to execute a `pod install`.
 
 ## 🆘 Manual linking
 
-Because this package targets React Native 0.60.0+, you will probably don't need to link it manually. Otherwise if it's not the case, follow this additional instructions:
+Because this package targets React Native 0.60.0+, you will probably not need to link it manually. Otherwise if it's not the case, follow this additional instructions:
 
 <details>
   <summary><b>👀 See manual linking instructions</b></summary>
