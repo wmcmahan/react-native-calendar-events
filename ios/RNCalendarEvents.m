@@ -5,6 +5,7 @@
 
 @interface RNCalendarEvents ()
 @property (nonatomic, readonly) EKEventStore *eventStore;
+@property (nonatomic) EKAuthorizationStatus eventStoreAuthorizationStatus;
 @end
 
 static NSString *const _id = @"id";
@@ -77,6 +78,7 @@ RCT_EXPORT_MODULE()
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _eventStoreAuthorizationStatus = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
         _eventStore = [[EKEventStore alloc] init];
         serialQueue = dispatch_queue_create("rncalendarevents.queue", DISPATCH_QUEUE_SERIAL);
     }
@@ -91,10 +93,20 @@ RCT_EXPORT_MODULE()
     return NO;
 }
 
+- (void)refreshEventStoreForAuthorizationStatus:(EKAuthorizationStatus)status
+{
+    @synchronized (self) {
+        if (self.eventStoreAuthorizationStatus != status) {
+            _eventStore = [[EKEventStore alloc] init];
+            self.eventStoreAuthorizationStatus = status;
+        }
+    }
+}
+
 - (BOOL)isCalendarAccessGranted
 {
     EKAuthorizationStatus status = [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent];
-
+    [self refreshEventStoreForAuthorizationStatus:status];
     return status == EKAuthorizationStatusAuthorized;
 }
 
@@ -783,6 +795,8 @@ RCT_EXPORT_METHOD(requestPermissions:(RCTPromiseResolveBlock)resolve rejecter:(R
     [self.eventStore requestAccessToEntityType:EKEntityTypeEvent completion:^(BOOL granted, NSError *error) {
         NSString *status = granted ? @"authorized" : @"denied";
         if (!error) {
+            [self refreshEventStoreForAuthorizationStatus:
+                [EKEventStore authorizationStatusForEntityType:EKEntityTypeEvent]];
             resolve(status);
         } else {
             reject(@"error", @"authorization request error", error);
