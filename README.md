@@ -1,469 +1,338 @@
-> [!WARNING]
-> **Deprecation Notice** - 
-> This repository is deprecated and no longer suppored.
-
 # React Native Calendar Events
 
 [![npm](https://img.shields.io/npm/v/react-native-calendar-events.svg?style=flat-square)](https://www.npmjs.com/package/react-native-calendar-events)
 [![npm](https://img.shields.io/npm/dm/react-native-calendar-events.svg?style=flat-square)](https://www.npmjs.com/package/react-native-calendar-events)
 [![npm](https://img.shields.io/npm/l/react-native-calendar-events.svg?style=flat-square)](https://github.com/wmcmahan/react-native-calendar-events/blob/master/LICENSE.md)
 
-A React Native module to help access and save events to iOS and Android calendars.
+A React Native module to read and write events in the iOS and Android calendars.
 
-## Getting started
+Version 3 is a React Native Turbo Module with a Swift core on iOS (EventKit) and a Kotlin core on Android (CalendarContract), with native test suites on both platforms. Upgrading from 2.x? Read [MIGRATION.md](./MIGRATION.md).
 
-This package assumes that you already have a React Native project or are familiar with React Native. If not, checkout the official documentation for more details about getting started with [React Native](https://facebook.github.io/react-native/docs/getting-started.html).
+## Requirements
 
-### Support
-
-| version    | react-native version |
-| ---------- | -------------------- |
-| 2.0.0+     | 0.60.0+              |
-| pre 2.0.0+ | 0.40.0+              |
-
-For 0.59-, you should use [`jetify -r`](https://github.com/mikehardy/jetifier/blob/master/README.md#to-reverse-jetify--convert-node_modules-dependencies-to-support-libraries)
+| react-native-calendar-events | React Native | iOS | Android |
+| ---------------------------- | ------------ | ---- | ------- |
+| 3.x | 0.76+ (New Architecture) | 15.1+ | API 24+ |
+| 2.x | 0.60+ (legacy bridge) | 9.0+ | API 16+ |
 
 ## Installation
 
-```bash
-$ npm install --save react-native-calendar-events
-# --- or ---
-$ yarn add react-native-calendar-events
+```sh
+npm install react-native-calendar-events
+# or
+yarn add react-native-calendar-events
 ```
-
-Don't forget going into the `ios` directory to execute a `pod install`.
-
-## 🆘 Manual linking
-
-Because this package targets React Native 0.60.0+, you will probably don't need to link it manually. Otherwise if it's not the case, follow this additional instructions:
-
-<details>
-  <summary><b>👀 See manual linking instructions</b></summary>
 
 ### iOS
 
-Add this line to your `ios/Podfile` file, then run `pod install`.
+Run `pod install` in your `ios` directory, then add the usage descriptions to `Info.plist`. iOS 17 introduced separate keys for full and write-only access; the older key is still read on iOS 16 and earlier.
 
-```bash
-target 'YourAwesomeProject' do
-  # …
-  pod 'RNCalendarEvents', :path => '../node_modules/react-native-calendar-events'
-end
+```xml
+<key>NSCalendarsFullAccessUsageDescription</key>
+<string>This app reads and writes your calendar to …</string>
+<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+<string>This app adds events to your calendar to …</string>
+<key>NSCalendarsUsageDescription</key>
+<string>This app reads and writes your calendar to …</string>
 ```
+
+If you create reminder lists with `saveCalendar({ entityType: 'reminder' })`, also add `NSRemindersFullAccessUsageDescription` and request reminders access in your app.
 
 ### Android
 
-1 - Add the following lines to `android/settings.gradle`:
+Nothing to do. The library's manifest declares `READ_CALENDAR` and `WRITE_CALENDAR`, and they merge into your app. Permissions are requested at runtime with `requestPermissions()`.
 
-```gradle
-include ':react-native-calendar-events'
-project(':react-native-calendar-events').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-calendar-events/android')
-```
+### Expo
 
-2 - Add the implementation line to the dependencies in `android/app/build.gradle`:
+The package ships a config plugin. Add it to `app.json` and rebuild your development build:
 
-```gradle
-dependencies {
-  // ...
-  implementation project(':react-native-calendar-events')
-}
-```
-
-3 - Add the import and link the package in `MainApplication.java`:
-
-```java
-import com.calendarevents.RNCalendarEventsPackage; // <- add the RNCalendarEventsPackage import
-
-public class MainApplication extends Application implements ReactApplication {
-
-  // …
-
-  @Override
-  protected List<ReactPackage> getPackages() {
-    @SuppressWarnings("UnnecessaryLocalVariable")
-    List<ReactPackage> packages = new PackageList(this).getPackages();
-    // …
-    packages.add(new RNCalendarEventsPackage());
-    return packages;
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-calendar-events",
+        {
+          "calendarPermission": "Allow $(PRODUCT_NAME) to access your calendar",
+          "writeOnlyCalendarPermission": "Allow $(PRODUCT_NAME) to add events to your calendar"
+        }
+      ]
+    ]
   }
-
-  // …
 }
 ```
 
-</details>
+Both strings are optional. Pass `remindersPermission` as well if you use reminder lists. The plugin does not work in Expo Go.
 
-### iOS specific instructions
+## Usage
 
-Add `RNCalendarEvents`, as well as `EventKit.framework` to project libraries if not already done.
+```ts
+import RNCalendarEvents from 'react-native-calendar-events';
 
-Setting up privacy usage descriptions may also be required depending on which iOS version is supported. This involves updating the Property List, `Info.plist`, with the corresponding key for the EKEventStore api. [Info.plist reference](https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html).
+const status = await RNCalendarEvents.requestPermissions();
+if (status !== 'authorized') return;
 
-For updating the `Info.plist` key/value via XCode, add a `Privacy - Calendars Usage Description` key with a usage description as the value. Resulting change to `Info.plist` should look something like:
+const calendars = await RNCalendarEvents.findCalendars();
+const primary = calendars.find((c) => c.isPrimary && c.allowsModifications);
 
-```xml
-<key>NSCalendarsUsageDescription</key>
-<string>This app requires access to the calendar</string>
+const id = await RNCalendarEvents.saveEvent('Lunch with Sam', {
+  calendarId: primary?.id,
+  startDate: new Date('2026-03-02T12:00:00Z'),
+  endDate: new Date('2026-03-02T13:00:00Z'),
+  location: 'Los Angeles, CA',
+  alarms: [{ date: -15 }], // fifteen minutes before
+});
+
+const events = await RNCalendarEvents.fetchAllEvents(
+  new Date(),
+  new Date(Date.now() + 7 * 24 * 3600 * 1000)
+);
 ```
+
+Every date you pass in may be a `Date` or an ISO-8601 string. Every date you read back is an ISO-8601 string in UTC with milliseconds, such as `2026-03-02T12:00:00.000Z`.
 
 ## API
 
-The following API allows for interacting with both iOS and Android device calendars. See the full list of available [event fields](#event-fields).
+All methods return promises and are available as static members of the default export.
 
-```javascript
-import RNCalendarEvents from "react-native-calendar-events";
-```
+### `checkPermissions(readOnly?)`
 
-### `checkPermissions`
+Returns the current [`AuthorizationStatus`](#authorizationstatus) without prompting.
 
-Get calendar authorization status.
-You may check for the default read/write access with no argument, or read-only access on Android by passing boolean true. iOS is always read/write.
+| Argument | Type | Description |
+| --- | --- | --- |
+| `readOnly` | `boolean` | Android only, default `false`. Check for read access only instead of read and write. Ignored on iOS. |
 
-```javascript
-RNCalendarEvents.checkPermissions((readOnly = false));
-```
+### `requestPermissions(readOnly?)`
 
-Returns: **Promise**
+Prompts the user if needed and resolves with the resulting [`AuthorizationStatus`](#authorizationstatus).
 
-- fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
-- rejected: Error
+| Argument | Type | Description |
+| --- | --- | --- |
+| `readOnly` | `boolean` | Android only, default `false`. Request read access only. Ignored on iOS. |
 
-### `requestPermissions`
+On iOS the library asks for full access. If the user granted write-only access instead, the status is `writeOnly`: creating events with `saveEvent` works, but reading, updating and removing reject with `unauthorized to access calendar`.
 
-Request calendar authorization. Authorization must be granted before accessing calendar events.
+### `findCalendars()`
 
-```javascript
-RNCalendarEvents.requestPermissions((readOnly = false));
-```
+Resolves with an array of [`Calendar`](#calendar) for every calendar on the device.
 
-(readOnly is for Android only, see below)
+### `saveCalendar(options)`
 
-> Android note: this is necessary for targeted SDK of >=23.
-> iOS note: This method will crash, if you didn't update `Info.plist`. Follow carefully installation instruction.
+Creates a calendar and resolves with its id. See [`CalendarOptions`](#calendaroptions). iOS needs only `title`; Android also needs `name`, `color`, `accessLevel`, `ownerAccount` and `source`.
 
-Returns: **Promise**
-
-- fulfilled: String - `denied`, `restricted`, `authorized` or `undetermined`
-- rejected: Error
-
-### Read-Only `requestPermissions` (_Android only_)
-
-⚠️ Note that to restrict to read-only usage on Android (iOS is always read/write) you will need to alter the included Android permissions
-as the `AndroidManifest.xml` is merged during the Android build.
-
-You do that by altering your AndroidManifest.xml to "remove" the WRITE_CALENDAR permission with an entry like so:
-
-```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
-  >
-  <!-- ... -->
-  <uses-permission tools:node="remove" android:name="android.permission.WRITE_CALENDAR" />
-```
-
-### `findCalendars`
-
-Finds all the calendars on the device.
-
-```javascript
-RNCalendarEvents.findCalendars();
-```
-
-Returns: **Promise**
-
-- fulfilled: Array - A list of known calendars on the device
-- rejected: Error
-
-### `saveCalendar`
-
-Create a calendar.
-
-```javascript
-RNCalendarEvents.saveCalendar(calendar);
-```
-
-⚠️ When you want to save a calendar, you need to use a valid source (find using [`findCalendars`](#findcalendars)).
-
-Arguments:
-
-- [calendar](#Calendar-options): Object - Calendar to create.
-
-Returns: **Promise**
-
-- fulfilled: The id of the created calendar
-- rejected: Error
-
-### `removeCalendar`
-
-Removes a calendar.
-
-```javascript
-RNCalendarEvents.removeCalendar(id);
-```
-
-Arguments:
-
-- id: String - The id of the calendar to remove.
-
-Returns: **Promise**
-
-- fulfilled: Bool - Successful
-- rejected: Error
-
-### `findEventById`
-
-Find calendar event by id.
-Returns a promise with fulfilled found events.
-
-```javascript
-RNCalendarEvents.findEventById(id);
-```
-
-Arguments:
-
-- id: String - The events unique id.
-
-Returns: **Promise**
-
-- fulfilled: Object | null - Found event with unique id.
-- rejected: Error
-
-### `fetchAllEvents`
-
-Fetch all calendar events.
-Returns a promise with fulfilled found events.
-
-```javascript
-RNCalendarEvents.fetchAllEvents(startDate, endDate, calendars);
-```
-
-Arguments:
-
-- startDate: String - The start date of the range of events fetched.
-- endDate: String - The end date of the range of events fetched.
-- calendars: Array - List of calendar id strings to specify calendar events. Defaults to all calendars if empty.
-
-Returns: **Promise**
-
-- fulfilled: Array - Matched events within the specified date range.
-- rejected: Error
-
-### `saveEvent`
-
-Creates or updates a calendar event. - [wiki guide](https://github.com/wmcmahan/react-native-calendar-events/wiki/Creating-basic-event)
-
-```javascript
-RNCalendarEvents.saveEvent(title, details, options);
-```
-
-Arguments:
-
-- title: String - The title of the event.
-- [details](#event-fields): Object - The event's details.
-- [options](#options): Object - Options specific to the saved event. Note that on Android, `saveEvent` accepts an additional option `sync` (boolean) to prevent syncing issues.
-
-Returns: **Promise**
-
-- fulfilled: String - Created event's ID.
-- rejected: Error
-
-To update an event, the event `id` must be defined. - [wiki guide](https://github.com/wmcmahan/react-native-calendar-events/wiki/Updating-events)
-
-```javascript
-RNCalendarEvents.saveEvent(title, {
-  id: "FE6B128F-C0D8-4FB8-8FC6-D1D6BA015CDE",
+```ts
+const id = await RNCalendarEvents.saveCalendar({
+  title: 'Travel',
+  color: '#2196F3',
+  // Android only
+  name: 'travel',
+  accessLevel: 'owner',
+  ownerAccount: 'me@example.com',
+  source: { name: 'me@example.com', isLocalAccount: true },
 });
 ```
 
-#### Example for saveEvent
+### `removeCalendar(id)`
 
-Creating events is fairly straightforward. Hopefully the following explanation can help.
+Removes a calendar and resolves with whether a calendar was removed.
 
-##### Basic `saveEvent`
-For both iOS and Android the pattern is simple; the event needs a `title` as well as a `startDate` and `endDate`. The `endDate` should also be a date later than the `startDate`.
+### `findEventById(id)`
 
-```javascript
-RNCalendarEvents.saveEvent('Title of event', {
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z'
-}) 
+Resolves with the [`CalendarEventReadable`](#calendareventreadable), or `null` when no event has that id.
+
+### `fetchAllEvents(startDate, endDate, calendarIds?)`
+
+Resolves with every event instance that overlaps the range, sorted by start date. Recurring events are expanded into their occurrences.
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `startDate` | `Date \| string` | Start of the range. |
+| `endDate` | `Date \| string` | End of the range. |
+| `calendarIds` | `string[]` | Optional. Restrict to these calendars. All calendars when empty. |
+
+### `saveEvent(title, details, options?)`
+
+Creates an event, or updates one when `details.id` is set, and resolves with the event id. See [`CalendarEventWritable`](#calendareventwritable) and [`Options`](#options).
+
+Creating requires `startDate` and `endDate`. Updating only needs the fields you want to change.
+
+```ts
+// Update the title of one occurrence of a recurring event
+await RNCalendarEvents.saveEvent('Standup (moved)', { id }, {
+  exceptionDate: '2026-03-04T10:00:00.000Z',
+});
+
+// Update that occurrence and all later ones (iOS)
+await RNCalendarEvents.saveEvent('Standup', { id }, {
+  exceptionDate: '2026-03-04T10:00:00.000Z',
+  futureEvents: true,
+});
 ```
 
-##### Specify a calendar `saveEvent`
+### `removeEvent(id, options?)`
 
-The example above will simply save the event to your devices default calendar. If you wish to control which calendar the event is saved to, you must provide the `calendarId`. This will ensure your event is saved to an expected calendar.
+Removes an event, or a single occurrence when `options.exceptionDate` is set. For a recurring event without `exceptionDate` the whole series is removed. Resolves with `true` when something was removed and `false` when no such event exists.
 
-```javascript
-RNCalendarEvents.saveEvent('Title of event', {
-  calendarId: '141',
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z'
-}) 
-```
+### `removeFutureEvents(id, options?)`
 
-##### Additional fields with `saveEvent`
+iOS only. Same as `removeEvent` with `futureEvents: true`: removes the occurrence at `exceptionDate` and every later one.
 
-There are also other writable fields available. For example, you may wish to specify the location of the event or add additional notes for the event. Complete list of fields can be found [in the wiki](https://github.com/wmcmahan/react-native-calendar-events/wiki/Event-Fields#event-details).
+### `uriForCalendar()`
 
-```javascript
-RNCalendarEvents.saveEvent('Title of event', {
-  calendarId: '141',
-  startDate: '2016-08-19T19:26:00.000Z',
-  endDate: '2017-08-19T19:26:00.000Z',
-  location: 'Los Angeles, CA',
-  notes: 'Bring sunglasses'
-}) 
-```
+Android only. Resolves with the content URI of the calendar provider. Rejects on iOS.
 
-### `removeEvent`
+### `openEventInCalendar(id)`
 
-Removes calendar event.
+Android only. Opens the event in the system calendar app. Does nothing on iOS.
 
-```javascript
-RNCalendarEvents.removeEvent(id, options);
-```
+## Types
 
-Arguments:
+The package ships TypeScript definitions; the tables below summarize them.
 
-- id: String - The id of the event to remove.
-- [options](#options): Object - Options specific to event removal.
+### `AuthorizationStatus`
 
-Returns: **Promise**
+`'authorized' | 'denied' | 'restricted' | 'undetermined' | 'writeOnly'`
 
-- fulfilled: Bool - Successful
-- rejected: Error
+`writeOnly` is iOS 17 and later only. On Android, `restricted` means the user chose "don't ask again".
 
-## Event fields
+### `Calendar`
 
-| Property                                             | Type   | Description                                                                                           | iOS | Android |
-| :--------------------------------------------------- | :----- | :---------------------------------------------------------------------------------------------------- | :-: | :-----: |
-| **id\***                                             | String | Unique id for the calendar event.                                                                     |  ✓  |    ✓    |
-| **calendarId\*\***                                   | String | Unique id for the calendar where the event will be saved. Defaults to the device's default calendar.  |  ✓  |    ✓    |
-| **title**                                            | String | The title for the calendar event.                                                                     |  ✓  |    ✓    |
-| **startDate**                                        | String | The start date of the calendar event in ISO format.                                                   |  ✓  |    ✓    |
-| **endDate**                                          | String | The end date of the calendar event in ISO format.                                                     |  ✓  |    ✓    |
-| **allDay**                                           | Bool   | Indicates whether the event is an all-day                                                             |
-| event.                                               | ✓      | ✓                                                                                                     |
-| **recurrence**                                       | String | The simple recurrence frequency of the calendar event `daily`, `weekly`, `monthly`, `yearly` or none. |  ✓  |    ✓    |
-| [**recurrenceRule**](#recurrence-rule) \*\*          | Object | The events recurrence settings.                                                                       |  ✓  |    ✓    |
-| **occurrenceDate\***                                 | String | The original occurrence date of an event if it is part of a recurring series.                         |  ✓  |         |
-| **isDetached**                                       | Bool   | Indicates whether an event is a detached instance of a repeating event.                               |  ✓  |         |
-| **url**                                              | String | The url associated with the calendar event.                                                           |  ✓  |         |
-| **location**                                         | String | The location associated with the calendar event.                                                      |  ✓  |    ✓    |
-| [**structuredLocation**](#alarm-structuredlocation)  | String | The structuredLocation associated with the calendar event.                                            |  ✓  |         |
-| **notes**                                            | String | The notes associated with the calendar event.                                                         |  ✓  |         |
-| **description**                                      | String | The description associated with the calendar event.                                                   |     |    ✓    |
-| [**alarms**](#alarms)                                | Array  | The alarms associated with the calendar event, as an array of alarm objects.                          |  ✓  |    ✓    |
-| [**attendees**](#attendees)\*                        | Array  | The attendees of the event, including the organizer.                                                  |  ✓  |    ✓    |
-| [**calendar**](#calendar)\*                          | Object | The calendar containing the event.                                                                    |  ✓  |    ✓    |
-| **skipAndroidTimezone**                              | Bool   | Skip the process of setting automatic timezone on android                                             |     |    ✓    |
-| **timeZone**                                         | String | The time zone associated with the event                                                               |  ✓  |         |
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Unique calendar id. |
+| `title` | `string` | Display name. |
+| `type` | `string` | iOS: `local`, `calDAV`, `exchange`, `subscription`, `birthday`. Android: the account type. |
+| `source` | `string` | The account the calendar belongs to. |
+| `isPrimary` | `boolean` | The device's default calendar for new events. |
+| `allowsModifications` | `boolean` | Whether events can be written. |
+| `color` | `string` | Hex color, e.g. `#FF0000`. |
+| `allowedAvailabilities` | `string[]` | Availability values the calendar supports. |
 
-### Calendar
+### `CalendarEventReadable`
 
-| Property                    | Type   | Description                                                                | iOS | Android |
-| :-------------------------- | :----- | :------------------------------------------------------------------------- | :-: | :-----: |
-| **id**                      | String | Unique calendar ID.                                                        |  ✓  |    ✓    |
-| **title**                   | String | The calendar’s title.                                                      |  ✓  |    ✓    |
-| **type**                    | String | The calendar’s type.                                                       |  ✓  |    ✓    |
-| **source**                  | String | The source object representing the account to which this calendar belongs. |  ✓  |    ✓    |
-| **isPrimary\***             | Bool   | Indicates if the calendar is assigned as primary.                          |  ✓  |    ✓    |
-| **allowsModifications\***   | Bool   | Indicates if the calendar allows events to be written, edited or removed.  |  ✓  |    ✓    |
-| **color\***                 | String | The color assigned to the calendar represented as a hex value.             |  ✓  |    ✓    |
-| **allowedAvailabilities\*** | Array  | The event availability settings supported by the calendar.                 |  ✓  |    ✓    |
+| Field | Type | Platform | Description |
+| --- | --- | --- | --- |
+| `id` | `string` | both | Event id. |
+| `title` | `string` | both | |
+| `startDate`, `endDate` | `string` | both | ISO-8601, UTC. |
+| `allDay` | `boolean` | both | |
+| `location` | `string` | both | |
+| `calendarId` | `string` | both | |
+| `calendar` | `Calendar` | both | The containing calendar. |
+| `attendees` | `Attendee[]` | both | |
+| `alarms` | `AlarmReadable[]` | both | Each alarm's absolute `date`. |
+| `recurrence` | `RecurrenceFrequency \| ''` | both | Simple frequency, empty when not recurring. |
+| `recurrenceRule` | `RecurrenceRule` | both | Full rule when recurring. |
+| `availability` | `Availability` | both | `busy`, `free`, `tentative`, `unavailable`, `notSupported`. |
+| `status` | `EventStatus` | both | `none`, `confirmed`, `tentative`, `canceled`. |
+| `timeZone` | `string` | both | |
+| `notes`, `url`, `structuredLocation`, `occurrenceDate`, `isDetached` | | iOS | |
+| `description`, `originalId`, `syncId` | | Android | |
 
-### Attendees
+### `CalendarEventWritable`
 
-| Property    | Type   | Description                        | iOS | Android |
-| :---------- | :----- | :--------------------------------- | :-: | :-----: |
-| **name**    | String | The name of the attendee.          |  ✓  |    ✓    |
-| **email\*** | String | The email address of the attendee. |  ✓  |    ✓    |
-| **phone\*** | String | The phone number of the attendee.  |  ✓  |         |
+Everything in `CalendarEventReadable` that makes sense to write, plus:
 
-### Recurrence rule
-
-| Property       | Type   | Description                                                                           | iOS | Android |
-| :------------- | :----- | :------------------------------------------------------------------------------------ | :-: | :-----: |
-| **frequency**  | String | Event recurring frequency. Allowed values are `daily`, `weekly`, `monthly`, `yearly`. |  ✓  |    ✓    |
-| **endDate**    | String | Event recurring end date. This overrides occurrence.                                  |  ✓  |    ✓    |
-| **occurrence** | Number | Number of event occurrences.                                                          |  ✓  |    ✓    |
-| **interval**   | Number | The interval between events of this recurrence.                                       |  ✓  |    ✓    |
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Set to update an existing event. |
+| `startDate`, `endDate` | `Date \| string` | Required when creating. |
+| `alarms` | `AlarmWritable[]` | See [Alarms](#alarms). |
+| `recurrence` | `RecurrenceFrequency` | Shortcut for a simple rule. |
+| `recurrenceRule` | `RecurrenceRule` | See [Recurrence](#recurrence). |
+| `attendees` | `{ name, email }[]` | Replaces the attendees on update. |
 
 ### Alarms
 
-| Property                                            | Type             | Description                                                                                                                                                           | iOS | Android |
-| :-------------------------------------------------- | :--------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-: | :-----: |
-| **date**                                            | String or Number | If a String is given, an alarm will be set with an absolute date. If a Number is given, an alarm will be set with a relative offset (in minutes) from the start date. |  ✓  |    ✓    |
-| [**structuredLocation**](#alarm-structuredlocation) | Object           | The location to trigger an alarm.                                                                                                                                     |  ✓  |         |
+```ts
+alarms: [
+  { date: -30 }, // thirty minutes before the start
+  { date: new Date('2026-03-02T08:00:00Z') }, // absolute
+  {
+    // iOS only: geofenced alarm
+    date: 0,
+    structuredLocation: {
+      title: 'Office',
+      proximity: 'enter',
+      radius: 100,
+      coords: { latitude: 37.33, longitude: -122.03 },
+    },
+  },
+];
+```
 
-### Alarm structuredLocation
+A relative alarm is a number of minutes from the start where negative means before. Android's calendar provider cannot ring after the start, so positive numbers are treated as "before" there too, and an absolute date after the start rings at the start.
 
-| Property      | Type   | Description                                                                                            | iOS | Android |
-| :------------ | :----- | :----------------------------------------------------------------------------------------------------- | :-: | :-----: |
-| **title**     | String | The title of the location.                                                                             |  ✓  |         |
-| **proximity** | String | A value indicating how a location-based alarm is triggered. Possible values: `enter`, `leave`, `none`. |  ✓  |         |
-| **radius**    | Number | A minimum distance from the core location that would trigger the calendar event's alarm.               |  ✓  |         |
-| **coords**    | Object | The geolocation coordinates, as an object with latitude and longitude properties                       |  ✓  |         |
+### Recurrence
 
-### Options
+| Field | Type | Description |
+| --- | --- | --- |
+| `frequency` | `'daily' \| 'weekly' \| 'monthly' \| 'yearly'` | Required. |
+| `interval` | `number` | Every n periods. |
+| `occurrence` | `number` | Stop after n occurrences. |
+| `endDate` | `Date \| string` | Stop at this date. Overrides `occurrence`. |
+| `daysOfWeek` | `('MO' \| 'TU' \| 'WE' \| 'TH' \| 'FR' \| 'SA' \| 'SU')[]` | Weekly: which days. Monthly: combined with `weekPositionInMonth`. |
+| `weekPositionInMonth` | `number` | Monthly: which week (1 = first, -1 = last). |
+| `duration` | `string` | Android only. RFC 5545 duration of each occurrence, default `PT1H`. |
+| `weekStart` | weekday | Android only. |
 
-| Property          | Type   | Description                                                                                                    | iOS | Android |
-| :---------------- | :----- | :------------------------------------------------------------------------------------------------------------- | :-: | :-----: |
-| **exceptionDate** | String | The start date of a recurring event's exception instance. Used for updating single event in a recurring series |  ✓  |    ✓    |
-| **futureEvents**  | Bool   | If `true` the update will span all future events. If `false` it only update the single instance.               |  ✓  |         |
+### `Options`
 
-### Calendar options
+| Field | Type | Platform | Description |
+| --- | --- | --- | --- |
+| `exceptionDate` | `Date \| string` | both | Target a single occurrence of a recurring event. |
+| `futureEvents` | `boolean` | iOS | With `exceptionDate`: also apply to later occurrences. |
+| `sync` | `boolean` | Android | Write through the sync adapter and force a sync. Helps when saved events disappear. |
 
-| Property                  | Type   | Description                                                                                                                                                                                                                                                                            | iOS | Android |
-| :------------------------ | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-: | :-----: |
-| **title**                 | String | The calendar title (required)                                                                                                                                                                                                                                                          |  ✓  |    ✓    |
-| **color**                 | String | The calendar color (required)                                                                                                                                                                                                                                                          |  ✓  |    ✓    |
-| **entityType**            | String | 'event' or 'reminder' (required)                                                                                                                                                                                                                                                       |  ✓  |         |
-| **name**                  | String | The calendar name (required)                                                                                                                                                                                                                                                           |     |    ✓    |
-| **accessLevel**           | String | Defines how the event shows up for others when the calendar is shared [doc](https://developer.android.com/reference/android/provider/CalendarContract.EventsColumns.html#ACCESS_LEVEL)(required) `'contributor', 'editor', 'freebusy', 'override', 'owner', 'read', 'respond', 'root'` |     |    ✓    |
-| **ownerAccount**          | String | The owner account for this calendar, based on the calendar feed [doc](https://developer.android.com/reference/android/provider/CalendarContract.CalendarColumns#OWNER_ACCOUNT)(required)                                                                                               |     |    ✓    |
-| **source**                | Object | The calendar Account source (required)                                                                                                                                                                                                                                                 |     |    ✓    |
-| **source.name**           | String | The Account name (required)                                                                                                                                                                                                                                                            |     |    ✓    |
-| **source.type**           | String | The Account type                                                                                                                                                                                                                                                                       |     |    ✓    |
-| **source.isLocalAccount** | Bool   | The source (required if **source.type** is not used)                                                                                                                                                                                                                                   |     |    ✓    |
+### `CalendarOptions`
 
-\* _Read only_, \*\* \_Write only
+| Field | Type | Platform | Description |
+| --- | --- | --- | --- |
+| `title` | `string` | both | Required. |
+| `color` | `string` | both (required on Android) | Any color React Native understands. |
+| `entityType` | `'event' \| 'reminder'` | iOS | Default `event`. |
+| `name` | `string` | Android, required | |
+| `accessLevel` | `'contributor' \| 'editor' \| 'freebusy' \| 'override' \| 'owner' \| 'read' \| 'respond' \| 'root'` | Android, required | |
+| `ownerAccount` | `string` | Android, required | |
+| `source` | `{ name, type }` or `{ name, isLocalAccount: true }` | Android, required | |
 
 ## Troubleshooting
 
-These are some common issues you may run into while using `react-native-calendar-events` library.
-If you encounter something that is not listed here, try [searching in GitHub issues of `react-native-calendar-events`](https://github.com/wmcmahan/react-native-calendar-events/issues).
+### After saving an event, it disappears from the calendar
 
-### After saving an event, it disappear form the calendar
+Usually a sync issue: the event was saved to a calendar the device does not keep in sync.
 
-This might be related to a sync issue.
-You need to be sure that the event you saved is matching what your device will keep in sync.
+On iOS check _Settings_ > _Calendar_ > _Sync_ > **All Events**, and see [Apple's iCloud calendar sync help](https://support.apple.com/en-us/HT203521). On Android pass `{ sync: true }` as the options argument to `saveEvent`, and see [Google Calendar sync help](https://support.google.com/calendar/answer/6261951).
 
-For iOS, you might have not all event synced. You might need to update this iOS settings in _Settings_ > _Calendar_ > _Sync_ > **All Events**. If that's not enough, it might be worth checking [iOS iCloud sync documentation](https://support.apple.com/en-us/HT203521).  
-For Android, you can have a look to [Google Calendar sync problems documentation](https://support.google.com/calendar/answer/6261951).
+### Duplicated events after editing an event
 
-### Duplicated events after editing and saving an event
+Another symptom of the sync issue above.
 
-Another symptom of syncing issue. See the issue above.
-Note that on Android, `saveEvent` accepts an additional option `sync` (boolean) to prevent syncing issues.
+### `unauthorized to access calendar` on iOS 17
 
-## Wiki
+Add the `NSCalendarsFullAccessUsageDescription` key. Without it the system denies the request silently.
 
-- [Create basic event](https://github.com/wmcmahan/react-native-calendar-events/wiki/Creating-basic-event)
-- [Create recurring event](https://github.com/wmcmahan/react-native-calendar-events/wiki/Create-recurring-event)
-- [Updating events](https://github.com/wmcmahan/react-native-calendar-events/wiki/Updating-events)
-- [Adding alarms](https://github.com/wmcmahan/react-native-calendar-events/wiki/Event-alarms)
+### Read methods reject although the user granted access
 
-## Authors
+On iOS 17 the user may have granted write-only access. Check for `writeOnly` from `checkPermissions()` and point the user to Settings.
 
-- **Will McMahan** - Initial code - [github.com/wmcmahan](https://github.com/wmcmahan)
+## Contributing
 
-See also the list of [contributors](https://github.com/wmcmahan/react-native-calendar-events/contributors) who participated in this project.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the development workflow. Useful commands:
+
+```sh
+yarn test          # JavaScript unit tests
+yarn lint:ios      # swift-format
+yarn lint:android  # Android Lint
+yarn test:expo     # Expo config plugin + published package check
+yarn test:ios      # XCTest suite on a simulator
+yarn test:android  # Robolectric suite
+yarn test:android:emulator  # instrumented tests on a device or emulator
+yarn example ios   # run the example app
+yarn example android
+```
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/wmcmahan/react-native-calendar-events/blob/master/LICENSE.md) file for details
-
-## Acknowledgments
-
-Big thanks to all who have contributed, raised an issue or simply find use in this project. Cheers!
+MIT. See [LICENSE.md](./LICENSE.md).

@@ -1,0 +1,62 @@
+name: Release
+# Publishes to npm when release-it pushes a version tag (see CONTRIBUTING.md).
+# Authenticates with npm trusted publishing (OIDC): no npm token anywhere.
+# One-time setup on npmjs.com: package settings > Trusted Publisher > GitHub,
+# owner wmcmahan, repository react-native-calendar-events, workflow release.yml.
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-*'
+
+permissions:
+  contents: read
+  id-token: write # lets npm verify this workflow's identity
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Point npm at the public registry
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+
+      - name: Ensure npm supports trusted publishing (11.5.1+)
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - name: Check the tag matches package.json
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $VERSION" >&2
+            exit 1
+          fi
+
+      - name: Lint, typecheck, unit tests
+        run: |
+          yarn lint
+          yarn typecheck
+          yarn test --ci
+
+      - name: Expo plugin and package layout check
+        run: yarn test:expo
+
+      - name: Publish
+        run: |
+          # Prereleases go to their own dist-tag (3.0.0-alpha.1 -> alpha); releases to latest.
+          TAG=$(node -p "require('./package.json').version.match(/-([a-z]+)/)?.[1] ?? 'latest'")
+          echo "Publishing $GITHUB_REF_NAME to dist-tag $TAG"
+          npm publish --provenance --access public --tag "$TAG"

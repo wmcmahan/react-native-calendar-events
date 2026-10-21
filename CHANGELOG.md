@@ -1,5 +1,24 @@
 # Changelog for `react-native-calendar-events`
 
+## 3.0.0 - Unreleased
+
+A rewrite as a React Native Turbo Module (New Architecture only, React Native 0.76+) with a Swift core on iOS and a Kotlin core on Android, native test suites on both platforms, and an Expo config plugin. See [MIGRATION.md](./MIGRATION.md) for the full list of changes.
+
+Highlights:
+
+- iOS 17 permission APIs with the new `writeOnly` status; the event store is recreated after access is granted so the first save works [#459](https://github.com/wmcmahan/react-native-calendar-events/issues/459)
+- AGP 8 `namespace`, minSdk 24, compileSdk 36 [#456](https://github.com/wmcmahan/react-native-calendar-events/issues/456)
+- Event `status` field [#423](https://github.com/wmcmahan/react-native-calendar-events/issues/423)
+- Editing a single occurrence of a recurring event honours `futureEvents` and can move the occurrence [#135](https://github.com/wmcmahan/react-native-calendar-events/issues/135)
+- Android reminder times are read back correctly, and alarm offsets mean the same thing on both platforms [#330](https://github.com/wmcmahan/react-native-calendar-events/issues/330)
+- Android no longer crashes on non-numeric event ids or empty calendar ids [#332](https://github.com/wmcmahan/react-native-calendar-events/issues/332), [#342](https://github.com/wmcmahan/react-native-calendar-events/issues/342)
+- Events without a `calendarId` are saved to the primary writable calendar on Android instead of calendar `1`
+- Calendars created on Android are marked synced and visible, so their events show up in queries and other apps [#438](https://github.com/wmcmahan/react-native-calendar-events/issues/438), [#442](https://github.com/wmcmahan/react-native-calendar-events/issues/442), [#450](https://github.com/wmcmahan/react-native-calendar-events/issues/450)
+- Recurring events on Android are stored with `DURATION`, fixing the simple `recurrence` option [#312](https://github.com/wmcmahan/react-native-calendar-events/issues/312)
+- Single-occurrence edits and removals on Android work for local calendars
+- Native test suites: XCTest on iOS, Robolectric and emulator-based instrumented tests on Android, all run in CI
+- All date arguments accept `Date` objects
+
 ## 2.2.0 - 2021-01-08
 
 - Fixed `findEventByID` on iOS - return null if event is not found (_for consistency with Android_) [#337](https://github.com/wmcmahan/react-native-calendar-events/pull/337) by [@dstop75](https://github.com/dstop75)

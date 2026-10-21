@@ -1,25 +1,87 @@
-apply plugin: 'com.android.library'
+buildscript {
+  ext.CalendarEvents = [
+    kotlinVersion: "2.0.21",
+    minSdkVersion: 24,
+    compileSdkVersion: 36
+  ]
 
-def safeExtGet(prop, fallback) {
-    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  ext.getExtOrDefault = { prop ->
+    if (rootProject.ext.has(prop)) {
+      return rootProject.ext.get(prop)
+    }
+
+    return CalendarEvents[prop]
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "com.android.tools.build:gradle:8.7.2"
+    // noinspection DifferentKotlinGradleVersion
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion')}"
+  }
 }
 
+
+apply plugin: "com.android.library"
+
+if (project.extensions.findByName("kotlin") == null) {
+  apply plugin: "kotlin-android"
+}
+
+
+apply plugin: "com.facebook.react"
+
 android {
-    compileSdkVersion safeExtGet('compileSdkVersion', 28)
-    buildToolsVersion safeExtGet('buildToolsVersion', '28.0.3')
+  namespace "com.calendarevents"
 
-    defaultConfig {
-        minSdkVersion safeExtGet('minSdkVersion', 16)
-        targetSdkVersion safeExtGet('targetSdkVersion', 28)
-        versionCode 1
-        versionName "1.0"
-    }
+  compileSdkVersion getExtOrDefault("compileSdkVersion")
 
-    lintOptions {
-       warning 'InvalidPackage'
+  defaultConfig {
+    minSdkVersion getExtOrDefault("minSdkVersion")
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  testOptions {
+    unitTests {
+      includeAndroidResources = true
+      returnDefaultValues = true
     }
+  }
+
+  lint {
+    // Strict only when the library is linted on its own (yarn lint:android / CI),
+    // never when a consumer app compiles the library.
+    warningsAsErrors = project.hasProperty("rncalendarStrict")
+    abortOnError = true
+    // Version nags are noise for a library whose consumers pick these versions.
+    disable "GradleDependency", "AndroidGradlePluginVersion", "NewerVersionAvailable"
+  }
+}
+
+if (project.hasProperty("rncalendarStrict")) {
+  tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    compilerOptions.allWarningsAsErrors = true
+  }
 }
 
 dependencies {
-    api 'com.facebook.react:react-native:+'
+  implementation "com.facebook.react:react-android"
+  implementation "androidx.core:core-ktx:1.15.0"
+
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.robolectric:robolectric:4.15.1"
+  testImplementation "androidx.test:core:1.6.1"
+
+  androidTestImplementation "androidx.test.ext:junit:1.2.1"
+  androidTestImplementation "androidx.test:runner:1.6.2"
+  androidTestImplementation "androidx.test:rules:1.6.1"
 }

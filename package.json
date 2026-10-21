@@ -1,54 +1,192 @@
 {
   "name": "react-native-calendar-events",
-  "version": "2.2.0",
-  "description": "React Native module for IOS Calendar Events",
-  "homepage": "https://github.com/wmcmahan/react-native-calendar-events",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/wmcmahan/react-native-calendar-events.git"
+  "version": "3.0.0-alpha.0",
+  "description": "React Native module to access and save events to iOS and Android calendars",
+  "main": "./lib/module/index.js",
+  "types": "./lib/typescript/src/index.d.ts",
+  "exports": {
+    ".": {
+      "react-native-calendar-events-source": "./src/index.ts",
+      "types": "./lib/typescript/src/index.d.ts",
+      "default": "./lib/module/index.js"
+    },
+    "./package.json": "./package.json",
+    "./app.plugin.js": "./app.plugin.js"
   },
-  "author": "Will McMahan",
-  "license": "MIT",
+  "files": [
+    "src",
+    "lib",
+    "android",
+    "ios",
+    "*.podspec",
+    "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!android/gradlew",
+    "!android/gradlew.bat",
+    "!android/local.properties",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
+    "!**/.*",
+    "!scripts",
+    "app.plugin.js",
+    "!android/src/test",
+    "!android/src/androidTest"
+  ],
+  "scripts": {
+    "example": "yarn workspace react-native-calendar-events-example",
+    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "prepare": "bob build",
+    "typecheck": "tsc",
+    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "test": "jest",
+    "test:ios": "scripts/test-ios.sh",
+    "test:android": "scripts/test-android.sh",
+    "test:android:emulator": "scripts/test-android-emulator.sh",
+    "release": "release-it",
+    "lint:ios": "scripts/lint-ios.sh",
+    "format:ios": "xcrun swift-format format --in-place --recursive ios",
+    "lint:android": "scripts/lint-android.sh",
+    "test:expo": "scripts/test-expo-prebuild.sh"
+  },
   "keywords": [
     "react-native",
-    "react-component",
     "ios",
     "android",
+    "calendar",
     "eventkit",
-    "reminders",
-    "calendar-events"
+    "calendar-events",
+    "turbo-module",
+    "expo",
+    "expo-config-plugin"
   ],
-  "main": "src",
-  "types": "src/index.d.ts",
-  "files": [
-    "android/",
-    "ios/",
-    "src/",
-    "package.json",
-    "RNCalendarEvents.podspec"
-  ],
-  "peerDependencies": {
-    "react-native": ">=0.60.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wmcmahan/react-native-calendar-events.git"
   },
-  "scripts": {
-    "format": "prettier --write \"**/*.{md,json,js,css}\"",
-    "release": "npmpub",
-    "test": "echo \"Everything is awesome!\""
+  "author": "Will McMahan <mcmahanwill@gmail.com> (https://github.com/wmcmahan)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wmcmahan/react-native-calendar-events/issues"
+  },
+  "homepage": "https://github.com/wmcmahan/react-native-calendar-events",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
-    "husky": "^4.0.0",
-    "lint-staged": "^10.0.0",
-    "npmpub": "^5.0.0",
-    "prettier": "^2.0.0"
+    "@eslint/compat": "^2.1.0",
+    "@eslint/eslintrc": "^3.3.6",
+    "@eslint/js": "^9.39.5",
+    "@react-native/babel-preset": "0.86.2",
+    "@react-native/eslint-config": "0.86.2",
+    "@react-native/jest-preset": "0.86.2",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.2.0",
+    "del-cli": "^7.0.0",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-ft-flow": "^3.0.11",
+    "eslint-plugin-prettier": "^5.5.6",
+    "jest": "^30.5.2",
+    "prettier": "^3.9.6",
+    "react": "19.2.3",
+    "react-native": "0.86.2",
+    "react-native-builder-bob": "^0.43.2",
+    "release-it": "^21.1.1",
+    "typescript": "^6.0.3"
   },
-  "lint-staged": {
-    "*.{md,json,js,css}": [
-      "prettier --write"
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": ">=0.76.0"
+  },
+  "workspaces": [
+    "example"
+  ],
+  "packageManager": "yarn@4.11.0",
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
     ]
   },
-  "husky": {
+  "codegenConfig": {
+    "name": "CalendarEventsSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.calendarevents"
+    }
+  },
+  "prettier": {
+    "quoteProps": "consistent",
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "useTabs": false
+  },
+  "create-react-native-library": {
+    "type": "turbo-module",
+    "languages": "kotlin-objc",
+    "tools": [
+      "eslint"
+    ],
+    "version": "0.63.1"
+  },
+  "jest": {
+    "preset": "@react-native/jest-preset",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/example/node_modules",
+      "<rootDir>/lib/"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/example/",
+      "<rootDir>/lib/"
+    ]
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": true
+    }
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "${version}",
+      "requireCleanWorkingDir": true,
+      "requireBranch": [
+        "master",
+        "v3",
+        "2.x"
+      ]
+    },
+    "npm": {
+      "publish": false
+    },
+    "github": {
+      "release": true,
+      "releaseName": "${version}"
+    },
     "hooks": {
-      "pre-commit": "lint-staged"
+      "before:init": [
+        "yarn lint",
+        "yarn typecheck",
+        "yarn test --ci"
+      ]
     }
   }
 }

@@ -1,5 +1,5 @@
-#import <React/RCTBridgeModule.h>
-#import <React/RCTEventDispatcher.h>
+#import <CalendarEventsSpec/CalendarEventsSpec.h>
 
-@interface RNCalendarEvents : NSObject <RCTBridgeModule>
+@interface RNCalendarEvents : NSObject <NativeCalendarEventsSpec>
+
 @end
