@@ -9,6 +9,17 @@ on:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+-*'
+  # A tag-push run uses the workflow file at the tagged commit. To publish an
+  # existing tag with a fixed workflow, run this manually from the branch.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing version tag to publish, e.g. 3.0.0-alpha.1'
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 permissions:
   contents: read
@@ -20,8 +31,10 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Checkout
+      - name: Checkout ${{ env.RELEASE_TAG }}
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: ${{ env.RELEASE_TAG }}
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -32,16 +45,19 @@ jobs:
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org
 
-      - name: Ensure npm supports trusted publishing (11.5.1+)
+      - name: Check npm supports trusted publishing (11.5.1+)
+        # The npm bundled with the pinned Node is new enough; do not upgrade it,
+        # a newer npm may require a newer Node than .nvmrc provides.
         run: |
-          npm install -g npm@latest
-          npm --version
+          NPM_VERSION=$(npm --version)
+          echo "npm $NPM_VERSION"
+          node -e "const [a,b,c]=process.argv[1].split('.').map(Number); if (a<11||(a===11&&(b<5||(b===5&&c<1)))) { console.error('npm 11.5.1+ required, found ' + process.argv[1]); process.exit(1) }" "$NPM_VERSION"
 
       - name: Check the tag matches package.json
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          if [ "$VERSION" != "$GITHUB_REF_NAME" ]; then
-            echo "Tag $GITHUB_REF_NAME does not match package.json version $VERSION" >&2
+          if [ "$VERSION" != "$RELEASE_TAG" ]; then
+            echo "Tag $RELEASE_TAG does not match package.json version $VERSION" >&2
             exit 1
           fi
 
@@ -58,5 +74,5 @@ jobs:
         run: |
           # Prereleases go to their own dist-tag (3.0.0-alpha.1 -> alpha); releases to latest.
           TAG=$(node -p "require('./package.json').version.match(/-([a-z]+)/)?.[1] ?? 'latest'")
-          echo "Publishing $GITHUB_REF_NAME to dist-tag $TAG"
+          echo "Publishing $RELEASE_TAG to dist-tag $TAG"
           npm publish --provenance --access public --tag "$TAG"

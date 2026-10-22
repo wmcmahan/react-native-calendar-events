@@ -146,5 +146,5 @@ yarn release                      # next stable version, dist-tag latest
 
 Publishing authenticates with [npm trusted publishing](https://docs.npmjs.com/trusted-publishers): npm trusts this repository's `release.yml` workflow directly, so there is no npm token in GitHub secrets or on anyone's machine, and every version carries a provenance attestation. This needs a one-time registration by a package owner on npmjs.com: package settings, Trusted Publisher, GitHub, owner `wmcmahan`, repository `react-native-calendar-events`, workflow filename `release.yml`.
 
-If the workflow fails, nothing is published and the tag already exists: fix the cause on the branch and re-run the workflow from the Actions tab rather than re-tagging.
+If the workflow fails, nothing is published and the tag already exists. Fix the cause on the branch, push, then run the Release workflow manually against the existing tag (Actions tab, Release, Run workflow, enter the tag; or `gh workflow run Release --ref v3 -f tag=3.0.0-alpha.1`). A tag-push run is frozen to the workflow file at the tagged commit, so simply re-running it would reuse the broken version.
 
